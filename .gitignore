@@ -1,2 +1,5 @@
 *.DS_Store
 /orekit/CoverageDatabase/*
+/problems/ClimateCentric/xls/.*
+/problems/SMAP/xls/.*
+/venv/*
