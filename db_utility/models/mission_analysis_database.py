@@ -1,16 +1,21 @@
-from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Time, Enum, ForeignKey, Table, \
-    CheckConstraint
+from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Time, Enum, ForeignKey, Table, CheckConstraint, and_
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.types import ARRAY
+from models.base import DeclarativeBase
 from sqlalchemy.engine.url import URL
-
-DeclarativeBase = declarative_base()
-
-
-
+import numpy as np
+import pandas as pd
+from models.models import Problem, get_problem_id
 
 
-# --------------------------------> MissionAnalysisDatabase.xls
+
+#######
+### MissionAnalysisDatabase.xls - in progress
+#######
+
+
+
+
 class Walker_Mission_Analysis(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
     __tablename__ = 'Walker_Mission_Analysis'
@@ -28,6 +33,11 @@ class Walker_Mission_Analysis(DeclarativeBase):
     avg_revisit_time_cold_regiouis = Column('avg_revisit_time_cold_regiouis', Float)
     avg_revisit_time_us = Column('avg_revisit_time_us', Float)
     mission_architecture = Column('mission_architecture', String)
+def index_walker_mission_analysis(problems_dir, session, problem_name):
+    return 0
+
+
+
 
 
 class Power_Mission_Analysis(DeclarativeBase):
@@ -42,6 +52,12 @@ class Power_Mission_Analysis(DeclarativeBase):
     period = Column('period', Float)
     worst_sun_angles = Column('worst_sun_angles', Float)
     max_eclipse_time = Column('max_eclipse_time', Float)
+def index_power_mission_analysis(problems_dir, session, problem_name):
+    return 0
+
+
+
+
 
 class Launch_Vehicle_Mission_Analysis(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
@@ -57,3 +73,5 @@ class Launch_Vehicle_Mission_Analysis(DeclarativeBase):
     payload_meo_list = Column('payload_meo_list', String)
     payload_heo_list = Column('payload_heo_list', Float)
     cost = Column('cost', String)
+def index_launch_vehicle_mission_analysis(problems_dir, session, problem_name):
+    return 0

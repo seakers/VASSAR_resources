@@ -1,4 +1,6 @@
 *.DS_Store
+__pycache__/
+/db_utility/__pycache__/
 /orekit/CoverageDatabase/*
 /problems/ClimateCentric/xls/.*
 /problems/SMAP/xls/.*
