@@ -3,14 +3,13 @@ from sqlalchemy.orm import sessionmaker
 
 from models.base import DeclarativeBase
 
-from models.models import User
 from models.models import Problem
-from models.models import index_problems
+from models.models import index_problems, create_default_group
 
 from models.aggregation_rules import index_stakeholder_needs_panel, index_stakeholder_needs_objective, index_stakeholder_needs_subobjective
 from models.requirement_rules import index_requirement_rules
 from models.mission_analysis_database import index_launch_vehicle_mission_analysis, index_power_mission_analysis, index_walker_mission_analysis
-from models.attribute_set import index_mission_attribute, index_orbit_attribute, index_measurement_attribute, index_launch_vehicle_attribute
+from models.attribute_set import index_mission_attribute, index_orbit_attribute, index_measurement_attribute, index_launch_vehicle_attribute, index_instrument_attribute, index_inheritence_attribute
 
 
 
@@ -50,6 +49,8 @@ def index_vassar():
     session = Session()
 
     problems = index_problems(problem_dir, session)
+    create_default_group(session, problems)
+
     for problem in problems:
         index_stakeholder_needs_panel(problem_dir, session, problem)
 
@@ -59,14 +60,16 @@ def index_vassar():
     for problem in problems:
         index_stakeholder_needs_subobjective(problem_dir, session, problem)
 
-    # index_requirement_rules(problem_dir, session, 'SMAP')
-    # index_requirement_rules(problem_dir, session, 'Decadal2017Aerosols')
+    index_requirement_rules(problem_dir, session, 'SMAP')
+    index_requirement_rules(problem_dir, session, 'Decadal2017Aerosols')
 
 
     index_mission_attribute(problem_dir, session, problems)
     index_orbit_attribute(problem_dir, session, problems)
     index_measurement_attribute(problem_dir, session, problems)
     index_launch_vehicle_attribute(problem_dir, session, problems)
+    index_instrument_attribute(problem_dir, session, problems)
+    index_inheritence_attribute(problem_dir, session, problems)
     
 
 

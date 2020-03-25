@@ -1,7 +1,9 @@
-from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Time, Enum, ForeignKey, Table, CheckConstraint
+from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Time, Enum, ForeignKey, Table, CheckConstraint, Boolean
 from sqlalchemy.orm import relationship
 from models.base import DeclarativeBase
 from sqlalchemy.engine.url import URL
+
+from models.django_models import daphne_context_userinformation
 
 import os
 import pandas as pd
@@ -12,19 +14,31 @@ import pandas as pd
 #################################
 
 
-# This will just be our UserInformation table
-class User(DeclarativeBase):
-    """Sqlalchemy broad measurement categories model"""
-    __tablename__ = 'User'
-    id = Column(Integer, primary_key=True)
-    name = Column('name', String)
-    password = Column('password', String)
 
 class Group(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
     __tablename__ = 'Group'
     id = Column(Integer, primary_key=True)
     name = Column('name', String)
+def create_group(session, name):
+    entry = Group(name=name)
+    session.add(entry)
+    session.commit()
+    return entry.id
+def create_default_group(session, problems):
+    group_id = create_group(session, 'default')
+    for problem in problems:
+        problem_id = get_problem_id(session, problem)
+        entry = Join__Problem_Group(problem_id=problem_id, group_id=group_id)
+        session.add(entry)
+        session.commit()
+    relate_users_to_group(session, group_id)
+def relate_users_to_group(session, group_id):
+    user_query = session.query(daphne_context_userinformation.id).all()
+    print("ALL USERS", user_query)
+    for user in user_query:
+        user_id = user[0]
+        entry = Join__UserInformation_Group(user_id=user_id, group_id=group_id, admin=False)
 
 class Problem(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
@@ -49,14 +63,17 @@ def get_problem_id(session, problem_name):
 
 
 
-User_Group_Join = Table('User_Group_Join', DeclarativeBase.metadata,
-                        Column('user_id', Integer, ForeignKey('User.id')),
-                        Column('group_id', Integer, ForeignKey('Group.id')))
-
-Group_Problem_Join = Table('Group_Problem_Join', DeclarativeBase.metadata,
-                        Column('group_id', Integer, ForeignKey('Group.id')),
-                        Column('problem_id', Integer, ForeignKey('Problem.id')))
-
+class Join__UserInformation_Group(DeclarativeBase):
+    __tablename__ = 'Join__UserInformation_Group'
+    id = Column(Integer, primary_key=True)
+    user_id = Column('user_id', Integer, ForeignKey('daphne_context_userinformation.id'))
+    group_id = Column('group_id', Integer, ForeignKey('Group.id'))
+    admin = Column('admin', Boolean, default=False)
+class Join__Problem_Group(DeclarativeBase):
+    __tablename__ = 'Join__Problem_Group'
+    id = Column(Integer, primary_key=True)
+    problem_id = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    group_id = Column('group_id', Integer, ForeignKey('Group.id'))
 
 
 

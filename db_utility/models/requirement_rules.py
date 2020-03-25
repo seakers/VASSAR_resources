@@ -10,7 +10,7 @@ from models.models import Problem, get_problem_id
 
 
 #######
-### RequirementRules.xls - in progress
+### RequirementRules.xls - completed
 #######
 
 
@@ -31,6 +31,37 @@ class Requirement_Rule_Attribute(DeclarativeBase):
     justification = Column('justification', String)
     units = Column('units', String)
     notes = Column('notes', String)
+
+class Requirement_Rule_Case(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'Requirement_Rule_Case'
+    id = Column(Integer, primary_key=True)
+    problem_id = Column(Integer, ForeignKey('Problem.id'))
+    subobjective = Column('subobjective', String)
+    measurement = Column('measurement', String)
+    attribute = Column('attribute', String)
+    attribute_type = Column('type', String)
+
+    threshold = Column('threshold', String)
+    scores = Column('scores', String)
+    justification = Column('justification', String)
+
+    units = Column('units', String)
+    notes = Column('notes', String)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def index_requirement_rules(problems_dir, session, problem_name):
     problem_dir = problems_dir + '/' + problem_name + '/xls'  # /app/daphne/VASSAR_resources/problems/SMAP/xls
     file_path = problem_dir + "/Requirement Rules.xls"        # /app/daphne/VASSAR_resources/problems/SMAP/xls/Requirement Rules.xls
@@ -54,9 +85,14 @@ def index_requirement_rules(problems_dir, session, problem_name):
         attribute_type = row[3]
 
         threshold_str = row[4]
-        threshold_list = threshold_str.strip('][').split(',')
-
         scores_str = row[5]
+
+        # Check for "By Case" rule
+        if 'nominal' in scores_str or 'degraded' in scores_str:
+            index_by_case_rule(session, row, problem_id, problem_name)
+            continue
+
+        threshold_list = threshold_str.strip('][').split(',')
         scores_list = scores_str.strip('][').split(',')
         print(scores_list)
         scores_list = [float(element) for element in scores_list]
@@ -77,3 +113,21 @@ def index_requirement_rules(problems_dir, session, problem_name):
     print(df.shape)
 
 
+
+
+def index_by_case_rule(session, row, problem_id, problem_name):
+    subobjective = row[0]
+    measurement = row[1]
+    attribute = row[2]
+    attribute_type = row[3]
+    threshold = row[4]
+    scores = row[5]
+    justification = row[6]
+    if problem_name in ['ClimateCentric', 'Decadal2017Aerosols']:
+        units = str(row[7])
+        notes = str(row[8])
+        entry = Requirement_Rule_Case(problem_id=problem_id, subobjective=subobjective, measurement=measurement, attribute=attribute, attribute_type=attribute_type, threshold=threshold, scores=scores, justification=justification, units=units, notes=notes)
+    else:
+        entry = Requirement_Rule_Case(problem_id=problem_id, subobjective=subobjective, measurement=measurement, attribute=attribute, attribute_type=attribute_type, threshold=threshold, scores=scores, justification=justification)
+    session.add(entry)
+    session.commit()

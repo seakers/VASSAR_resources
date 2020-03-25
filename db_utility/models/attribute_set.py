@@ -11,21 +11,11 @@ from models.models import Problem, get_problem_id
 
 
 #######
-### AttributeSet.xls
+### AttributeSet.xls -- in progress
 #######
 
 
-class Instrument_Attribute(DeclarativeBase):
-    """Sqlalchemy broad measurement categories model"""
-    __tablename__ = 'Instrument_Attribute'
-    id = Column(Integer, primary_key=True)
-    problem_id = Column(Integer, ForeignKey('Problem.id'))
-    slot_type = Column('slot_type', String)
-    name = Column('name', String)
-    type = Column('type', String)
-Instrument_Attribute_Accepted_Value_Join = Table('Instrument_Attribute_Accepted_Value_Join', DeclarativeBase.metadata,
-                        Column('value_id', Integer, ForeignKey('Accepted_Value.id')),
-                        Column('attribute_id', Integer, ForeignKey('Instrument_Attribute.id')))
+
 
 
 
@@ -33,17 +23,53 @@ Instrument_Attribute_Accepted_Value_Join = Table('Instrument_Attribute_Accepted_
 class Inheritence_Attribute(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
     __tablename__ = 'Inheritence_Attribute'
+
     id = Column(Integer, primary_key=True)
+
     problem_id = Column(Integer, ForeignKey('Problem.id'))
+
     from_template = Column('from_template', String)
+
     slot_to_copy_type = Column('slot_to_copy_type', String)
+
     slot_to_copy_name = Column('slot_to_copy_name', String)
+
     matching_slot_type = Column('matching_slot_type', String)
+
     matching_slot_name = Column('matching_slot_name', String)
+
     to_template = Column('to_template', String)
+
     matching_to_template_slot_name = Column('matching_to_template_slot_name', String)
+
     copy_slot_name = Column('copy_slot_name', String)
+
     module = Column('module', String)
+def index_inheritence_attribute(problems_dir, session, problems):
+    files = [(problem, problems_dir+'/'+problem+'/xls/AttributeSet.xls') for problem in problems]
+    for problem, path in files:
+        problem_id = get_problem_id(session, problem)
+        df = pd.read_excel(path, sheet_name='Attribute Inheritance', header=0, usecols='A:DA')
+        df = df.dropna(how='all')
+        for index, row in df.iterrows():
+            from_template = row[0]
+            slot_to_copy_type = row[1]
+            slot_to_copy_name = row[2]
+            matching_slot_type = row[3]
+            matching_slot_name = row[4]
+            to_template = row[5]
+            matching_to_template_slot_name = row[6]
+            copy_slot_name = row[7]
+            module = row[8]
+            entry = Inheritence_Attribute(problem_id=problem_id,from_template=from_template, slot_to_copy_type=slot_to_copy_type,slot_to_copy_name=slot_to_copy_name,matching_slot_type=matching_slot_type,matching_slot_name=matching_slot_name,to_template=to_template,matching_to_template_slot_name=matching_to_template_slot_name,copy_slot_name=copy_slot_name,module=module)
+            session.add(entry)
+            session.commit()
+
+
+
+
+
+
 
 class Fuzzy_Attribute(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
@@ -122,7 +148,15 @@ class Launch_Vehicle_Attribute(DeclarativeBase):
     slot_type = Column('slot_type', String)
     name = Column('name', String)
     attribute_type = Column('attribute_type', String)
-
+class Instrument_Attribute(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'Instrument_Attribute'
+    id = Column(Integer, primary_key=True)
+    problem_id = Column(Integer, ForeignKey('Problem.id'))
+    attribute_id = Column('attribute_id', Integer)
+    slot_type = Column('slot_type', String)
+    name = Column('name', String)
+    attribute_type = Column('attribute_type', String)
 
 class Join__Mission_Attribute_Accepted_Value(DeclarativeBase):
     __tablename__ = 'Join__Mission_Attribute_Accepted_Value'
@@ -144,7 +178,11 @@ class Join__Launch_Vehicle_Attribute_Accepted_Value(DeclarativeBase):
     id = Column(Integer, primary_key=True)
     value_id = Column('value_id', Integer, ForeignKey('Accepted_Value.id'))
     attribute_id = Column('attribute_id', Integer, ForeignKey('Launch_Vehicle_Attribute.id'))
-
+class Join__Instrument_Attribute_Accepted_Value(DeclarativeBase):
+    __tablename__ = 'Join__Instrument_Attribute_Accepted_Value'
+    id = Column(Integer, primary_key=True)
+    value_id = Column('value_id', Integer, ForeignKey('Accepted_Value.id'))
+    attribute_id = Column('attribute_id', Integer, ForeignKey('Instrument_Attribute.id'))
 
 def index_mission_attribute(problems_dir, session, problems):
     files = [(problem, problems_dir+'/'+problem+'/xls/AttributeSet.xls') for problem in problems]
@@ -182,12 +220,20 @@ def index_launch_vehicle_attribute(problems_dir, session, problems):
         df = df.dropna(how='all')
         index_attribute(session, attribute_type, df, problem_id)
     return 0
-
+def index_instrument_attribute(problems_dir, session, problems):
+    files = [(problem, problems_dir+'/'+problem+'/xls/AttributeSet.xls') for problem in problems]
+    attribute_type = 'instrument'
+    for problem, path in files:
+        problem_id = get_problem_id(session, problem)
+        df = pd.read_excel(path, sheet_name='Instrument', header=0, usecols='A:DA')
+        df = df.dropna(how='all')
+        index_attribute(session, attribute_type, df, problem_id)
+    return 0
 
 
 
 # session:         database session
-# attribute_type:  mission / orbit / measurement / launch_vehicle
+# attribute_type:  mission / orbit / measurement / launch_vehicle / instrument
 # data_frame:      excel attribute sheet
 # problem_id:      problem_id lol
 def index_attribute(session, index_attribute_type, data_frame, problem_id):
@@ -212,6 +258,8 @@ def index_attribute(session, index_attribute_type, data_frame, problem_id):
             entry = Orbit_Attribute(problem_id=problem_id, attribute_id=attribute_id, slot_type=slot_type, name=name, attribute_type=attribute_type)
         elif index_attribute_type == 'launch_vehicle':
             entry = Launch_Vehicle_Attribute(problem_id=problem_id, attribute_id=attribute_id, slot_type=slot_type, name=name, attribute_type=attribute_type)
+        elif index_attribute_type == 'instrument':
+            entry = Instrument_Attribute(problem_id=problem_id, attribute_id=attribute_id, slot_type=slot_type, name=name, attribute_type=attribute_type)
         session.add(entry)
         session.commit()
         entry_id = entry.id
@@ -265,6 +313,8 @@ def index_attribute_join(session, attribute_type, attribute_id, accepted_value_i
             entry = Join__Orbit_Attribute_Accepted_Value(attribute_id=attribute_id, value_id=value_id)
         elif attribute_type == 'launch_vehicle':
             entry = Join__Launch_Vehicle_Attribute_Accepted_Value(attribute_id=attribute_id, value_id=value_id)
+        elif attribute_type == 'instrument':
+            entry = Join__Instrument_Attribute_Accepted_Value(attribute_id=attribute_id, value_id=value_id)
         session.add(entry)
     session.commit()
 
