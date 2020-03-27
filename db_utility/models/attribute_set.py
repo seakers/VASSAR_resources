@@ -8,15 +8,9 @@ import pandas as pd
 from models.models import Problem, get_problem_id
 
 
-
-
 #######
-### AttributeSet.xls -- in progress
+### AttributeSet.xls -- completed
 #######
-
-
-
-
 
 
 
@@ -49,7 +43,7 @@ def index_inheritence_attribute(problems_dir, session, problems):
     files = [(problem, problems_dir+'/'+problem+'/xls/AttributeSet.xls') for problem in problems]
     for problem, path in files:
         problem_id = get_problem_id(session, problem)
-        df = pd.read_excel(path, sheet_name='Attribute Inheritance', header=0, usecols='A:DA')
+        df = pd.read_excel(path, sheet_name='Attribute Inheritance', header=0, usecols='A:I')
         df = df.dropna(how='all')
         for index, row in df.iterrows():
             from_template = row[0]
@@ -68,9 +62,6 @@ def index_inheritence_attribute(problems_dir, session, problems):
 
 
 
-
-
-
 class Fuzzy_Attribute(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
     __tablename__ = 'Fuzzy_Attribute'
@@ -79,27 +70,43 @@ class Fuzzy_Attribute(DeclarativeBase):
     name = Column('name', String)
     parameter = Column('parameter', String)
     unit = Column('unit', String)
-    
 class Fuzzy_Value(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
     __tablename__ = 'Fuzzy_Value'
     id = Column(Integer, primary_key=True)
     fuzzy_attribute_id = Column(Integer, ForeignKey('Fuzzy_Attribute.id'))
     value = Column('value', String)
-    min = Column('min', Float)
+    minimum = Column('minimum', Float)
     mean = Column('mean', Float)
-    max = Column('max', Float)
+    maximum = Column('maximum', Float)
 
-
-
-
-
-
-
-
-
-
-
+def index_fuzzy_attribute(problems_dir, session, problems):
+    files = [(problem, problems_dir+'/'+problem+'/xls/AttributeSet.xls') for problem in problems]
+    for problem, path in files:
+        problem_id = get_problem_id(session, problem)
+        df = pd.read_excel(path, sheet_name='Fuzzy Attributes', header=0)
+        df = df.dropna(how='all')
+        for index, row in df.iterrows():
+            name = row[0]
+            parameter = row[1]
+            unit = row[2]
+            entry = Fuzzy_Attribute(problem_id=problem_id,name=name,parameter=parameter,unit=unit)
+            session.add(entry)
+            session.commit()
+            entry_id = entry.id
+            index_fuzzy_value(session, row, entry_id)
+def index_fuzzy_value(session, row, fuzzy_attribute_id , col__num_fuzzy_values=3):
+    num_values = int(row[col__num_fuzzy_values])
+    col__first_fuzzy_value = col__num_fuzzy_values + 1
+    for index in range(num_values):
+        current_index = col__first_fuzzy_value + (index * 4)
+        value = row[current_index]
+        minimum = float(row[current_index + 1])
+        mean = float(row[current_index + 2])
+        maximum = float(row[current_index + 3])
+        entry = Fuzzy_Value(fuzzy_attribute_id=fuzzy_attribute_id,value=value,minimum=minimum,mean=mean,maximum=maximum)
+        session.add(entry)
+        session.commit()
 
 
 
