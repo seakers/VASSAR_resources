@@ -59,19 +59,19 @@ def index_vassar():
 
     problems = index_problems(problem_dir, session)
     create_default_group(session, problems)
-    # create_default_group(session, problems, 'default2')
 
-    # for problem in problems:
-    #     index_stakeholder_needs_panel(problem_dir, session, problem)
+    for problem in problems:
+        index_stakeholder_needs_panel(problem_dir, session, problem)
 
-    # for problem in problems:
-    #     index_stakeholder_needs_objective(problem_dir, session, problem)
+    for problem in problems:
+        index_stakeholder_needs_objective(problem_dir, session, problem)
 
-    # for problem in problems:
-    #     index_stakeholder_needs_subobjective(problem_dir, session, problem)
+    for problem in problems:
+        index_stakeholder_needs_subobjective(problem_dir, session, problem)
 
-    # index_requirement_rules(problem_dir, session, 'SMAP')
-    # index_requirement_rules(problem_dir, session, 'Decadal2017Aerosols')
+    for problem in problems:
+        index_requirement_rules(problem_dir, session, problem)
+
 
 
     # index_mission_attribute(problem_dir, session, problems)
