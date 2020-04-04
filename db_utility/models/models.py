@@ -33,6 +33,7 @@ def create_default_group(session, problems, name='seakers (default)'):
         session.add(entry)
         session.commit()
     relate_users_to_group(session, group_id)
+    return group_id
 def relate_users_to_group(session, group_id):
     user_query = session.query(auth_user.id).all()
     print("ALL USERS", user_query)

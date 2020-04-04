@@ -11,6 +11,7 @@ from models.requirement_rules import index_requirement_rules
 from models.mission_analysis_database import index_launch_vehicle_mission_analysis, index_power_mission_analysis, index_walker_mission_analysis
 from models.attribute_set import index_mission_attribute, index_orbit_attribute, index_measurement_attribute, index_launch_vehicle_attribute, index_instrument_attribute, index_inheritence_attribute, index_fuzzy_attribute
 from models.mission_analysis_database import index_walker_mission_analysis, index_power_mission_analysis, index_launch_vehicle_mission_analysis
+from models.instrument_capability_definitions import create_default_instruments
 
 
 import os
@@ -58,7 +59,9 @@ def index_vassar():
     
 
     problems = index_problems(problem_dir, session)
-    create_default_group(session, problems)
+    default_group_id = create_default_group(session, problems)
+
+    
 
     for problem in problems:
         index_stakeholder_needs_panel(problem_dir, session, problem)
@@ -73,19 +76,22 @@ def index_vassar():
         index_requirement_rules(problem_dir, session, problem)
 
 
+    # Attributes
+    index_mission_attribute(problem_dir, session, problems)
+    index_orbit_attribute(problem_dir, session, problems)
+    index_measurement_attribute(problem_dir, session, problems)
+    index_launch_vehicle_attribute(problem_dir, session, problems)
+    index_instrument_attribute(problem_dir, session, problems)
+    index_inheritence_attribute(problem_dir, session, problems)
+    index_fuzzy_attribute(problem_dir, session, problems)
 
-    # index_mission_attribute(problem_dir, session, problems)
-    # index_orbit_attribute(problem_dir, session, problems)
-    # index_measurement_attribute(problem_dir, session, problems)
-    # index_launch_vehicle_attribute(problem_dir, session, problems)
-    # index_instrument_attribute(problem_dir, session, problems)
-    # index_inheritence_attribute(problem_dir, session, problems)
 
-    # index_fuzzy_attribute(problem_dir, session, problems)
+    create_default_instruments(session, problem_dir, problems,  default_group_id)
 
-    # index_walker_mission_analysis(problem_dir, session, problems)
-    # index_power_mission_analysis(problem_dir, session, problems)
-    # index_launch_vehicle_mission_analysis(problem_dir, session, problems)
+    # Mission Analysis
+    index_walker_mission_analysis(problem_dir, session, problems)
+    index_power_mission_analysis(problem_dir, session, problems)
+    index_launch_vehicle_mission_analysis(problem_dir, session, problems)
     
 
     

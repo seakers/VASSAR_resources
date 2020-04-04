@@ -257,6 +257,8 @@ def index_attribute(session, index_attribute_type, data_frame, problem_id):
         name = row[1]
         attribute_id = row[2]
         attribute_type = row[3]
+
+
         if index_attribute_type == 'mission':
             entry = Mission_Attribute(problem_id=problem_id, attribute_id=attribute_id, slot_type=slot_type, name=name, attribute_type=attribute_type)
         elif index_attribute_type == 'measurement':
@@ -272,6 +274,7 @@ def index_attribute(session, index_attribute_type, data_frame, problem_id):
         entry_id = entry.id
 
         if len(row) <= 4:
+            print('CONTINUE', row[3])
             continue
 
         # 2.

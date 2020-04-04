@@ -131,17 +131,17 @@ def index_mission_analysis(session, analysis_type, data_frame, problem_id, probl
         if analysis_type == 'Walker':
             entry = Walker_Mission_Analysis(sats_per_plane=float(row[0]), num_planes=float(row[1]), \
                                             orbit_altitude=float(row[2]), orbit_inclination=row[3], \
-                                            instrument_fov=float(row[4]), avg_revisit_time_global=float(row[5]), \
-                                            avg_revisit_time_tropics=float(row[6]), avg_revisit_time_northern_hemisphere=float(row[7]), \
-                                            avg_revisit_time_southern_hemisphere=float(row[8]), avg_revisit_time_cold_regions=float(row[9]), \
-                                            avg_revisit_time_us=float(row[10]), mission_architecture=row[11], \
+                                            instrument_fov=float(row[4]), avg_revisit_time_global=round(float(row[5]), 1), \
+                                            avg_revisit_time_tropics=round(float(row[6]), 1), avg_revisit_time_northern_hemisphere=round(float(row[7]), 1), \
+                                            avg_revisit_time_southern_hemisphere=round(float(row[8]), 1), avg_revisit_time_cold_regions=round(float(row[9]),1), \
+                                            avg_revisit_time_us=round(float(row[10]),1), mission_architecture=row[11], \
                                             problem_id=problem_id)
         elif analysis_type == 'Power':
             entry = Power_Mission_Analysis(orbit_id=row[0], orbit_type=row[1], \
                                             altitude=float(row[2]), inclination=float(row[3]), \
                                             RAAN=row[4], fraction_of_sunlight=row[5], \
-                                            period=float(row[6]), worst_sun_angles=float(row[7]), \
-                                            max_eclipse_time=float(row[8]), problem_id=problem_id)
+                                            period=round(float(row[6]),0), worst_sun_angles=round(float(row[7]),2), \
+                                            max_eclipse_time=round(float(row[8]),0), problem_id=problem_id)
         elif analysis_type == 'Launch Vehicles':
             payload_geo = string_to_float_list(row[1])
             payload_leo_polar = string_to_float_list(row[4])
