@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker, mapper
 
-from models.base import DeclarativeBase
+from models_arch.base import DeclarativeBase
 
 from models.models import Problem
 from models.models import index_problems, create_default_group
@@ -13,6 +13,10 @@ from models.attribute_set import index_mission_attribute, index_orbit_attribute,
 from models.mission_analysis_database import index_walker_mission_analysis, index_power_mission_analysis, index_launch_vehicle_mission_analysis
 from models.instrument_capability_definitions import create_default_instruments
 
+
+from models_arch.globals import index_group_globals
+from models_arch.problem_specific import index_group_problems
+from models_arch.stakeholders import index_group_stakeholders
 
 import os
 import pandas as pd
@@ -43,9 +47,6 @@ def drop_tables():
     DeclarativeBase.metadata.drop_all(engine)
     tables = engine.table_names()
     return tables
-
-
-
 
 def load_session():
     engine = db_connect()
@@ -97,8 +98,19 @@ def index_vassar():
     
 
 
+def create_vassar_group(name='seakers (default)'):
+    print('Indexing Group', name)
+    session = load_session()
+
+    data = index_group_globals(session, name)
+    index_group_stakeholders(session, data)
+    index_group_problems(session, data)
+
+
+
 if __name__ == "__main__":
     # print(drop_tables())
     print(create_tables())
-    index_vassar()
+    # index_vassar()
+    create_vassar_group()
     
