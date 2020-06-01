@@ -263,7 +263,7 @@ def index_mission_analysis(session, data, group_id, problem_id, path, sheet):
                     value = trans
 
 
-
+                # if row[0] in ['LEO-600-polar-NA', 'SSO-600-SSO-AM', 'SSO-600-SSO-DD', 'SSO-800-SSO-AM', 'SSO-800-SSO-DD']:
                 item_attribute_id = validate_dict(data, 'orbit_attributes', col_labels[idx])
                 entry_id = index_orbit_attribiute(session, group_id, problem_id, item_id, item_attribute_id, value)
                 # print("--------------------------------------------AAA")
@@ -311,6 +311,14 @@ class Join__Instrument_Characteristic(DeclarativeBase):
 
     value = Column('value', String, default=False)
 def index_instrument_characteristic(session, group_id, problem_id, instrument_id, instrument_attribute_id, value):
+
+    if ';' in value:
+        value_temp = value.split(';')[-1]
+        value = value_temp
+    if '"' in value:
+        value_temp = value.split('"')[-1]
+        value = value_temp
+
     entry = Join__Instrument_Characteristic(group_id=group_id, problem_id=problem_id, instrument_id=instrument_id, instrument_attribute_id=instrument_attribute_id, value=value)
     session.add(entry)
     session.commit()

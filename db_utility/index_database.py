@@ -14,7 +14,7 @@ from models.mission_analysis_database import index_walker_mission_analysis, inde
 from models.instrument_capability_definitions import create_default_instruments
 
 
-from models_arch.globals import index_group_globals
+from models_arch.globals import index_group_globals, index_fuzzy_attribute_arch
 from models_arch.problem_specific import index_group_problems
 from models_arch.stakeholders import index_group_stakeholders
 
@@ -102,9 +102,18 @@ def create_vassar_group(name='seakers (default)'):
     print('Indexing Group', name)
     session = load_session()
 
+    
+
     data = index_group_globals(session, name)
     index_group_stakeholders(session, data)
     index_group_problems(session, data)
+
+    problems = os.listdir(problem_dir)
+    index_fuzzy_attribute_arch(problem_dir, session, problems)
+
+    
+
+
 
 
 

@@ -21,7 +21,9 @@
 )
 
 (deffunction update-fovs (?param ?orbit-list)
+(printout t update-fovs " " ?param " " ?orbit-list crlf)
 (bind ?results (run-query* REQUIREMENTS::get-measurement-param-fov-and-orbit ?param))
+(printout t update-fovsss " " ?results  crlf)
 (bind ?n (length$ ?orbit-list))
 (bind ?fovs (repeat$ -1 ?n))
 (bind ?some FALSE)

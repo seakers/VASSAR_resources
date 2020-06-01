@@ -11,6 +11,8 @@ from models_arch.django_models import auth_user
 import os
 import pandas as pd
 
+import pprint
+
 problem_dir = "/app/daphne/VASSAR_resources/problems"
 problems_dir = "/app/daphne/VASSAR_resources/problems"
 
@@ -30,7 +32,6 @@ instrument_list = [
     'HYSP_TIR',
     'CNES_KaRIN',
     'POSTEPS_IRS',
-
     'SMAP_ANT',
     'SMAP_RAD',
     'SMAP_MWR',
@@ -41,6 +42,41 @@ instrument_list = [
     'GPS',
     'MODIS'
 ]
+
+smap_instrument_list = [
+    'SMAP_MWR',
+    'SMAP_ANT',
+    'VIIRS',
+    'CMIS',
+    'BIOMASS'
+]
+
+climate_centric_instrument_list = [
+    'ACE_CPR',
+    'ACE_ORCA',
+    'ACE_POL',
+    'ACE_LID',
+    'CLAR_ERB',
+    'DESD_SAR',
+    'DESD_LID',
+    'GACM_SWIR',
+    'GACM_VIS',
+    'HYSP_TIR',
+    'CNES_KaRIN',
+    'POSTEPS_IRS'
+]
+
+decadal_aerosols_instrument_list = [
+    'ACE_CPR',
+    'ACE_ORCA',
+    'ACE_POL',
+    'ACE_LID',
+    'CLAR_TIR',
+    'CLAR_VNIR',
+]
+
+
+
 
 launch_vehicle_list = [
     'Ariane-5-ESCA',
@@ -98,6 +134,8 @@ synergy_measurements = [
 
 
 def index_group_globals(session, group_name):
+    pp = pprint.PrettyPrinter(indent=4)
+
     data = {}
     data['group_id'] = index_group(session, group_name)
     data['problems'] = {}
@@ -127,6 +165,23 @@ def index_group_globals(session, group_name):
     
     for instrument in instrument_list:
         data['instruments'][instrument] = index_instrument(session, instrument, data['group_id'])
+        if instrument in smap_instrument_list:
+            entry = Join__Problem_Instrument(problem_id=data['problems']['SMAP'], instrument_id=data['instruments'][instrument])
+            entry2 = Join__Problem_Instrument(problem_id=data['problems']['SMAP_JPL1'], instrument_id=data['instruments'][instrument])
+            entry3 = Join__Problem_Instrument(problem_id=data['problems']['SMAP_JPL2'], instrument_id=data['instruments'][instrument])
+            session.add(entry)
+            session.add(entry2)
+            session.add(entry3)
+            session.commit()
+        if instrument in climate_centric_instrument_list:
+            entry = Join__Problem_Instrument(problem_id=data['problems']['ClimateCentric'], instrument_id=data['instruments'][instrument])
+            session.add(entry)
+            session.commit()
+        if instrument in decadal_aerosols_instrument_list:
+            entry = Join__Problem_Instrument(problem_id=data['problems']['Decadal2017Aerosols'], instrument_id=data['instruments'][instrument])
+            session.add(entry)
+            session.commit()
+
 
     
     for orbit in orbit_list:
@@ -139,7 +194,7 @@ def index_group_globals(session, group_name):
     files = [(problem, problems_dir+'/'+problem+'/xls/Instrument Capability Definition.xls') for problem in problems]
     
     for problem, path in files:
-        measurement_data = index_measurements(session, problem, path, group_id)
+        measurement_data = index_measurements(session, problem, path, group_id, data)
         for data_pair in measurement_data:
             data['measurements'][data_pair[0]] = data_pair[1]
     # for meas_name in synergy_measurements:
@@ -223,6 +278,18 @@ def get_problem_id(session, problem_name, group_id):
 
 
 
+
+class Join__Problem_Instrument(DeclarativeBase):
+    __tablename__ = 'Join__Problem_Instrument'
+    id            = Column(Integer, primary_key=True)
+    problem_id    = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    instrument_id = Column('instrument_id', Integer, ForeignKey('Instrument.id'))
+
+
+
+
+
+
 class Launch_Vehicle(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
     __tablename__ = 'Launch_Vehicle'
@@ -270,6 +337,7 @@ class Measurement(DeclarativeBase):
     __tablename__ = 'Measurement'
     id = Column(Integer, primary_key=True)
     group_id = Column('group_id', Integer, ForeignKey('Group.id'))
+
     name = Column('name', String)
     synergy_rule = Column('synergy_rule', Boolean, default=False)
 
@@ -280,6 +348,16 @@ def index_measurement(session, group_id, name, synergy_rule=False):
     return entry.id
 
 
+class Join__Instrument_Measurement(DeclarativeBase):
+    __tablename__ = 'Join__Instrument_Measurement'
+    id            = Column(Integer, primary_key=True)
+    measurement_id = Column('measurement_id', Integer, ForeignKey('Measurement.id'))
+    instrument_id = Column('instrument_id', Integer, ForeignKey('Instrument.id'))
+def index_instrument_measurement(session, measurement_id, instrument_id):
+    entry = Join__Instrument_Measurement(measurement_id=measurement_id, instrument_id=instrument_id)
+    session.add(entry)
+    session.commit()
+    return entry.id
 
 
 
@@ -291,7 +369,7 @@ def get_measurement_name(measurement):
     second_quote_index = measurement_id.find('"')
     return measurement_id[:second_quote_index]
 
-def index_measurements(session, problem, path, group_id):
+def index_measurements(session, problem, path, group_id, global_data):
     data = []
     xls = pd.ExcelFile(path)
     sheets = xls.sheet_names
@@ -300,16 +378,32 @@ def index_measurements(session, problem, path, group_id):
             continue
         df = pd.read_excel(xls, sheet, header=None)
         df = df.dropna(how='all')
+
         for index, row in df.iterrows():
             measurement_slot_type = get_measurement_name(row[0])
             measurement_name = get_measurement_name(row[1])
             measurement_type = get_measurement_name(row[2])
-            
+
+            meas_id = None
             if session.query(Measurement.group_id, Measurement.name).filter_by(group_id=group_id, name=measurement_name).scalar() is None:
                 entry = Measurement(name=measurement_name, group_id=group_id)
                 session.add(entry)
                 session.commit()
                 data.append([measurement_name, entry.id])
+                meas_id = entry.id
+            else:
+                meas_query = session.query(Measurement.group_id, Measurement.name).filter_by(group_id=group_id, name=measurement_name).first()
+                meas_id = meas_query[0]
+
+            if(meas_id == None):
+                print("Measurement id not foound in data")
+                exit()
+
+            inst_meas_id = index_instrument_measurement(session, meas_id, global_data['instruments'][sheet])
+
+            
+        
+            
     return data
 
 def get_measurement_id(session, name, group_id):
@@ -517,6 +611,56 @@ class Inheritence_Attribute(DeclarativeBase):
 
 
 
+class Fuzzy_Attribute(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'Fuzzy_Attribute'
+    id = Column(Integer, primary_key=True)
+    problem_id = Column(Integer, ForeignKey('Problem.id'))
+
+    name = Column('name', String)
+    parameter = Column('parameter', String)
+    unit = Column('unit', String)
+
+class Fuzzy_Value(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'Fuzzy_Value'
+    id = Column(Integer, primary_key=True)
+    fuzzy_attribute_id = Column(Integer, ForeignKey('Fuzzy_Attribute.id'))
+    value = Column('value', String)
+    minimum = Column('minimum', Float)
+    mean = Column('mean', Float)
+    maximum = Column('maximum', Float)
+
+
+
+
+def index_fuzzy_attribute_arch(problems_dir, session, problems):
+    files = [(problem, problems_dir+'/'+problem+'/xls/AttributeSet.xls') for problem in problems]
+    for problem, path in files:
+        problem_id = get_problem_id(session, problem, 1)
+        df = pd.read_excel(path, sheet_name='Fuzzy Attributes', header=0)
+        df = df.dropna(how='all')
+        for index, row in df.iterrows():
+            name = row[0]
+            parameter = row[1]
+            unit = row[2]
+            entry = Fuzzy_Attribute(problem_id=problem_id,name=name,parameter=parameter,unit=unit)
+            session.add(entry)
+            session.commit()
+            entry_id = entry.id
+            index_fuzzy_value(session, row, entry_id)
+def index_fuzzy_value(session, row, fuzzy_attribute_id , col__num_fuzzy_values=3):
+    num_values = int(row[col__num_fuzzy_values])
+    col__first_fuzzy_value = col__num_fuzzy_values + 1
+    for index in range(num_values):
+        current_index = col__first_fuzzy_value + (index * 4)
+        value = row[current_index]
+        minimum = float(row[current_index + 1])
+        mean = float(row[current_index + 2])
+        maximum = float(row[current_index + 3])
+        entry = Fuzzy_Value(fuzzy_attribute_id=fuzzy_attribute_id,value=value,minimum=minimum,mean=mean,maximum=maximum)
+        session.add(entry)
+        session.commit()
 
 
 
