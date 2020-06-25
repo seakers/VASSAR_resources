@@ -49,9 +49,9 @@
 	;(printout t design-EPS " " ?Pavg_payload " " ?Ppeak_payload " " ?frac_sunlight " " ?worst_sun_angle " " ?period " " ?lifetime " " ?dry_mass " " ?DOD crlf)
 	(bind ?Xe 0.65); % efficiency from solar arrays to battery to equipment (SMAD page 415)
 	(bind ?Xd  0.85); % efficiency from solar arrays to equipment (SMAD page 415)
-	(bind ?P0 253);% in W/m2, corresponds to GaAs, see SMAD page 412,
+	(bind ?P0 300);% in W/m2, corresponds to GaAs, see SMAD page 412,
 	(bind ?Id 0.77); % See SMAD page 412
-	(bind ?degradation 0.0275); % Degradation of solar arrays performance in % per year, corresponds to multi-junction
+	(bind ?degradation 0.005); % Degradation of solar arrays performance in % per year, corresponds to multi-junction
 	(bind ?Spec_power_SA 25); % in W per kg see SMAD chapter 11
 	(bind ?n 0.9); % Efficiency of battery to load (SMAD page 422).
 	(bind ?Spec_energy_density_batt 40); % In Whr/kg see SMAD page 420, corresponds to Ni-H2
@@ -90,6 +90,8 @@
 
 	;; Others: regulators, converters, wiring
 	(bind ?mass_others (+ (* (+ 0.02  0.0125) ?P_BOL) (* 0.02 ?dry_mass)));%SMAD page 334, assume all the power is regulated and half is converted.
+
+	(printout t ?mass_SA " " ?Asa " " ?frac_sunlight " " ?Psa " " ?Ppeak_payload " " ?Pavg_payload crlf)
 
 	;; Total subsystem mass
 	(bind ?mass_EPS (+ ?mass_SA ?mass_batt ?mass_others));
