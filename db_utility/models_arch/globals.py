@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from models_arch.base import DeclarativeBase
 from sqlalchemy.engine.url import URL
 
+from models_arch.stakeholders import Stakeholder_Needs_Subobjective, Stakeholder_Needs_Objective, Stakeholder_Needs_Panel
 
 from models_arch.django_models import auth_user
 
@@ -45,6 +46,7 @@ instrument_list = [
 
 smap_instrument_list = [
     'SMAP_MWR',
+    'SMAP_RAD',
     'SMAP_ANT',
     'VIIRS',
     'CMIS',
@@ -74,9 +76,6 @@ decadal_aerosols_instrument_list = [
     'CLAR_TIR',
     'CLAR_VNIR',
 ]
-
-
-
 
 launch_vehicle_list = [
     'Ariane-5-ESCA',
@@ -161,6 +160,8 @@ def index_group_globals(session, group_name):
     
     for problem in problems:
         data['problems'][problem] = index_problem(session, problem, data['group_id'])
+        index_problem_architectures(session, problem, data['problems'][problem])
+
 
     
     for instrument in instrument_list:
@@ -229,6 +230,17 @@ def index_group_globals(session, group_name):
 
 
 
+def index_problem_architectures(session, problem_name, problem_id):
+    if problem_name != "SMAP" and problem_name != "SMAP_JPL1" and problem_name != "SMAP_JPL2":
+        return 0
+    filepath = '/app/daphne/VASSAR_resources/problem_default_archs/' + problem_name + '/default.csv'
+    df = pd.read_csv(filepath, header=0)
+
+    for index, row in df.iterrows():
+        input = row[0]
+        science = row[1]
+        cost = row[2]
+        index_architecture(session, problem_id, input, science, cost)
 
 
 
@@ -668,6 +680,56 @@ def index_fuzzy_value(session, row, fuzzy_attribute_id , col__num_fuzzy_values=3
 
 
 
+class Architecture(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'Architecture'
+    id = Column(Integer, primary_key=True)
+    problem_id = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    user_id = Column('user_id', Integer, ForeignKey('auth_user.id'))
+    input = Column('input', String)
+    science = Column('science', Float)
+    cost = Column('cost', Float)
+    ga = Column('ga', Boolean, default=False)
+def index_architecture(session, problem_id, input, science, cost, user_id=None):
+    entry = Architecture(problem_id=problem_id,input=input, science=science, cost=cost, user_id=user_id)
+    session.add(entry)
+    session.commit()
+
+
+
+
+
+class ArchitectureScoreExplanation(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'ArchitectureScoreExplanation'
+    id = Column(Integer, primary_key=True)
+    architecture_id = Column('architecture_id', Integer, ForeignKey('Architecture.id'))
+    panel_id = Column('panel_id', Integer, ForeignKey('Stakeholder_Needs_Panel.id'))
+    satisfaction = Column('satisfaction', Float)
+
+class PanelScoreExplanation(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'PanelScoreExplanation'
+    id = Column(Integer, primary_key=True)
+    architecture_id = Column('architecture_id', Integer, ForeignKey('Architecture.id'))
+    objective_id = Column('objective_id', Integer, ForeignKey('Stakeholder_Needs_Objective.id'))
+    satisfaction = Column('satisfaction', Float)
+
+class ObjectiveScoreExplanation(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'ObjectiveScoreExplanation'
+    id = Column(Integer, primary_key=True)
+    architecture_id = Column('architecture_id', Integer, ForeignKey('Architecture.id'))
+    subobjective_id = Column('subobjective_id', Integer, ForeignKey('Stakeholder_Needs_Subobjective.id'))
+    satisfaction = Column('satisfaction', Float)
+
+
+
+
+
+
+
+
 
 
 
@@ -712,7 +774,7 @@ def index_accepted_values(session, row, sheet, group_id, attribute_id):
 
 def get_accepted_values(session, row, col__num_accepted_vals=4):
     accepted_value_names = []
-    num_accepted_vals = int(row[col__num_accepted_vals]) - 1
+    num_accepted_vals = int(row[col__num_accepted_vals])
     col__first_accepted_val = col__num_accepted_vals + 1
     print(row)
     for index in range(num_accepted_vals):

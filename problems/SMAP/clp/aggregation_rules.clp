@@ -7,6 +7,7 @@
     (test (< (nth$ ?index $?scors) ?sat))
     =>
     (bind ?new-scors (replace$ $?scors ?index ?index ?sat))
+    (printout t "debug: get-subobjective-scores: " ?index " " $?scors " " ?sat " " ?papa crlf)
     (modify ?obj (subobj-scores ?new-scors) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::get-subobjective-scores) " " ?fh " S" (call ?sub getFactId) "}")))
     )
 
@@ -18,6 +19,7 @@
 	?obj <- (AGGREGATION::OBJECTIVE (satisfaction nil) (subobj-scores $?scors) (weights $?weights) (factHistory ?fh))
     (test (no-nils $?scors))
     =>
+    (printout t "debug: compute-objective-scores: " $?scors crlf)
     (modify ?obj (satisfaction (dot-product$ $?weights $?scors)) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::compute-objective-scores) " " ?fh "}")))
     )
 
@@ -30,6 +32,7 @@
     (test (< (nth$ ?index $?scors) ?sat))
     =>
     (bind ?new-scors (replace$ $?scors ?index ?index ?sat))
+    (printout t "debug: get-objective-scores: " ?index " " $?scors " " ?sat " " ?papa crlf)
     (modify ?sh (obj-scores ?new-scors) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::get-objective-scores) " " ?fh " S" (call ?sub getFactId) "}")))
     )
 
@@ -39,7 +42,7 @@
     ?sh <- (AGGREGATION::STAKEHOLDER (satisfaction nil) (obj-scores $?scors) (weights $?weights) (factHistory ?fh))
     (test (no-nils $?scors))
     =>
-    ;(printout t "compute-stakeholder-scores " (?sh getFactId) crlf)
+    (printout t "debug: compute-stakeholder-scores: " $?scors crlf)
     (modify ?sh (satisfaction (dot-product$ $?weights $?scors)) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::compute-stakeholder-scores) " " ?fh "}")))
     )
 

@@ -1,3 +1,4 @@
+
 (defrule FUZZY::numerical-to-fuzzy-{{attribute}}
 
     ?m <- ({{template}}

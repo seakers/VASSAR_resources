@@ -171,7 +171,7 @@ def index_group_capabilities(session, data, group_id, problem_id, path):
             continue
 
         instrument_id = validate_dict(data, 'instruments', sheet)  # instrument_id
-        df = pd.read_excel(xls, sheet, header=0)
+        df = pd.read_excel(xls, sheet, header=None)
         df = df.dropna(how='all')
         for index, row in df.iterrows():
 
@@ -263,9 +263,9 @@ def index_mission_analysis(session, data, group_id, problem_id, path, sheet):
                     value = trans
 
 
-                # if row[0] in ['LEO-600-polar-NA', 'SSO-600-SSO-AM', 'SSO-600-SSO-DD', 'SSO-800-SSO-AM', 'SSO-800-SSO-DD']:
-                item_attribute_id = validate_dict(data, 'orbit_attributes', col_labels[idx])
-                entry_id = index_orbit_attribiute(session, group_id, problem_id, item_id, item_attribute_id, value)
+                if row[0] in ['LEO-600-polar-NA', 'SSO-600-SSO-AM', 'SSO-600-SSO-DD', 'SSO-800-SSO-AM', 'SSO-800-SSO-DD']:
+                    item_attribute_id = validate_dict(data, 'orbit_attributes', col_labels[idx])
+                    entry_id = index_orbit_attribiute(session, group_id, problem_id, item_id, item_attribute_id, value)
                 # print("--------------------------------------------AAA")
                 # print(col, row)
                 # exit()
