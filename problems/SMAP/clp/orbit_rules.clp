@@ -78,7 +78,7 @@
 	;	(bind ?phi (* 2 (acos (/ (cos ?rho) (cos ?Bs)))))
 	;	(return (- 1 (/ ?phi 360)))
 	;else (return 0.99))
-	(return 0.99)
+	return 0.99
     )
 
 
