@@ -44,10 +44,16 @@ instrument_list = [
     'MODIS'
 ]
 
+
+smap_problem_list = [
+    'SMAP',
+    'SMAP_JPL1',
+    'SMAP_JPL2'
+]
+
 smap_instrument_list = [
     'SMAP_MWR',
     'SMAP_RAD',
-    'SMAP_ANT',
     'VIIRS',
     'CMIS',
     'BIOMASS'
@@ -113,6 +119,14 @@ orbit_list = [
     'LEO-600-near-polar-NA',
     'SSO-1000-SSO-AM',
     'LEO-600-equat-NA'
+]
+
+smap_orbit_list = [
+    'LEO-600-polar-NA',
+    'SSO-600-SSO-AM',
+    'SSO-600-SSO-DD',
+    'SSO-800-SSO-AM',
+    'SSO-800-SSO-DD'
 ]
 
 global_attributes = [
@@ -187,10 +201,11 @@ def index_group_globals(session, group_name):
     
     for orbit in orbit_list:
         data['Power'][orbit] = index_orbit(session, orbit, data['group_id'])
-
-    
+        if orbit in smap_orbit_list:
+            index_orbit_join(session, data, data['Power'][orbit]) # last param is orbit id    
     for launch_vehicle in launch_vehicle_list:
         data['Launch Vehicles'][launch_vehicle] = index_launch_vehicle(session, launch_vehicle, data['group_id'])
+        index_lv_join(session, data, data['Launch Vehicles'][launch_vehicle]) # last param is lv id
 
     files = [(problem, problems_dir+'/'+problem+'/xls/Instrument Capability Definition.xls') for problem in problems]
     
@@ -226,6 +241,17 @@ def index_group_globals(session, group_name):
 
     return data
 
+
+# index_orbit_join(session, data, data['Power'][orbit]) # last param is orbit id
+def index_orbit_join(session, data, orbit_id):
+    for prob in smap_problem_list:
+        index_problem_orbit(session, data['problems'][prob], orbit_id)
+
+
+# index_lv_join(session, data, data['Launch Vehicles'][launch_vehicle]) # last param is orbit id
+def index_lv_join(session, data, lv_id):
+    for prob in smap_problem_list:
+        index_problem_lv(session, data['problems'][prob], lv_id)
 
 
 
@@ -296,6 +322,31 @@ class Join__Problem_Instrument(DeclarativeBase):
     id            = Column(Integer, primary_key=True)
     problem_id    = Column('problem_id', Integer, ForeignKey('Problem.id'))
     instrument_id = Column('instrument_id', Integer, ForeignKey('Instrument.id'))
+
+
+class Join__Problem_Orbit(DeclarativeBase):
+    __tablename__ = 'Join__Problem_Orbit'
+    id            = Column(Integer, primary_key=True)
+    problem_id    = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    orbit_id = Column('orbit_id', Integer, ForeignKey('Orbit.id'))
+def index_problem_orbit(session, problem_id, orbit_id):
+    entry = Join__Problem_Orbit(problem_id=problem_id,orbit_id=orbit_id)
+    session.add(entry)
+    session.commit()
+
+
+class Join__Problem_Launch_Vehicle(DeclarativeBase):
+    __tablename__ = 'Join__Problem_Launch_Vehicle'
+    id            = Column(Integer, primary_key=True)
+    problem_id    = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    launch_vehicle_id = Column('launch_vehicle_id', Integer, ForeignKey('Launch_Vehicle.id'))
+def index_problem_lv(session, problem_id, launch_vehicle_id):
+    entry = Join__Problem_Launch_Vehicle(problem_id=problem_id,launch_vehicle_id=launch_vehicle_id)
+    session.add(entry)
+    session.commit()
+
+
+    
 
 
 
