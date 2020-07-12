@@ -72,15 +72,16 @@ def index_group_problems(session, data):
     files = [(problem, problems_dir+'/'+problem+'/xls/Mission Analysis Database.xls') for problem in problems]
     for problem, path in files:
         problem_id = data['problems'][problem]
-        index_mission_analysis(session, data, group_id, problem_id, path, 'Launch Vehicles')
-        index_mission_analysis(session, data, group_id, problem_id, path, 'Power')
+        index_mission_analysis(session, data, group_id, problem_id, path, 'Launch Vehicles', problem)
+        index_mission_analysis(session, data, group_id, problem_id, path, 'Power', problem)
 
     # INSTRUMENTS / MEASUREMENTS
     files = [(problem, problems_dir+'/'+problem+'/xls/Instrument Capability Definition.xls') for problem in problems]
     for problem, path in files:
         problem_id = data['problems'][problem]
         index_group_characteristics(session, data, group_id, problem_id, path)
-        index_group_capabilities(session, data, group_id, problem_id, path)
+        if problem == 'SMAP':
+            index_group_capabilities(session, data, group_id, problem_id, path)
 
     # REQUIREMENT RULES: only by attribute for now, so skip Decadal2017Aerosols
     files = [(problem, problems_dir+'/'+problem+'/xls/Requirement Rules.xls') for problem in problems]
@@ -223,7 +224,7 @@ def index_group_characteristics(session, data, group_id, problem_id, path):
 
 
 
-def index_mission_analysis(session, data, group_id, problem_id, path, sheet):
+def index_mission_analysis(session, data, group_id, problem_id, path, sheet, problem_name):
     # NEED
     # group_id:   given
     # problem_id: given
@@ -246,9 +247,9 @@ def index_mission_analysis(session, data, group_id, problem_id, path, sheet):
 
             item_attribute_id = None               # item_attribute_id
             entry = None
-            if sheet == 'Launch Vehicles':
+            if sheet == 'Launch Vehicles' and problem_name == 'SMAP':
                 item_attribute_id = validate_dict(data, 'launch_vehicle_attributes', col_labels[idx])
-                entry_id = index_launch_vehicle_attribiute(session, group_id, problem_id, item_id, item_attribute_id, value)
+                entry_id = index_launch_vehicle_attribiute(session, group_id, item_id, item_attribute_id, value)
             elif sheet == 'Power':
                 if idx == 5:
                     trans = int(float(value) * 100)
@@ -263,9 +264,11 @@ def index_mission_analysis(session, data, group_id, problem_id, path, sheet):
                     value = trans
 
 
-                if row[0] in ['LEO-600-polar-NA', 'SSO-600-SSO-AM', 'SSO-600-SSO-DD', 'SSO-800-SSO-AM', 'SSO-800-SSO-DD']:
+                # if row[0] in ['LEO-600-polar-NA', 'SSO-600-SSO-AM', 'SSO-600-SSO-DD', 'SSO-800-SSO-AM', 'SSO-800-SSO-DD']:
+                # only index orbit attributes globally for SMAP
+                if problem_name == 'SMAP':
                     item_attribute_id = validate_dict(data, 'orbit_attributes', col_labels[idx])
-                    entry_id = index_orbit_attribiute(session, group_id, problem_id, item_id, item_attribute_id, value)
+                    entry_id = index_orbit_attribiute(session, group_id, item_id, item_attribute_id, value)
                 # print("--------------------------------------------AAA")
                 # print(col, row)
                 # exit()
@@ -287,13 +290,13 @@ class Join__Instrument_Capability(DeclarativeBase):
     instrument_id = Column('instrument_id', Integer, ForeignKey('Instrument.id')) # nullable
     measurement_id = Column('measurement_id', Integer, ForeignKey('Measurement.id'))
     measurement_attribute_id = Column('measurement_attribute_id', Integer, ForeignKey('Measurement_Attribute.id'))
-    problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable
+    # problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable
     requirement_rule_case_id = Column('requirement_rule_case_id', Integer, ForeignKey('Requirement_Rule_Case.id')) 
 
     descriptor = Column('descriptor', String, default=False)
     value = Column('value', String, default=False)
 def index_instrument_capability(session, group_id, problem_id, instrument_id, measurement_id, measurement_attribute_id, value):
-    entry = Join__Instrument_Capability(group_id=group_id, problem_id=problem_id, instrument_id=instrument_id, measurement_id=measurement_id, measurement_attribute_id=measurement_attribute_id, value=value)
+    entry = Join__Instrument_Capability(group_id=group_id, instrument_id=instrument_id, measurement_id=measurement_id, measurement_attribute_id=measurement_attribute_id, value=value)
     session.add(entry)
     session.commit()
     return entry.id
@@ -325,6 +328,11 @@ def index_instrument_characteristic(session, group_id, problem_id, instrument_id
     return entry.id
 
 
+
+
+
+
+
 class Join__Orbit_Attribute(DeclarativeBase):
     __tablename__ = 'Join__Orbit_Attribute'
     id = Column(Integer, primary_key=True)
@@ -332,11 +340,11 @@ class Join__Orbit_Attribute(DeclarativeBase):
     orbit_id = Column('orbit_id', Integer, ForeignKey('Orbit.id')) # nullable
     group_id = Column('group_id', Integer, ForeignKey('Group.id'))
     orbit_attribute_id = Column('orbit_attribute_id', Integer, ForeignKey('Orbit_Attribute.id')) 
-    problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable # nullable
+    # problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable # nullable
     
     value = Column('value', String, default=False)
-def index_orbit_attribiute(session, group_id, problem_id, orbit_id, orbit_attribute_id, value):
-    entry = Join__Orbit_Attribute(group_id=group_id, problem_id=problem_id, orbit_id=orbit_id, orbit_attribute_id=orbit_attribute_id, value=value)
+def index_orbit_attribiute(session, group_id, orbit_id, orbit_attribute_id, value):
+    entry = Join__Orbit_Attribute(group_id=group_id, orbit_id=orbit_id, orbit_attribute_id=orbit_attribute_id, value=value)
     session.add(entry)
     session.commit()
     return entry.id
@@ -350,11 +358,11 @@ class Join__Launch_Vehicle_Attribute(DeclarativeBase):
     launch_vehicle_id = Column('launch_vehicle_id', Integer, ForeignKey('Launch_Vehicle.id')) # nullable
     group_id = Column('group_id', Integer, ForeignKey('Group.id'))
     launch_vehicle_attribute_id = Column('launch_vehicle_attribute_id', Integer, ForeignKey('Launch_Vehicle_Attribute.id')) 
-    problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable # nullable
+    # problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable # nullable
     
     value = Column('value', String, default=False)
-def index_launch_vehicle_attribiute(session, group_id, problem_id, launch_vehicle_id, launch_vehicle_attribute_id, value):
-    entry = Join__Launch_Vehicle_Attribute(group_id=group_id, problem_id=problem_id, launch_vehicle_id=launch_vehicle_id, launch_vehicle_attribute_id=launch_vehicle_attribute_id, value=value)
+def index_launch_vehicle_attribiute(session, group_id, launch_vehicle_id, launch_vehicle_attribute_id, value):
+    entry = Join__Launch_Vehicle_Attribute(group_id=group_id, launch_vehicle_id=launch_vehicle_id, launch_vehicle_attribute_id=launch_vehicle_attribute_id, value=value)
     session.add(entry)
     session.commit()
     return entry.id

@@ -416,8 +416,9 @@ class Join__Instrument_Measurement(DeclarativeBase):
     id            = Column(Integer, primary_key=True)
     measurement_id = Column('measurement_id', Integer, ForeignKey('Measurement.id'))
     instrument_id = Column('instrument_id', Integer, ForeignKey('Instrument.id'))
-def index_instrument_measurement(session, measurement_id, instrument_id):
-    entry = Join__Instrument_Measurement(measurement_id=measurement_id, instrument_id=instrument_id)
+    problem_id    = Column('problem_id', Integer, ForeignKey('Problem.id'))
+def index_instrument_measurement(session, measurement_id, instrument_id, problem_id):
+    entry = Join__Instrument_Measurement(measurement_id=measurement_id, instrument_id=instrument_id, problem_id=problem_id)
     session.add(entry)
     session.commit()
     return entry.id
@@ -462,7 +463,7 @@ def index_measurements(session, problem, path, group_id, global_data):
                 print("Measurement id not foound in data")
                 exit()
 
-            inst_meas_id = index_instrument_measurement(session, meas_id, global_data['instruments'][sheet])
+            inst_meas_id = index_instrument_measurement(session, meas_id, global_data['instruments'][sheet], global_data['problems'][problem])
 
             
         
@@ -741,6 +742,7 @@ class Architecture(DeclarativeBase):
     science = Column('science', Float)
     cost = Column('cost', Float)
     ga = Column('ga', Boolean, default=False)
+    eval_status = Column('eval_status', Boolean, default=True) # if false, arch needs to be re-evaluated
 def index_architecture(session, problem_id, input, science, cost, user_id=None):
     entry = Architecture(problem_id=problem_id,input=input, science=science, cost=cost, user_id=user_id)
     session.add(entry)
