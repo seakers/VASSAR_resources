@@ -137,7 +137,7 @@
     
        =>
     ;(bind ?new-list (add-element$ ?list-of-instruments SMAP_ANT))
-    ;printout t "contains SMAP_ANT = " (eq (subsetp (create$ SMAP_ANT) ?list-of-instruments) FALSE) " new list = " ?new-list crlf)
+    ;(printout t "contains SMAP_ANT = " (eq (subsetp (create$ SMAP_ANT) ?list-of-instruments) FALSE) " new list = " ?new-list crlf))
     (modify ?miss (instruments (add-element$ ?list-of-instruments SMAP_ANT)))
     
     ) 
