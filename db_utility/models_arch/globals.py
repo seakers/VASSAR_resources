@@ -11,6 +11,7 @@ from models_arch.django_models import auth_user
 
 import os
 import pandas as pd
+import time
 
 import pprint
 
@@ -446,7 +447,9 @@ def index_measurements(session, problem, path, group_id, global_data):
         for index, row in df.iterrows():
             measurement_slot_type = get_measurement_name(row[0])
             measurement_name = get_measurement_name(row[1])
-            measurement_type = get_measurement_name(row[2])
+            # measurement_type = get_measurement_name(row[2])
+            print("indexing measurement")
+            print("measurement name:", measurement_name)
 
             meas_id = None
             if session.query(Measurement.group_id, Measurement.name).filter_by(group_id=group_id, name=measurement_name).scalar() is None:
@@ -456,13 +459,15 @@ def index_measurements(session, problem, path, group_id, global_data):
                 data.append([measurement_name, entry.id])
                 meas_id = entry.id
             else:
-                meas_query = session.query(Measurement.group_id, Measurement.name).filter_by(group_id=group_id, name=measurement_name).first()
+                meas_query = session.query(Measurement.id, Measurement.name).filter_by(group_id=group_id, name=measurement_name).first()
                 meas_id = meas_query[0]
 
             if(meas_id == None):
                 print("Measurement id not foound in data")
                 exit()
 
+            print("--> Measurement ID", meas_id)
+            # time.sleep(5)
             inst_meas_id = index_instrument_measurement(session, meas_id, global_data['instruments'][sheet], global_data['problems'][problem])
 
             
@@ -564,6 +569,12 @@ class Measurement_Attribute(DeclarativeBase):
     name = Column('name', String)
     slot_type = Column('slot_type', String)
     type = Column('type', String)
+
+
+
+
+
+
 
 
 
@@ -742,6 +753,7 @@ class Architecture(DeclarativeBase):
     science = Column('science', Float)
     cost = Column('cost', Float)
     ga = Column('ga', Boolean, default=False)
+    improve_hv = Column('improve_hv', Boolean, default=False)
     eval_status = Column('eval_status', Boolean, default=True) # if false, arch needs to be re-evaluated
 def index_architecture(session, problem_id, input, science, cost, user_id=None):
     entry = Architecture(problem_id=problem_id,input=input, science=science, cost=cost, user_id=user_id)
@@ -749,6 +761,31 @@ def index_architecture(session, problem_id, input, science, cost, user_id=None):
     session.commit()
 
 
+
+
+class ArchitectureCostInformation(DeclarativeBase):
+    __tablename__ = 'ArchitectureCostInformation'
+    id = Column(Integer, primary_key=True)
+    architecture_id = Column('architecture_id', Integer, ForeignKey('Architecture.id'))
+    mission_name = Column('mission_name', String) 
+    launch_vehicle = Column('launch_vehicle', String) 
+    mass = Column('mass', Float) 
+    power = Column('power', Float) 
+    cost = Column('cost', Float) 
+    others = Column('others', Float) 
+
+class ArchitecturePayload(DeclarativeBase):
+    __tablename__ = 'ArchitecturePayload'
+    id = Column(Integer, primary_key=True)
+    arch_cost_id = Column('arch_cost_id', Integer, ForeignKey('ArchitectureCostInformation.id'))
+    instrument_id = Column('instrument_id', Integer, ForeignKey('Instrument.id'))
+
+class ArchitectureBudget(DeclarativeBase):
+    __tablename__ = 'ArchitectureBudget'
+    id = Column(Integer, primary_key=True)
+    mission_attribute_id = Column('mission_attribute_id', Integer, ForeignKey('Mission_Attribute.id'))
+    arch_cost_id = Column('arch_cost_id', Integer, ForeignKey('ArchitectureCostInformation.id'))
+    value = Column('value', Float) 
 
 
 
