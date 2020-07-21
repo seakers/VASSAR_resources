@@ -755,6 +755,7 @@ class Architecture(DeclarativeBase):
     ga = Column('ga', Boolean, default=False)
     improve_hv = Column('improve_hv', Boolean, default=False)
     eval_status = Column('eval_status', Boolean, default=True) # if false, arch needs to be re-evaluated
+    critique = Column('critique', String) 
 def index_architecture(session, problem_id, input, science, cost, user_id=None):
     entry = Architecture(problem_id=problem_id,input=input, science=science, cost=cost, user_id=user_id)
     session.add(entry)
