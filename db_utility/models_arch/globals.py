@@ -303,6 +303,7 @@ class Problem(DeclarativeBase):
     id = Column(Integer, primary_key=True)
     group_id = Column('group_id', Integer, ForeignKey('Group.id'))
     name = Column('name', String)
+    reload_problem = Column('reload_problem', Boolean, default=False)
 def index_problem(session, name, group_id):
     entry = Problem(name=name, group_id=group_id)
     session.add(entry)
