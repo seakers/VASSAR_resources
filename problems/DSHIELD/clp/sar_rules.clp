@@ -158,29 +158,33 @@
 
     )
 
-(defrule MANIFEST0::Add-common-dish-to-SARs-1-2-5-6
+(defrule MANIFEST0::Add-common-dish-to-SARs-1
 	(declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
 	  (test (eq (contains$ ?list-of-instruments SAR_ANT_1) FALSE))
-    (test (or (contains$ ?list-of-instruments SAR_1)
-              (contains$ ?list-of-instruments SAR_2)
-              (contains$ ?list-of-instruments SAR_5)
-              (contains$ ?list-of-instruments SAR_6)))
+    (test (eq (contains$ ?list-of-instruments SAR_1) TRUE))
        =>
     (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_1)))
     ;(printout t "payload: " $?list-of-instruments  crlf)
     )
 
-(defrule MANIFEST0::Add-common-dish-to-SARs-3-4-7-8
+(defrule MANIFEST0::Add-common-dish-to-SARs-2
 	(declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
 	  (test (eq (contains$ ?list-of-instruments SAR_ANT_2) FALSE))
-    (test (or (contains$ ?list-of-instruments SAR_3)
-              (contains$ ?list-of-instruments SAR_4)
-              (contains$ ?list-of-instruments SAR_7)
-              (contains$ ?list-of-instruments SAR_8)))
+    (test (eq (contains$ ?list-of-instruments SAR_2) TRUE))
        =>
     (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_2)))
+    ;(printout t "payload: " $?list-of-instruments  crlf)
+    )
+
+(defrule MANIFEST0::Add-common-dish-to-SARs-3
+	(declare (salience 100))
+    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
+	  (test (eq (contains$ ?list-of-instruments SAR_ANT_3) FALSE))
+    (test (eq (contains$ ?list-of-instruments SAR_3) TRUE))
+       =>
+    (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_3)))
     ;(printout t "payload: " $?list-of-instruments  crlf)
     )
 
@@ -201,9 +205,14 @@
     (bind ?along (- ?x2 ?x1))
     (bind ?cross (* 2 (* (/ ?h (cos ?theta)) (tan (/ ?dtheta 2)))))
     ;(printout t "(compute-swath-conical-MWR ?h ?alfa ?theta) = " (compute-swath-conical-MWR ?h ?alfa ?theta) crlf)
+
     (bind ?sw (compute-swath-conical-MWR ?h ?alfa ?theta))
-    (modify ?MWR (Angular-resolution-elevation# ?dtheta) (Horizontal-Spatial-Resolution# ?along) (Horizontal-Spatial-Resolution-Along-track# ?along)
-        (Horizontal-Spatial-Resolution-Cross-track# ?cross) (Swath# ?sw) (Field-of-view# ?alfa))
+    (modify ?MWR (Angular-resolution-elevation# ?dtheta)
+    (Horizontal-Spatial-Resolution# ?along)
+    (Horizontal-Spatial-Resolution-Along-track# ?along)
+        (Horizontal-Spatial-Resolution-Cross-track# ?cross)
+        (Swath# ?sw)
+        (Field-of-view# ?alfa))
     )
 
 (defrule MANIFEST::compute-CMIS-spatial-resolution
@@ -231,6 +240,9 @@
     (bind ?dtheta (to-deg (/ 3e8 (* ?D ?f)))); lambda/D
     (bind ?range-res (/ 3e8 (* 2 ?B (sin ?theta))))
     (bind ?sw (* 2 ?h (tan (/ (+ ?alfa ?theta) 2))))
+
+    ;(printout t "SMAP HSR = " (* ?nl ?range-res) " HSRAT = " (/ ?range-res (sin ?theta)) " HSRCT = " ?range-res crlf)
+
     (modify ?RAD (Angular-resolution-elevation# ?dtheta) (Horizontal-Spatial-Resolution# (* ?nl ?range-res))
         (Horizontal-Spatial-Resolution-Along-track# (/ ?range-res (sin ?theta)))
         (Horizontal-Spatial-Resolution-Cross-track# ?range-res) (Swath# ?sw)
@@ -238,16 +250,24 @@
     )
 
 (defrule MANIFEST::compute-SAR-spatial-resolution
-    ?RAD <- (CAPABILITIES::Manifested-instrument  (Name ~SMAP_RAD&~SAR_ANT_1&~SAR_ANT_2) (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa&~nil)
-         (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Intent "Imaging MW radars -SAR-") (off-axis-angle-plus-minus# ?theta&~nil) (flies-in ?sat))
+    ?RAD <- (CAPABILITIES::Manifested-instrument  (Name SAR_1|SAR_2|SAR_3) (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa&~nil)
+         (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?theta&~nil) (flies-in ?sat))
     (CAPABILITIES::Manifested-instrument  (Name SAR_ANT_1|SAR_ANT_2) (dimension-x# ?D&~nil) (flies-in ?sat))
+    (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil))
     =>
     (bind ?dtheta (to-deg (/ 3e8 (* ?D ?f)))); lambda/D
     (bind ?range-res (/ 3e8 (* 2 ?B (sin ?theta))))
     (bind ?sw (* 2 ?h (tan (/ (+ ?alfa ?theta) 2))))
+
     ;(printout t "b = " ?B " theta = " ?theta crlf)
     ;(printout t "dth = " ?dtheta " rage-res = " ?range-res " swath = " ?sw crlf)
-    (modify ?RAD (Angular-resolution-elevation# ?dtheta) (Swath# ?sw) (Field-of-view# ?alfa))
+    ;(printout t "SAR HSR = " (/ ?range-res 1) " HSRAT = " (/ (* ?B 1000 (sqrt (/ 3.986e14 ?a))) (* 2 ?nl)) " HSRCT = " ?range-res crlf)
+
+    (modify ?RAD (Angular-resolution-elevation# ?dtheta)
+        (Horizontal-Spatial-Resolution# (/ ?range-res 1) )
+        (Horizontal-Spatial-Resolution-Along-track# (/ (* ?B 1000 (sqrt (/ 3.986e14 ?a))) (* 2 ?nl)) )
+        (Horizontal-Spatial-Resolution-Cross-track# ?range-res)
+        (Swath# ?sw))
     )
 
 

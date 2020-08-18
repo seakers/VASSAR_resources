@@ -70,6 +70,7 @@
     "Calculates rho in kg/m^3 as a function of h in m"
     (return (* 1e-5 (exp (/ (- (/ ?h 1000) 85) -33.387))))
     )
+
 (deffunction estimate-fraction-sunlight (?a)
     "Estimate fraction of sunlight based on circular orbit"
 	;(if (< ?a 7000000) then
@@ -80,8 +81,6 @@
 	;else (return 0.99))
 	return 0.99
     )
-
-
 
 (deffunction get-orbit-altitude (?orbit-str)
 	(bind ?orb (new seakers.vassar.Orbit ?orbit-str))

@@ -7,22 +7,40 @@
 
 ;(batch ".\\clp\\eps_design_rules.clp")
 
-; avionics or obdh
+; avionics
 (defrule MASS-BUDGET::design-avionics-subsystem
+  "Computes avionics subsystem mass using rules of thumb"
+  (declare (salience 10))
+  ?miss <- (MANIFEST::Mission (avionics-mass# nil) (payload-mass# ?m&~nil) (payload-data-rate# ?bps&~nil)(factHistory ?fh))
+  =>
+  ;(bind ?obdh-mass-coeff 0.0983)
+  ;(bind ?obdh-mass (* ?m ?obdh-mass-coeff))
+  ;(bind ?obdh-power 0.0)
+
+  (bind ?avionics-list (MatlabFunctions designAvionics ?bps 2 ?m))
+  (bind ?av-mass (nth$ 1 ?avionics-list))
+  (bind ?av-power (nth$ 2 ?avionics-list))
+  ;(printout t ?av-mass " " ?av-power crlf)
+  (modify ?miss (avionics-mass# ?av-mass) (avionics-power# ?av-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
+)
+
+; comms-obdh
+(defrule MASS-BUDGET::design-comms-subsystem
     "Computes comm subsystem mass using rules of thumb"
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (avionics-mass# nil) (avionics-power# nil) (payload-mass# ?m&~nil) (payload-data-rate# ?dr&~nil) (factHistory ?fh))
+    ?miss <- (MANIFEST::Mission (comm-OBDH-mass# nil) (satellite-dry-mass ?m&~nil) (payload-data-rate# ?bps&~nil) (orbit-altitude# ?alt&~nil) (factHistory ?fh))
     =>
     ;(bind ?obdh-mass-coeff 0.0983)
     ;(bind ?obdh-mass (* ?m ?obdh-mass-coeff))
+    ;(bind ?obdh-power 0.0)
 
-    (bind $?odbh (MatlabFunctions designAvionics ?dr 1))
-    (bind ?obdh-mass (nth$ 1 $?odbh))
-    (bind ?obdh-power (nth$ 2 $?odbh))
-
-    (modify ?miss (avionics-mass# ?obdh-mass) (avionics-power# ?obdh-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
-    ;(printout t "Avionics design: " (MatlabFunctions design_avionics ?dr 1) crlf)
-    )
+    ;(printout t ?bps " " ?m " " ?alt crlf)
+    (bind ?obdh_list (MatlabFunctions designComs ?bps ?m ?alt))
+    (bind ?obdh-mass (nth$ 1 ?obdh_list))
+    (bind ?obdh-power (nth$ 2 ?obdh_list))
+    ;(printout t ?obdh-mass " " ?obdh-power crlf)
+    (modify ?miss (comm-OBDH-mass# ?obdh-mass) (comm-OBDH-power# ?obdh-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
+)
 
 ; adcs
 ;(batch ".\\clp\\adcs_design_rules.clp")

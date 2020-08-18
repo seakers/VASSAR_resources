@@ -107,22 +107,23 @@
     (modify ?sat (delta-V-ADCS nil) (satellite-BOL-power# nil)
         (delta-V-injection nil) (delta-V-drag nil) (delta-V-deorbit nil) (delta-V nil)
         (propellant-mass-injection nil) (propellant-mass-ADCS nil) (drag-coefficient nil)
-        (ADCS-mass# nil) (EPS-mass# nil) (structure-mass# nil) (thermal-mass# nil) (avionics-mass# nil) (avionics-power# nil)
+        (ADCS-mass# nil) (EPS-mass# nil) (structure-mass# nil) (thermal-mass# nil)
+        (avionics-mass# nil) (comm-OBDH-mass# nil) (propulsion-mass# nil)
         (updated nil) (updated2 nil))
 
     )
 
 (defrule UPDATE-MASS-BUDGET::update-dry-mass
     "Computes the sum of subsystem masses"
-    ?miss <- (MANIFEST::Mission (propulsion-mass# ?prop-mass&~nil)
+    ?miss <- (MANIFEST::Mission (propulsion-mass# ?prop-mass&~nil) (payload-mass# ?payload&~nil)
         (structure-mass# ?struct-mass&~nil) (adapter-mass ?adap-mass&~nil)
         (avionics-mass# ?av-mass&~nil) (ADCS-mass# ?adcs-mass&~nil)
-        (EPS-mass# ?eps-mass&~nil) (thermal-mass# ?thermal-mass&~nil)
-         (payload-mass# ?payload&~nil)
+        (EPS-mass# ?eps-mass&~nil) (thermal-mass# ?thermal-mass&~nil) (comm-OBDH-mass# ?comm-mass&~nil)
  (propellant-mass-ADCS ?mp1&~nil) (propellant-mass-injection ?mp2&~nil) (factHistory ?fh)(updated2 nil))
     =>
 
-    (bind ?sat-mass (+ ?prop-mass ?struct-mass ?eps-mass ?adcs-mass ?av-mass ?payload ?thermal-mass)); dry mass
+    ;(printout t ?prop-mass " " ?struct-mass " " ?eps-mass " " ?adcs-mass " " ?av-mass " " ?payload " " ?thermal-mass " " ?comm-mass crlf)
+    (bind ?sat-mass (+ ?adap-mass ?prop-mass ?struct-mass ?eps-mass ?adcs-mass ?av-mass ?payload ?thermal-mass ?comm-mass)); dry mass
     (modify ?miss (satellite-dry-mass ?sat-mass)
         (satellite-wet-mass (+ ?sat-mass ?mp1 ?mp2))
         (satellite-launch-mass (+ ?sat-mass ?mp1 ?mp2 ?adap-mass)) (factHistory (str-cat "{R" (?*rulesMap* get UPDATE-MASS-BUDGET::update-dry-mass) " " ?fh "}"))

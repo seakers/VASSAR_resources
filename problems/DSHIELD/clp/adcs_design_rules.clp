@@ -51,7 +51,17 @@
     (bind ?el-mass (+ (* 4 ?ctrl-mass) (* 3 ?det-mass)))
     (bind ?str-mass (* 0.01 ?dry-mass));
     (bind ?adcs-mass (+ ?el-mass ?str-mass))
-    (modify ?sat (ADCS-mass# ?adcs-mass)(factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
+
+    ;(+ (/ (* (- y2 y1) (- x x1)) (- x2 x1)) y1)
+    (bind ?ctrl-pow (+ (/ (* (- 200 0) (- ?ctrl-mass 0.0)) (- 15 0)) 0) )
+    (bind ?det-pow (+ (/ (* (- 3 0) (- ?ctrl-mass 0.1)) (- 2 0.1)) 0))
+    (bind ?el-pow 0.0)
+    (bind ?str-pow 0.0)
+    (bind ?adcs-pow (+ ?ctrl-pow ?det-pow ?el-pow ?str-pow))
+
+    (printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
+    (printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?el-pow " " ?str-pow " " ?adcs-pow crlf)
+    (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
     )
 
 
@@ -102,7 +112,7 @@
     (bind ?Ta (aero-torque ?Cd ?As ?a ?cpacg))
     (bind ?Tsp (solar-pressure-torque ?As ?q ?sun-angle ?cpscg))
     (bind ?Tm (magnetic-field-torque ?D ?a))
-    (return (create$ ?Tg ?Ta ?Tsp ?Tm))
+    (return (+ ?Tg ?Ta ?Tsp ?Tm))
     )
 
 (deffunction max-disturbance-torque (?a ?off-nadir ?Iy ?Iz ?Cd  ?As ?cpacg ?cpscg ?sun-angle ?D ?q)

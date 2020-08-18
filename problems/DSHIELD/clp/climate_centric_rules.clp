@@ -35,7 +35,6 @@
 (deffunction get-my-instruments ()
     ;(bind ?list (matlabf get_instrument_list))
     ;(if (listp ?list) then (return ?list) else (return (create$ ?list)))
-    (prinout t (MatlabFunction getInstrumentList) crlf)
 	(return (MatlabFunction getInstrumentList))
     )
 
