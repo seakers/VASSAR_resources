@@ -83,7 +83,7 @@
     =>
 
     (bind ?adapter-mass (* 0.01 ?m)); 0.75
-    printout t "adapter mass: " ?adapter-mass crlf)
+    (printout t "adapter mass: " ?adapter-mass crlf)
     (modify ?miss (adapter-mass ?adapter-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::add-launch-adapter ) " " ?fh "}")))
     )
 
