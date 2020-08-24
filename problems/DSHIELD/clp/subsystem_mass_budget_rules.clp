@@ -53,6 +53,7 @@
     =>
     (bind ?thermal-mass-coeff 0.0607)
     (bind ?thermal-mass (* ?m ?thermal-mass-coeff))
+    (printout t "thermal mass: " ?thermal-mass crlf)
     (modify ?miss (thermal-mass# ?thermal-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-thermal-subsystem) " " ?fh "}")))
     )
 
@@ -69,7 +70,7 @@
     =>
 
     (bind ?struct-mass (* 0.5462 ?m)); 0.75
-
+    (printout t "structure mass: " ?struct-mass crlf)
     (modify ?miss (structure-mass# ?struct-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-structure-subsystem) " " ?fh "}")))
     )
 
@@ -82,6 +83,7 @@
     =>
 
     (bind ?adapter-mass (* 0.01 ?m)); 0.75
+    printout t "adapter mass: " ?adapter-mass crlf)
     (modify ?miss (adapter-mass ?adapter-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::add-launch-adapter ) " " ?fh "}")))
     )
 

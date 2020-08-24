@@ -44,8 +44,8 @@
 
         =>
     (bind ?m (+ ?mp-inj ?mp-a))
-    ;(printout t "propellant mass total: " ?m crlf)
-    ;(printout t "propulsion-mass: " (* ?m (/ 6 94)) crlf)
+    (printout t "propellant mass total: " ?m crlf)
+    (printout t "propulsion-mass: " (* ?m (/ 6 94)) crlf)
     (modify ?miss (propulsion-mass# (* ?m (/ 6 94))) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-propulsion-AKM) " " ?fh "}")))
     )
 
