@@ -20,7 +20,7 @@
   (bind ?avionics-list (MatlabFunctions designAvionics ?bps 2 ?m))
   (bind ?av-mass (nth$ 1 ?avionics-list))
   (bind ?av-power (nth$ 2 ?avionics-list))
-  ;(printout t ?av-mass " " ?av-power crlf)
+  (printout t "avionics power: " ?av-power crlf)
   (modify ?miss (avionics-mass# ?av-mass) (avionics-power# ?av-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
 )
 
@@ -51,7 +51,8 @@
     (declare (salience 10))
     ?miss <- (MANIFEST::Mission (thermal-mass# nil) (payload-mass# ?m&~nil) (factHistory ?fh))
     =>
-    (bind ?thermal-mass-coeff 0.0607)
+    ;(bind ?thermal-mass-coeff 0.0607)
+    (bind ?thermal-mass-coeff (/ 0.02 0.31))
     (bind ?thermal-mass (* ?m ?thermal-mass-coeff))
     (printout t "thermal mass: " ?thermal-mass crlf)
     (modify ?miss (thermal-mass# ?thermal-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-thermal-subsystem) " " ?fh "}")))
@@ -69,7 +70,8 @@
     ?miss <- (MANIFEST::Mission (structure-mass# nil) (payload-mass# ?m&~nil) (factHistory ?fh))
     =>
 
-    (bind ?struct-mass (* 0.5462 ?m)); 0.75
+    ;(bind ?struct-mass (* 0.5462 ?m)); 0.75
+    (bind ?struct-mass (* (/ 0.27 0.31) ?m)); 0.75
     (printout t "structure mass: " ?struct-mass crlf)
     (modify ?miss (structure-mass# ?struct-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-structure-subsystem) " " ?fh "}")))
     )
@@ -82,7 +84,8 @@
     ?miss <- (MANIFEST::Mission (adapter-mass nil) (satellite-dry-mass ?m&~nil) (factHistory ?fh) )
     =>
 
-    (bind ?adapter-mass (* 0.01 ?m)); 0.75
+    ;(bind ?adapter-mass (* 0.01 ?m)); 0.75
+    (bind ?adapter-mass (* (/ 0.03 0.31) ?m)); 0.75
     (printout t "adapter mass: " ?adapter-mass crlf)
     (modify ?miss (adapter-mass ?adapter-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::add-launch-adapter ) " " ?fh "}")))
     )

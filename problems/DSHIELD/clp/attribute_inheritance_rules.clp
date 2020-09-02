@@ -5,13 +5,13 @@
 (batch (str-cat ?*app_path* "/clp/orbit_rules.clp"))
 
 (defquery MANIFEST::search-instrument-by-name   (declare (variables ?name))
-    (DATABASE::Instrument (Name ?name) (mass# ?m) (average-power# ?p) (peak-power# ?pp) 
-        (average-data-rate# ?rb) (dimension-x# ?dx) (dimension-y# ?dy) (characteristic-power# ?ppp)  
+    (DATABASE::Instrument (Name ?name) (mass# ?m) (average-power# ?p) (peak-power# ?pp)
+        (average-data-rate# ?rb) (dimension-x# ?dx) (dimension-y# ?dy) (characteristic-power# ?ppp)
         (dimension-z# ?dz) (cost# ?c) (cost ?fz-c))
     )
 (defquery MANIFEST::search-instrument-by-name-manifest   (declare (variables ?name))
-    (CAPABILITIES::Manifested-instrument (Name ?name) (mass# ?m) (average-power# ?p) (peak-power# ?pp) 
-        (average-data-rate# ?rb) (dimension-x# ?dx) (dimension-y# ?dy) (characteristic-power# ?ppp)  
+    (CAPABILITIES::Manifested-instrument (Name ?name) (mass# ?m) (average-power# ?p) (peak-power# ?pp)
+        (average-data-rate# ?rb) (dimension-x# ?dx) (dimension-y# ?dy) (characteristic-power# ?ppp)
         (dimension-z# ?dz) (cost# ?c) (cost ?fz-c))
     )
 (deffunction get-instrument-cost (?instr)
@@ -46,7 +46,7 @@
 (deffunction get-instrument-peak-power (?instr)
     (bind ?result (run-query* search-instrument-by-name ?instr))
     (?result next)
-    (return (?result getDouble ppp))
+    (return (?result getDouble pp))
     )
 
 
@@ -116,7 +116,7 @@
     (bind ?m (compute-payload-mass $?payload))
     (modify ?miss (payload-mass# ?m) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::populate-payload-mass) " " ?fh "}")))
     )
- 
+
 
 
 ; populate payload power
@@ -134,7 +134,7 @@
     =>
     (bind ?peak (compute-payload-peak-power $?payload))
     (modify ?miss (payload-peak-power# ?peak)(factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::populate-payload-peak-power) " " ?fh "}"))))
-    
+
 ; populate payload data rate
 (defrule MANIFEST::populate-payload-data-rate
     (declare (salience 10))
@@ -163,11 +163,11 @@
     (declare (salience 20))
 
     ?miss <- (MANIFEST::Mission (Name ?name) (mission-architecture ?arch) (num-of-planes# ?nplanes) (num-of-sats-per-plane# ?nsats) (orbit-altitude# ?h) (orbit-inclination ?inc) (instruments $?list-of-instruments))
-    
+
        =>
     (foreach ?x $?list-of-instruments (assert (CAPABILITIES::Manifested-instrument (Name ?x) (flies-in ?name)  (mission-architecture ?arch) (num-of-planes# ?nplanes) (num-of-sats-per-plane# ?nsats) (num-of-planes# ?nplanes) (orbit-altitude# ?h) (orbit-inclination ?inc) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST2::assert-manifested-instruments) " A" (call ?miss getFactId) "}")))))
     ;(assert (SYNERGIES::cross-registered-instruments (instruments ?list-of-instruments) (degree-of-cross-registration spacecraft)))
-    )         
+    )
 
 
 ;; **********************************
@@ -183,14 +183,14 @@
 
 ;(defquery DATABASE::get-revisit-times
 ;    (declare (variables ?))
-;    (DATABASE::Revisit-time-of (mission-architecture ?arch) 
-;        (num-of-sats-per-plane# ?nsats) (num-of-planes# ?nplanes) (orbit-altitude# ?h) 
-;        (orbit-inclination ?inc) (instrument-field-of-view# ?fov) 
+;    (DATABASE::Revisit-time-of (mission-architecture ?arch)
+;        (num-of-sats-per-plane# ?nsats) (num-of-planes# ?nplanes) (orbit-altitude# ?h)
+;        (orbit-inclination ?inc) (instrument-field-of-view# ?fov)
 ;        (avg-revisit-time-global# ?revtime-global)
 ;         (avg-revisit-time-tropics# ?revtime-tropics)
 ;         (avg-revisit-time-northern-hemisphere# ?revtime-NH)
 ;         (avg-revisit-time-southern-hemisphere# ?revtime-SH)
-;         (avg-revisit-time-cold-regions# ?revtime-cold) 
+;         (avg-revisit-time-cold-regions# ?revtime-cold)
 ;        (avg-revisit-time-US# ?revtime-US))
 ;    )
 
@@ -202,39 +202,39 @@
     (declare (salience 5))
     ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (Field-of-view# ?fov&~nil)
          (mission-architecture ?arch) (num-of-planes# ?nplanes&~nil)
-         (num-of-sats-per-plane# ?nsats&~nil) 
+         (num-of-sats-per-plane# ?nsats&~nil)
         (orbit-altitude# ?h&~nil) (orbit-RAAN ?raan&~nil) (orbit-inclination ?inc&~nil)
         (avg-revisit-time-global# nil) (avg-revisit-time-tropics# nil)
-         (avg-revisit-time-northern-hemisphere# nil) 
-        (avg-revisit-time-southern-hemisphere# nil) 
+         (avg-revisit-time-northern-hemisphere# nil)
+        (avg-revisit-time-southern-hemisphere# nil)
         (avg-revisit-time-cold-regions# nil) (avg-revisit-time-US# nil) (factHistory ?fh1))
-    ?sub <- (DATABASE::Revisit-time-of (mission-architecture ?arch) (num-of-sats-per-plane# ?nsats) 
-        (num-of-planes# ?nplanes) (orbit-altitude# ?h) (orbit-inclination ?inc) 
+    ?sub <- (DATABASE::Revisit-time-of (mission-architecture ?arch) (num-of-sats-per-plane# ?nsats)
+        (num-of-planes# ?nplanes) (orbit-altitude# ?h) (orbit-inclination ?inc)
         (instrument-field-of-view# ?fov2&:(eq ?fov2 (round-to-5deg ?fov))) (orbit-raan ?raan2)  (avg-revisit-time-global# ?revtime-global) (avg-revisit-time-tropics# ?revtime-tropics) (avg-revisit-time-northern-hemisphere# ?revtime-NH) (avg-revisit-time-southern-hemisphere# ?revtime-SH) (avg-revisit-time-cold-regions# ?revtime-cold) (avg-revisit-time-US# ?revtime-US) )
      (test (or (eq ?raan ?raan2) (eq ?raan NA)))
     =>
     (modify ?instr (avg-revisit-time-global# ?revtime-global) (avg-revisit-time-tropics# ?revtime-tropics) (avg-revisit-time-northern-hemisphere# ?revtime-NH) (avg-revisit-time-southern-hemisphere# ?revtime-SH) (avg-revisit-time-cold-regions# ?revtime-cold) (avg-revisit-time-US# ?revtime-US) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::get-instrument-revisit-times-from-database) " " ?fh1 " S" (call ?sub getFactId) "}")))
     )
 
-(defrule MANIFEST::compute-hsr-cross-track-from-instrument-and-orbit 
-    "Compute horizontal spatial resolution from instrument angular resolution 
+(defrule MANIFEST::compute-hsr-cross-track-from-instrument-and-orbit
+    "Compute horizontal spatial resolution from instrument angular resolution
     and orbit altitude"
-    ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) (Angular-resolution-azimuth# ?ara&~nil) 
+    ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) (Angular-resolution-azimuth# ?ara&~nil)
         (Horizontal-Spatial-Resolution-Cross-track# nil) (factHistory ?fh))
     =>
     (modify ?instr (Horizontal-Spatial-Resolution-Cross-track# (* 1000 ?h (* ?ara (/ (pi) 180)) ))  (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-hsr-cross-track-from-instrument-and-orbit) " " ?fh "}")))
     )
 
-(defrule MANIFEST::compute-hsr-along-track-from-instrument-and-orbit 
-    "Compute horizontal spatial resolution from instrument angular resolution 
+(defrule MANIFEST::compute-hsr-along-track-from-instrument-and-orbit
+    "Compute horizontal spatial resolution from instrument angular resolution
     and orbit altitude"
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) (Angular-resolution-elevation# ?are&:(neq ?are nil)) (Horizontal-Spatial-Resolution-Along-track# nil) (factHistory ?fh))
     =>
     (modify ?instr (Horizontal-Spatial-Resolution-Along-track# (* 1000 ?h (* ?are (/ (pi) 180)) )) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-hsr-along-track-from-instrument-and-orbit) " " ?fh "}")) )
     )
 
-(defrule MANIFEST::compute-hsr-from-instrument-and-orbit 
-    "Compute horizontal spatial resolution hsr and hsr2 from instrument angular resolution 
+(defrule MANIFEST::compute-hsr-from-instrument-and-orbit
+    "Compute horizontal spatial resolution hsr and hsr2 from instrument angular resolution
     and orbit altitude"
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) (Angular-resolution# ?are&:(neq ?are nil)) (Horizontal-Spatial-Resolution# nil) (factHistory ?fh))
     =>
@@ -242,7 +242,7 @@
     )
 
 (defrule MANIFEST::fill-in-hsr-from-directional-hsrs
-    "If along-track and cross-track spatial resolutions are known and identical, then 
+    "If along-track and cross-track spatial resolutions are known and identical, then
     horizontal spatial resolution is equal to them"
     (declare (salience -2))
     ?instr <- (CAPABILITIES::Manifested-instrument (Horizontal-Spatial-Resolution-Cross-track# ?cr&~nil)
@@ -252,85 +252,85 @@
     )
 
 
-;(defrule MANIFEST::compute-swath-from-instrument-and-orbit 
-;    "Compute swath from instrument field of regard 
+;(defrule MANIFEST::compute-swath-from-instrument-and-orbit
+;    "Compute swath from instrument field of regard
 ;    and orbit altitude"
-;    
-;    ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) 
+;
+;    ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil)
 ;        (Field-of-regard# ?for&~nil) (Swath# nil))
 ;    =>
-;    (bind ?sw (* 2 ?h (matlabf tan (* ?for (/ (pi) 360) )))) 
-;    (modify ?instr (Swath# ?sw) ) 
+;    (bind ?sw (* 2 ?h (matlabf tan (* ?for (/ (pi) 360) ))))
+;    (modify ?instr (Swath# ?sw) )
 ;    )
 
-(defrule MANIFEST::compute-fov-from-angular-res-and-npixels-square 
+(defrule MANIFEST::compute-fov-from-angular-res-and-npixels-square
     "Compute field of view in degrees from angular resolution (IFOV)
     and number of pixels for a square image"
     (declare (salience 4))
-    ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view# nil) 
+    ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view# nil)
         (Angular-resolution-azimuth# nil) (Angular-resolution-elevation# nil)
         (Angular-resolution# ?ifov&~nil) (num-pixels# ?npix&~nil) (factHistory ?fh) ) ; only square images
     =>
-	(bind ?fov (* ?ifov ?npix)); 
+	(bind ?fov (* ?ifov ?npix));
     (modify ?instr (Field-of-view# ?fov) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-fov-from-angular-res-and-npixels-square) " " ?fh "}")))
     )
 
-(defrule MANIFEST::compute-fov-from-angular-res-and-npixels-elevation 
+(defrule MANIFEST::compute-fov-from-angular-res-and-npixels-elevation
     "Compute field of view in degrees from angular resolution (IFOV)
     and number of pixels for the elevation direction in a rectangular image"
     (declare (salience 4))
-    ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view-elevation# nil) 
+    ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view-elevation# nil)
        (Angular-resolution-elevation# ?ara&~nil) (num-pixels-along-track# ?npix&~nil) (factHistory ?fh) )
     =>
-	(bind ?fov (* ?ara ?npix)); 
+	(bind ?fov (* ?ara ?npix));
     (modify ?instr (Field-of-view-elevation# ?fov) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-fov-from-angular-res-and-npixels-elevation) " " ?fh "}")))
     )
 
-(defrule MANIFEST::compute-fov-from-angular-res-and-npixels-azimuth 
+(defrule MANIFEST::compute-fov-from-angular-res-and-npixels-azimuth
     "Compute field of view in degrees from angular resolution (IFOV)
     and number of pixels for the azimuth direction in a rectangular image"
     (declare (salience 4))
-    ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view-azimuth# nil) 
+    ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view-azimuth# nil)
        (Angular-resolution-azimuth# ?ara&~nil) (num-pixels-cross-track# ?npix&~nil) (factHistory ?fh))
     =>
-	(bind ?fov (* ?ara ?npix)); 
+	(bind ?fov (* ?ara ?npix));
     (modify ?instr (Field-of-view-azimuth# ?fov) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-fov-from-angular-res-and-npixels-azimuth) " " ?fh "}")))
     )
 
-(defrule MANIFEST::compute-for-from-fov-square 
+(defrule MANIFEST::compute-for-from-fov-square
     "Compute field of regard in degrees from field of view
     and off-axis scanning capability"
     (declare (salience 2))
-    ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-regard# nil) 
+    ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-regard# nil)
         (Field-of-view# ?fov&~nil) (off-axis-angle-plus-minus# ?off-axis) (factHistory ?fh)) ; only square images
     =>
-    
+
     ; if no scanning capability then FOR = FOV, else take into account scanning
     (if (neq ?off-axis nil) then
         (bind ?for (+ ?fov (* 2 ?off-axis)))
         else
-        (bind ?for  ?fov); 
+        (bind ?for  ?fov);
         )
-	
+
     (modify ?instr (Field-of-regard# ?for) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-for-from-fov-square) " " ?fh "}")))
     )
 
 (defrule MANIFEST::compute-revisit-time
-    
+
     ?m <- (REQUIREMENTS::Measurement (taken-by ?ins) (avg-revisit-time-global# nil)
          (avg-revisit-time-tropics# nil) (avg-revisit-time-northern-hemisphere# nil)
-        (avg-revisit-time-southern-hemisphere# nil) (avg-revisit-time-cold-regions# nil) 
+        (avg-revisit-time-southern-hemisphere# nil) (avg-revisit-time-cold-regions# nil)
         (avg-revisit-time-US# nil) (factHistory ?fh1))
-    
+
     ?sub1 <- (CAPABILITIES::Manifested-instrument (Name ?ins) (num-of-planes# ?np) (num-of-sats-per-plane# ?ns)
          (orbit-altitude# ?h) (orbit-inclination ?inc) (Field-of-view# ?fov) )
-    
+
     ?sub2 <- (DATABASE::Revisit-time-of (num-of-planes# ?np) (num-of-sats-per-plane# ?ns) (orbit-altitude# ?h)
-         (orbit-inclination ?inc) (instrument-field-of-view# ?fov) 
+         (orbit-inclination ?inc) (instrument-field-of-view# ?fov)
          (avg-revisit-time-global# ?glob) (avg-revisit-time-tropics# ?trop)
-         (avg-revisit-time-northern-hemisphere# ?nh)(avg-revisit-time-southern-hemisphere# ?sh) 
-        (avg-revisit-time-cold-regions# ?cold) (avg-revisit-time-US# ?us) ) 
-    => 
+         (avg-revisit-time-northern-hemisphere# ?nh)(avg-revisit-time-southern-hemisphere# ?sh)
+        (avg-revisit-time-cold-regions# ?cold) (avg-revisit-time-US# ?us) )
+    =>
     (modify ?m (avg-revisit-time-global# ?glob) (avg-revisit-time-tropics# ?trop) (avg-revisit-time-northern-hemisphere# ?nh)
         (avg-revisit-time-southern-hemisphere# ?sh) (avg-revisit-time-cold-regions# ?cold) (avg-revisit-time-US# ?us) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-revisit-time) " " ?fh1 " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
     )
@@ -344,14 +344,14 @@
     (modify ?instr (average-power# ?zep) (peak-power# ?zep)(factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::adjust-power-with-orbit) " " ?fh "}")))
     )
 
-;; ********************************** 
+;; **********************************
 ;; **********************************
 ;; Cloud radars (e.g. Cloudsat, EarthCARE, ACE_RAD, TRMM PR)
 ;; **********************************
 ;; **********************************
 
 (defrule MANIFEST::compute-cloud-radar-properties-vertical-spatial-resolution
-    ?instr <- (CAPABILITIES::Manifested-instrument (Intent "Cloud profile and rain radars") 
+    ?instr <- (CAPABILITIES::Manifested-instrument (Intent "Cloud profile and rain radars")
         (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (Vertical-Spatial-Resolution# nil) (factHistory ?fh))
     =>
     (bind ?range-res (/ 3e8 (* 2 ?B (sin ?theta))))
@@ -367,13 +367,13 @@
     )
 
 (defrule MANIFEST::compute-cloud-radar-properties-swath
-    ?instr <- (CAPABILITIES::Manifested-instrument (Intent "Cloud profile and rain radars") 
+    ?instr <- (CAPABILITIES::Manifested-instrument (Intent "Cloud profile and rain radars")
         (off-axis-angle-plus-minus# ?theta&~nil) (scanning conical) (orbit-altitude# ?h&~nil) (Swath# nil) (factHistory ?fh))
     =>
     (bind ?sw (* 2 ?h (tan ?theta ))); hsr = lambda/D*h, lambda=c/f
     (modify ?instr (Swath# ?sw) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-cloud-radar-properties-swath) " " ?fh "}")))
     )
-;; ********************************** 
+;; **********************************
 ;; **********************************
 ;; Radar altimeters (e.g. Jason, SWOT)
 ;; **********************************
@@ -387,7 +387,7 @@
     (modify ?instr (Horizontal-Spatial-Resolution# ?hsr) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-altimeter-horizontal-spatial-resolution) " " ?fh "}")))
     )
 
-;; ********************************** 
+;; **********************************
 ;; **********************************
 ;; Passive microwave imaging radiometers (e.g. SMAP)
 ;; **********************************
@@ -431,8 +431,3 @@
 =>
 (if (eq ?inc polar) then (bind ?dc variable) else (bind ?dc (eval (str-cat ?raan "-only"))))
  (modify ?meas (diurnal-cycle ?dc)(factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES-UPDATE::basic-diurnal-cycle) " " ?fh "}")) ) )
- 
- 
- 
- 
- 

@@ -60,7 +60,7 @@
     (bind ?adcs-pow (+ ?ctrl-pow ?det-pow ?el-pow ?str-pow))
 
     (printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
-    (printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?el-pow " " ?str-pow " " ?adcs-pow crlf)
+    (printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
     (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
     )
 
@@ -152,7 +152,7 @@
     from its knowledge accuracy requirement. It is based on data from BAll Aerospace,
     Honeywell, and SMAD chapter 10 page 327"
 
-    (return (* 10 (** ?acc -0.316)))
+    (return (* 1 (** ?acc -0.316)))
     )
 
 (deffunction get-star-tracker-mass (?req)

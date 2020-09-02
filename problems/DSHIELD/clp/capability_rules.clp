@@ -1,4 +1,4 @@
-;(batch templates.clp)   
+;(batch templates.clp)
 ;(batch functions.clp)
 
 ;; ***************************
@@ -21,26 +21,26 @@
     "Decrease sensitivity of chemistry instruments flying in AM orbits"
     (declare (salience 10))
     ?i <- (CAPABILITIES::Manifested-instrument (Name ?ins) (Concept ?c) (orbit-RAAN AM) (sensitivity-in-low-troposphere-PBL High) (factHistory ?fh))
-    (or 
+    (or
         (test (neq (str-index "chemistry" ?c) FALSE))
         (test (neq (str-index "pollut" ?c) FALSE))
         )
     =>
     ;(printout t "Decrease sensitivity of chemistry instruments flying in AM orbits " ?ins " " crlf)
-    (modify ?i (sensitivity-in-low-troposphere-PBL Low) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::chemistry-instruments-prefer-PM-orbits-effect-on-science-tropo) " " ?fh "}"))) 
+    (modify ?i (sensitivity-in-low-troposphere-PBL Low) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::chemistry-instruments-prefer-PM-orbits-effect-on-science-tropo) " " ?fh "}")))
     )
 
 (defrule CAPABILITIES::chemistry-instruments-prefer-PM-orbits-effect-on-science-strato
     "Decrease sensitivity of chemistry instruments flying in AM orbits"
     (declare (salience 10))
     ?i <- (CAPABILITIES::Manifested-instrument (Name ?ins) (Concept ?c) (orbit-RAAN AM) (sensitivity-in-upper-troposphere-and-stratosphere High) (factHistory ?fh))
-    (or 
+    (or
         (test (neq (str-index "chemistry" ?c) FALSE))
         (test (neq (str-index "pollut" ?c) FALSE))
         )
     =>
     ;(printout t "Decrease sensitivity of chemistry instruments flying in AM orbits " ?ins " " crlf)
-    (modify ?i (sensitivity-in-upper-troposphere-and-stratosphere Low) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::chemistry-instruments-prefer-PM-orbits-effect-on-science-strato) " " ?fh "}"))) 
+    (modify ?i (sensitivity-in-upper-troposphere-and-stratosphere Low) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::chemistry-instruments-prefer-PM-orbits-effect-on-science-strato) " " ?fh "}")))
     )
 
 (defrule CAPABILITIES::hires-passive-optical-imagers-prefer-AM-orbits-effect-on-science
@@ -71,7 +71,7 @@
     ?l2 <- (CAPABILITIES::can-measure (instrument ?ins2&~?ins1) (can-take-measurements yes) (factHistory ?fh2))
     ?sub1 <- (DATABASE::Instrument (Name ?ins1) (Intent "Laser altimeters") (spectral-bands $?sr))
     ?sub2 <- (DATABASE::Instrument (Name ?ins2) (Intent "Laser altimeters") (spectral-bands $?sr))
-    
+
     =>
     ;(printout t two-lidars-same-freq " " ?ins1 " " ?ins2 " " $?sr crlf)
     (modify ?l1 (can-take-measurements no) (reason "Two lidars at same frequency can interfere with each other") (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::two-lidars-at-same-frequency-cannot-work) " " ?fh1 " S" (call ?l2 getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
@@ -97,20 +97,21 @@
     ?sub <- (MANIFEST::Mission  (satellite-BOL-power# ?pow&~nil) (factHistory ?fh3))
     =>
     (bind ?dc (min 1.0 (/ 10000 ?pow)))
+    (printout t "duty-cycle: " ?dc crlf)
     (modify ?l1 (power-duty-cycle# ?dc) (reason "Cumulative spacecraft power exceeds 10kW") (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::resource-limitations-power) " " ?fh1 " S" (call ?i1 getFactId) " S" (call ?sub getFactId) "}")))
 	(modify ?i1 (power-duty-cycle# ?dc) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::resource-limitations-power) " " ?fh2 " S" (call ?l1 getFactId) " S" (call ?sub getFactId) "}")))
     ;(if (< ?dc 1.0) then (printout t "resource-limitations-power " ?ins1 " dc = " ?dc crlf))
     )
-        
+
 ;(defrule CAPABILITIES::get-instrument-revisit-times-from-database
 ;    (declare (salience 5))
 ;    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (Field-of-view# ?fov&~nil)
 ;         (mission-architecture ?arch) (num-of-planes# ?nplanes&~nil)
-;         (num-of-sats-per-plane# ?nsats&~nil) 
+;         (num-of-sats-per-plane# ?nsats&~nil)
 ;        (orbit-altitude# ?h&~nil) (orbit-RAAN ?raan&~nil) (orbit-inclination ?inc&~nil)
 ;        (avg-revisit-time-global# nil) (avg-revisit-time-tropics# nil)
-;         (avg-revisit-time-northern-hemisphere# nil) 
-;        (avg-revisit-time-southern-hemisphere# nil) 
+;         (avg-revisit-time-northern-hemisphere# nil)
+;        (avg-revisit-time-southern-hemisphere# nil)
 ;        (avg-revisit-time-cold-regions# nil) (avg-revisit-time-US# nil))
 ;    (DATABASE::Revisit-time-of (mission-architecture ?arch) (num-of-sats-per-plane# ?nsats) (num-of-planes# ?nplanes) (orbit-altitude# ?h) (orbit-inclination ?inc) (instrument-field-of-view# ?fov) (orbit-raan ?raan)  (avg-revisit-time-global# ?revtime-global) (avg-revisit-time-tropics# ?revtime-tropics) (avg-revisit-time-northern-hemisphere# ?revtime-NH) (avg-revisit-time-southern-hemisphere# ?revtime-SH) (avg-revisit-time-cold-regions# ?revtime-cold) (avg-revisit-time-US# ?revtime-US))
 ;    =>
@@ -118,16 +119,16 @@
 ;    )
 
 (defrule CAPABILITIES::cryospheric-instruments-want-polar-orbits
-    "If a cryospheric instrument is flown on a non polar orbit then 
+    "If a cryospheric instrument is flown on a non polar orbit then
     it loses coverage of the polar regions"
-    
+
     (declare (salience 10))
     ?c <- (CAPABILITIES::can-measure (instrument ?ins) (orbit-inclination ?inc&~polar) (can-take-measurements yes) (factHistory ?fh1))
     ?sub <- (DATABASE::Instrument (Name ?ins) (Concept ?co) (factHistory ?fh2))
     (test (neq (str-index "Primary application: ice" ?co) FALSE))
     =>
     ;(printout t cryospheric-instruments-want-polar-orbits crlf)
-    (modify ?c (can-take-measurements no) (reason "If a cryospheric instrument is flown on a non polar orbit then 
+    (modify ?c (can-take-measurements no) (reason "If a cryospheric instrument is flown on a non polar orbit then
     it loses coverage of the polar regions") (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::cryospheric-instruments-want-polar-orbits) " " ?fh1 " S" (call ?sub getFactId) "}")))
     )
 
@@ -138,4 +139,3 @@
     =>
     (retract ?s1)
 )
-
