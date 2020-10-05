@@ -241,7 +241,7 @@
     (bind ?range-res (/ 3e8 (* 2 ?B (sin ?theta))))
     (bind ?sw (* 2 ?h (tan (/ (+ ?alfa ?theta) 2))))
 
-    ;(printout t "SMAP HSR = " (* ?nl ?range-res) " HSRAT = " (/ ?range-res (sin ?theta)) " HSRCT = " ?range-res crlf)
+    (printout t "SMAP HSR = " (* ?nl ?range-res) " HSRAT = " (/ ?range-res (sin ?theta)) " HSRCT = " ?range-res crlf)
 
     (modify ?RAD (Angular-resolution-elevation# ?dtheta) (Horizontal-Spatial-Resolution# (* ?nl ?range-res))
         (Horizontal-Spatial-Resolution-Along-track# (/ ?range-res (sin ?theta)))
@@ -283,6 +283,30 @@
         (Horizontal-Spatial-Resolution-Along-track# (/ ?range-res (sin ?theta)))
         (Horizontal-Spatial-Resolution-Cross-track# ?range-res) (Swath# ?sw)
         (Field-of-view# ?alfa))
+    )
+
+(defrule MANIFEST::compute-Reflectometer-spatial-Resolution
+    ?REF <- (CAPABILITIES::Manifested-instrument (Name CYGNSS|SNOOPI) (frequency# ?f&~nil) (off-axis-angle-plus-minus# ?th-incidence&~nil)
+            (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (flies-in ?sat))
+
+    =>
+    (bind ?lambda (/ 3e8 ?f))
+    (bind ?hg (- 26559.8 6371))
+
+    (bind ?res-az (sqrt (* ?lambda (/ 1 (** (sin ?th-incidence) 2)) ?h 1e3)))
+    (bind ?res-el (* ?res-az (sin ?th-incidence)))
+    (bind ?dtheta (* 2 (atan (* ?res-az (cos ?th-incidence) (/ 1 (* 2 ?h)) ) ) ))
+
+    (modify ?REF (Angular-resolution-elevation# ?dtheta)
+      (Horizontal-Spatial-Resolution# ?res-az)
+      (Horizontal-Spatial-Resolution-Along-track# ?res-az)
+      (Horizontal-Spatial-Resolution-Cross-track# ?res-el)
+      (Swath# ?res-az)
+      (Field-of-view# 35.0)
+      )
+      
+    (printout t "f = " ?f ", h = " ?h ", hg = " ?hg ", res-az = " ?res-az ", res-el = " ?res-el
+                ", lambda = " ?lambda ", th_i = " ?th-incidence ", angular-res = " ?dtheta ", fov = " 35.0 crlf)
     )
 
 (defrule compute-sensitivity-to-soil-moisture-in-vegetation
