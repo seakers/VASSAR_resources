@@ -28,7 +28,7 @@
     (bind ?list (MatlabFunctions designEPS ?p ?pp ?obdh-power ?av-power ?adcs-pow ?frac ?angle (orbit-period ?a) ?life ?m ?dod))
 
     (bind ?epsm (nth$ 1 ?list)) (bind ?pow (nth$ 2 ?list)) (bind ?area (nth$ 3 ?list)) (bind ?samass (nth$ 4 ?list))
-    (printout t "BOL power: " ?pow crlf)
+    ;(printout t "BOL power: " ?pow crlf)
     (modify ?miss (EPS-mass# ?epsm) (satellite-BOL-power# ?pow) (solar-array-area ?area) (solar-array-mass ?samass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-EPS) " " ?fh "}")))
     )
 

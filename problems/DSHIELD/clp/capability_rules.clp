@@ -57,7 +57,7 @@
 (defrule CAPABILITIES::image-distortion-at-low-altitudes-in-side-looking-instruments
     "Passive optical instruments cannot take their measurements in DD RAANs"
     (declare (salience 10))
-    ?c <- (CAPABILITIES::can-measure (instrument ?ins) (orbit-altitude# ?h&~nil&:(<= ?h 400)) (can-take-measurements yes) (factHistory ?fh1))
+    ?c <- (CAPABILITIES::can-measure (instrument ?ins) (orbit-altitude# ?h&~nil&:(<= ?h 300)) (can-take-measurements yes) (factHistory ?fh1))
     ?sub <- (DATABASE::Instrument (Name ?ins) (Geometry slant) (Spectral-region ?sr))
     =>
     ;(printout t image-distortion " " ?ins crlf)

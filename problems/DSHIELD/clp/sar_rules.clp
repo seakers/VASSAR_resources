@@ -168,6 +168,25 @@
     ;(printout t "payload: " $?list-of-instruments  crlf)
     )
 
+(defrule MANIFEST0::Add-common-dish-to-SARs-4
+	(declare (salience 100))
+    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
+	  (test (eq (contains$ ?list-of-instruments SAR_ANT_1) FALSE))
+    (test (eq (contains$ ?list-of-instruments P-band_SAR) TRUE))
+       =>
+    (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_1)))
+    ;(printout t "payload: " $?list-of-instruments  crlf)
+    )
+(defrule MANIFEST0::Add-common-dish-to-SARs-5
+	(declare (salience 100))
+    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
+	  (test (eq (contains$ ?list-of-instruments SAR_ANT_1) FALSE))
+    (test (eq (contains$ ?list-of-instruments L-band_SAR) TRUE))
+       =>
+    (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_1)))
+    ;(printout t "payload: " $?list-of-instruments  crlf)
+    )
+
 (defrule MANIFEST0::Add-common-dish-to-SARs-2
 	(declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
@@ -250,7 +269,7 @@
     )
 
 (defrule MANIFEST::compute-SAR-spatial-resolution
-    ?RAD <- (CAPABILITIES::Manifested-instrument  (Name SAR_1|SAR_2|SAR_3) (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa&~nil)
+    ?RAD <- (CAPABILITIES::Manifested-instrument  (Name SAR_1|SAR_2|SAR_3|P-band_SAR|L-band_SAR) (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa&~nil)
          (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?theta&~nil) (flies-in ?sat))
     (CAPABILITIES::Manifested-instrument  (Name SAR_ANT_1|SAR_ANT_2) (dimension-x# ?D&~nil) (flies-in ?sat))
     (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil))
