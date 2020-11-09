@@ -3,16 +3,6 @@ from sqlalchemy.orm import sessionmaker, mapper
 
 from models_arch.base import DeclarativeBase
 
-from models.models import Problem
-from models.models import index_problems, create_default_group
-
-from models.aggregation_rules import index_stakeholder_needs_panel, index_stakeholder_needs_objective, index_stakeholder_needs_subobjective
-from models.requirement_rules import index_requirement_rules
-from models.mission_analysis_database import index_launch_vehicle_mission_analysis, index_power_mission_analysis, index_walker_mission_analysis
-from models.attribute_set import index_mission_attribute, index_orbit_attribute, index_measurement_attribute, index_launch_vehicle_attribute, index_instrument_attribute, index_inheritence_attribute, index_fuzzy_attribute
-from models.mission_analysis_database import index_walker_mission_analysis, index_power_mission_analysis, index_launch_vehicle_mission_analysis
-from models.instrument_capability_definitions import create_default_instruments
-
 
 from models_arch.globals import index_group_globals, index_fuzzy_attribute_arch
 from models_arch.problem_specific import index_group_problems
@@ -55,57 +45,21 @@ def load_session():
     return session
 
 
-def index_vassar():
-    session = load_session()
-    
-
-    problems = index_problems(problem_dir, session)
-    default_group_id = create_default_group(session, problems)
-
-    
-
-    for problem in problems:
-        index_stakeholder_needs_panel(problem_dir, session, problem)
-
-    for problem in problems:
-        index_stakeholder_needs_objective(problem_dir, session, problem)
-
-    for problem in problems:
-        index_stakeholder_needs_subobjective(problem_dir, session, problem)
-
-    for problem in problems:
-        index_requirement_rules(problem_dir, session, problem)
-
-
-    # Attributes
-    index_mission_attribute(problem_dir, session, problems)
-    index_orbit_attribute(problem_dir, session, problems)
-    index_measurement_attribute(problem_dir, session, problems)
-    index_launch_vehicle_attribute(problem_dir, session, problems)
-    index_instrument_attribute(problem_dir, session, problems)
-    index_inheritence_attribute(problem_dir, session, problems)
-    index_fuzzy_attribute(problem_dir, session, problems)
-
-
-    create_default_instruments(session, problem_dir, problems,  default_group_id)
-
-    # Mission Analysis
-    index_walker_mission_analysis(problem_dir, session, problems)
-    index_power_mission_analysis(problem_dir, session, problems)
-    index_launch_vehicle_mission_analysis(problem_dir, session, problems)
-    
-
-    
 
 
 def create_vassar_group(name='seakers (default)'):
     print('Indexing Group', name)
+
+    # LOAD SESSION
     session = load_session()
 
-    
-
+    # INDEX GROUP GLOBALS
     data = index_group_globals(session, name)
+
+    # INDEX STAKEHOLDERS
     index_group_stakeholders(session, data)
+
+    #
     index_group_problems(session, data)
 
     problems = os.listdir(problem_dir)
@@ -118,8 +72,6 @@ def create_vassar_group(name='seakers (default)'):
 
 
 if __name__ == "__main__":
-    # print(drop_tables())
     print(create_tables())
-    # index_vassar()
     create_vassar_group()
     

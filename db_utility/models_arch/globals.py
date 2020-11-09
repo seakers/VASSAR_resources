@@ -42,7 +42,22 @@ instrument_list = [
     'BIOMASS',
     'ALT',
     'GPS',
-    'MODIS'
+    'MODIS',
+    'ACE-CPR',
+    'ACE-OCI',
+    'ACE-POL',
+    'ACE-LID',
+    'CALIPSO-CALIOP',
+    'CALIPSO-WFC',
+    'CALIPSO-IIR',
+    'EARTHCARE-ATLID',
+    'EARTHCARE-BBR',
+    'EARTHCARE-CPR',
+    'EARTHCARE-MSI',
+    'ICI',
+    'AQUARIUS',
+    'DIAL',
+    'IR-Spectrometer'
 ]
 
 
@@ -76,12 +91,49 @@ climate_centric_instrument_list = [
 ]
 
 decadal_aerosols_instrument_list = [
+
     'ACE_CPR',
     'ACE_ORCA',
     'ACE_POL',
     'ACE_LID',
+    'ASC_LID',
+    'ASC_GCR',
+    'ASC_IRR',
     'CLAR_TIR',
     'CLAR_VNIR',
+    'CLAR_GPS',
+    'DESD_SAR',
+    'DESD_LID',
+    'GACM_SWIR',
+    'GACM_MWSP',
+    'GACM_VIS',
+    'GACM_DIAL',
+    'GEO_STEER',
+    'GEO_WAIS',
+    'GEO_GCR',
+    'GPS',
+    'GRAC_RANG',
+    'HYSP_TIR',
+    'HYSP_VIS',
+    'ICE_LID',
+    'LIST_LID',
+    'PATH_GEOSTAR',
+    'SCLP_SAR',
+    'SCLP_MWR',
+    'SMAP_ANT',
+    'SMAP_RAD',
+    'SMAP_MWR',
+    'SWOT_GPS',
+    'SWOT_KaRIN',
+    'SWOT_RAD',
+    'SWOT_MWR',
+    'XOV_SAR',
+    'XOV_RAD',
+    'XOV_MWR',
+    '3D_CLID',
+    '3D_NCLID',
+    'CLOUD_MASK'
+
 ]
 
 launch_vehicle_list = [
@@ -152,35 +204,37 @@ def index_group_globals(session, group_name):
 
     data = {}
     data['group_id'] = index_group(session, group_name)
-    data['problems'] = {}
 
+    # INIT GLOBAL DATA
+    data['problems'] = {}
     data['instruments'] = {}
     data['Power'] = {}
     data['Launch Vehicles'] = {}
     data['measurements'] = {}
-
     data['measurement_attributes'] = {}
     data['instrument_attributes'] = {}
     data['orbit_attributes'] = {}
     data['launch_vehicle_attributes'] = {}
     data['mission_attributes'] = {}
+
+
     problems = os.listdir(problem_dir)
     group_id = data['group_id']
     
 
 
 
-    
-    
-    
+    # INDEX PROBLEMS AND CORRESPONDING DESIGNS
     for problem in problems:
         data['problems'][problem] = index_problem(session, problem, data['group_id'])
         index_problem_architectures(session, problem, data['problems'][problem])
 
 
-    
-    for instrument in instrument_list:
+    # INDEX INSTRUMENTS
+    for instrument in list(set(instrument_list)):
+        # INDEX GLOBALLY
         data['instruments'][instrument] = index_instrument(session, instrument, data['group_id'])
+        # INDEX JOIN TABLES
         if instrument in smap_instrument_list:
             entry = Join__Problem_Instrument(problem_id=data['problems']['SMAP'], instrument_id=data['instruments'][instrument])
             entry2 = Join__Problem_Instrument(problem_id=data['problems']['SMAP_JPL1'], instrument_id=data['instruments'][instrument])
@@ -204,9 +258,19 @@ def index_group_globals(session, group_name):
         data['Power'][orbit] = index_orbit(session, orbit, data['group_id'])
         if orbit in smap_orbit_list:
             index_orbit_join(session, data, data['Power'][orbit]) # last param is orbit id    
+
+
+
+
     for launch_vehicle in launch_vehicle_list:
         data['Launch Vehicles'][launch_vehicle] = index_launch_vehicle(session, launch_vehicle, data['group_id'])
         index_lv_join(session, data, data['Launch Vehicles'][launch_vehicle]) # last param is lv id
+
+
+
+
+
+    # INSTRUMENT CAPABILITY DEFINITIONS
 
     files = [(problem, problems_dir+'/'+problem+'/xls/Instrument Capability Definition.xls') for problem in problems]
     
@@ -219,12 +283,14 @@ def index_group_globals(session, group_name):
     #     data['measurements'][meas_name] = meas_id
 
     
+    # ATTRIBUTE SET
 
     files = [(problem, problems_dir+'/'+problem+'/xls/AttributeSet.xls') for problem in problems]
     for attribute in global_attributes:
         for problem, path in files:
             problem_id = data['problems'][problem]
             measurement_attribute_data = index_global_attribute(session, problem, path, group_id, attribute, problem_id)
+            # data_pair: (attribute_name, attribute_id)
             for data_pair in measurement_attribute_data:
                 if attribute == 'Measurement':
                     data['measurement_attributes'][data_pair[0]] = data_pair[1]
@@ -238,21 +304,35 @@ def index_group_globals(session, group_name):
                     data['launch_vehicle_attributes'][data_pair[0]] = data_pair[1]
                 elif attribute == 'Mission':
                     data['mission_attributes'][data_pair[0]] = data_pair[1]
-
-
     return data
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # index_orbit_join(session, data, data['Power'][orbit]) # last param is orbit id
 def index_orbit_join(session, data, orbit_id):
     for prob in smap_problem_list:
         index_problem_orbit(session, data['problems'][prob], orbit_id)
+    # Index for Decadal2017Aerosols
+    index_problem_orbit(session, data['problems']['Decadal2017Aerosols'], orbit_id)
+
 
 
 # index_lv_join(session, data, data['Launch Vehicles'][launch_vehicle]) # last param is orbit id
 def index_lv_join(session, data, lv_id):
     for prob in smap_problem_list:
         index_problem_lv(session, data['problems'][prob], lv_id)
+    index_problem_lv(session, data['problems']['Decadal2017Aerosols'], lv_id)
 
 
 
@@ -402,7 +482,6 @@ class Measurement(DeclarativeBase):
     __tablename__ = 'Measurement'
     id = Column(Integer, primary_key=True)
     group_id = Column('group_id', Integer, ForeignKey('Group.id'))
-
     name = Column('name', String)
     synergy_rule = Column('synergy_rule', Boolean, default=False)
 
@@ -468,7 +547,6 @@ def index_measurements(session, problem, path, group_id, global_data):
                 exit()
 
             print("--> Measurement ID", meas_id)
-            # time.sleep(5)
             inst_meas_id = index_instrument_measurement(session, meas_id, global_data['instruments'][sheet], global_data['problems'][problem])
 
             
@@ -538,9 +616,6 @@ def index_global_attribute(session, problem, path, group_id, sheet, problem_id):
             session.commit()
             data.append([name, entry.id])
             continue
-
-
-
         index_accepted_values(session, row, sheet, group_id, entry.id)
     return data
 
@@ -570,13 +645,6 @@ class Measurement_Attribute(DeclarativeBase):
     name = Column('name', String)
     slot_type = Column('slot_type', String)
     type = Column('type', String)
-
-
-
-
-
-
-
 
 
 class Join__Measurement_Attribute_Values(DeclarativeBase):
@@ -658,30 +726,17 @@ class Join__Mission_Attribute_Values(DeclarativeBase):
 class Inheritence_Attribute(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
     __tablename__ = 'Inheritence_Attribute'
-
     id = Column(Integer, primary_key=True)
     problem_id = Column(Integer, ForeignKey('Problem.id'))
-
-
     template1 = Column('template1', String)
-
     copySlotType1 = Column('copySlotType1', String)
-
     copySlotName1 = Column('copySlotName1', String)
-
     matchingSlotType1 = Column('matchingSlotType1', String)
-
     matchingSlotName1 = Column('matchingSlotName1', String)
-
     template2 = Column('template2', String)
-
     matchingSlotName2 = Column('matchingSlotName2', String)
-
     copySlotName2 = Column('copySlotName2', String)
-
     module = Column('module', String)
-
-
 
 
 
@@ -692,7 +747,6 @@ class Fuzzy_Attribute(DeclarativeBase):
     __tablename__ = 'Fuzzy_Attribute'
     id = Column(Integer, primary_key=True)
     problem_id = Column(Integer, ForeignKey('Problem.id'))
-
     name = Column('name', String)
     parameter = Column('parameter', String)
     unit = Column('unit', String)
@@ -788,8 +842,6 @@ class ArchitectureBudget(DeclarativeBase):
     mission_attribute_id = Column('mission_attribute_id', Integer, ForeignKey('Mission_Attribute.id'))
     arch_cost_id = Column('arch_cost_id', Integer, ForeignKey('ArchitectureCostInformation.id'))
     value = Column('value', Float) 
-
-
 
 class ArchitectureScoreExplanation(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
