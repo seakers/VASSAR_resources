@@ -158,52 +158,23 @@
 
     )
 
-(defrule MANIFEST0::Add-common-dish-to-SARs-1
+(defrule MANIFEST0::Add-common-dish-to-PSAR
 	(declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
-	  (test (eq (contains$ ?list-of-instruments SAR_ANT_1) FALSE))
-    (test (eq (contains$ ?list-of-instruments SAR_1) TRUE))
-       =>
-    (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_1)))
-    ;(printout t "payload: " $?list-of-instruments  crlf)
-    )
-
-(defrule MANIFEST0::Add-common-dish-to-SARs-4
-	(declare (salience 100))
-    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
-	  (test (eq (contains$ ?list-of-instruments SAR_ANT_1) FALSE))
+	  (test (eq (contains$ ?list-of-instruments P-band_ANT) FALSE))
     (test (eq (contains$ ?list-of-instruments P-band_SAR) TRUE))
        =>
-    (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_1)))
+    (modify ?miss (instruments (add-element$ ?list-of-instruments P-band_ANT)))
     ;(printout t "payload: " $?list-of-instruments  crlf)
     )
-(defrule MANIFEST0::Add-common-dish-to-SARs-5
+
+(defrule MANIFEST0::Add-common-dish-to-LSAR
 	(declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
-	  (test (eq (contains$ ?list-of-instruments SAR_ANT_1) FALSE))
+	  (test (eq (contains$ ?list-of-instruments L-band_ANT) FALSE))
     (test (eq (contains$ ?list-of-instruments L-band_SAR) TRUE))
        =>
-    (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_1)))
-    ;(printout t "payload: " $?list-of-instruments  crlf)
-    )
-
-(defrule MANIFEST0::Add-common-dish-to-SARs-2
-	(declare (salience 100))
-    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
-	  (test (eq (contains$ ?list-of-instruments SAR_ANT_2) FALSE))
-    (test (eq (contains$ ?list-of-instruments SAR_2) TRUE))
-       =>
-    (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_2)))
-    ;(printout t "payload: " $?list-of-instruments  crlf)
-    )
-
-(defrule MANIFEST0::Add-common-dish-to-SARs-3
-	(declare (salience 100))
-    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
-	  (test (eq (contains$ ?list-of-instruments SAR_ANT_3) FALSE))
-    (test (eq (contains$ ?list-of-instruments SAR_3) TRUE))
-       =>
-    (modify ?miss (instruments (add-element$ ?list-of-instruments SAR_ANT_3)))
+    (modify ?miss (instruments (add-element$ ?list-of-instruments L-band_ANT)))
     ;(printout t "payload: " $?list-of-instruments  crlf)
     )
 
@@ -323,7 +294,7 @@
       (Swath# ?res-az)
       (Field-of-view# 35.0)
       )
-      
+
     (printout t "f = " ?f ", h = " ?h ", hg = " ?hg ", res-az = " ?res-az ", res-el = " ?res-el
                 ", lambda = " ?lambda ", th_i = " ?th-incidence ", angular-res = " ?dtheta ", fov = " 35.0 crlf)
     )

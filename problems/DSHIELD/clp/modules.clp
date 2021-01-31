@@ -26,6 +26,7 @@
 (defmodule LV-SELECTION1)
 (defmodule LV-SELECTION2)
 (defmodule LV-SELECTION3)
+(defmodule LV-SELECTION4)
 (defmodule EPS-DESIGN)
 (defmodule PRELIM-MASS-BUDGET)
 (defmodule MASS-BUDGET)
