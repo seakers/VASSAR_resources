@@ -14,7 +14,7 @@ class Architectures:
 
 
 
-    def __init__(self, client, problem_dir="/app/daphne/VASSAR_resources/problems"):
+    def __init__(self, client, problem_dir="/app/vassar_resources/problems"):
         self.client = client
         self.problem_dir = problem_dir
         self.problems = os.listdir(problem_dir)
@@ -25,7 +25,7 @@ class Architectures:
         for problem in self.problems:
             if problem != "SMAP" and problem != "SMAP_JPL1" and problem != "SMAP_JPL2":
                 continue
-            filepath = '/app/daphne/VASSAR_resources/problem_default_archs/' + problem + '/default.csv'
+            filepath = '/app/vassar_resources/problem_default_archs/' + problem + '/default.csv'
             df = pd.read_csv(filepath, header=0)
             for index, row in df.iterrows():
                 input = row[0]

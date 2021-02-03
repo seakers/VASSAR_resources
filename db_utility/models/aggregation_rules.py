@@ -38,8 +38,8 @@ class Stakeholder_Needs_Panel(DeclarativeBase):
     weight = Column('weight', Float)
     index_id = Column('index_id', String, nullable=True)
 def index_stakeholder_needs_panel(problems_dir, session, problem_name):  
-    problem_dir = problems_dir + '/' + problem_name + '/xls' # /app/daphne/VASSAR_resources/problems/SMAP/xls
-    file_path = problem_dir + '/Aggregation Rules.xls'       # /app/daphne/VASSAR_resources/problems/SMAP/xls/Aggregation Rules.xls
+    problem_dir = problems_dir + '/' + problem_name + '/xls' # /app/vassar_resources/problems/SMAP/xls
+    file_path = problem_dir + '/Aggregation Rules.xls'       # /app/vassar_resources/problems/SMAP/xls/Aggregation Rules.xls
     print("Indexing aggregation objectives from", file_path)
 
     # Get DataFrame
@@ -73,9 +73,9 @@ class Stakeholder_Needs_Objective(DeclarativeBase):
     name = Column('name', String)
     description = Column('description', String)
     weight = Column('weight', Float)
-def index_stakeholder_needs_objective(problems_dir, session, problem_name):  # problems_dir: directory to the problems --> problem_dir = "/app/daphne/VASSAR_resources/problems"
-    problem_dir = problems_dir + '/' + problem_name + '/xls'  # /app/daphne/VASSAR_resources/problems/SMAP/xls
-    file_path = problem_dir + "/Aggregation Rules.xls"        # /app/daphne/VASSAR_resources/problems/SMAP/xls/Aggregation Rules.xls
+def index_stakeholder_needs_objective(problems_dir, session, problem_name):  # problems_dir: directory to the problems --> problem_dir = "/app/vassar_resources/problems"
+    problem_dir = problems_dir + '/' + problem_name + '/xls'  # /app/vassar_resources/problems/SMAP/xls
+    file_path = problem_dir + "/Aggregation Rules.xls"        # /app/vassar_resources/problems/SMAP/xls/Aggregation Rules.xls
     print("Indexing aggregation objectives from", file_path)
 
     # Get the problem ID from the Problems table
@@ -115,8 +115,8 @@ class Stakeholder_Needs_Subobjective(DeclarativeBase):
     description = Column('description', String)
     weight = Column('weight', Float)
 def index_stakeholder_needs_subobjective(problems_dir, session, problem_name):
-    problem_dir = problems_dir + '/' + problem_name + '/xls'  # /app/daphne/VASSAR_resources/problems/SMAP/xls
-    file_path = problem_dir + "/Aggregation Rules.xls"        # /app/daphne/VASSAR_resources/problems/SMAP/xls/Aggregation Rules.xls
+    problem_dir = problems_dir + '/' + problem_name + '/xls'  # /app/vassar_resources/problems/SMAP/xls
+    file_path = problem_dir + "/Aggregation Rules.xls"        # /app/vassar_resources/problems/SMAP/xls/Aggregation Rules.xls
 
     # Get the problem ID from the Problems table
     problem_id = get_problem_id(session, problem_name)

@@ -897,7 +897,7 @@ class Walker_Mission_Analysis(DeclarativeBase):
     mission_architecture = Column('mission_architecture', String)
 
 
-def index_walker_mission_analysis(client, problems_dir='/app/daphne/VASSAR_resources/problems', problems=['Decadal2007']):
+def index_walker_mission_analysis(client, problems_dir='/app/vassar_resources/problems', problems=['Decadal2007']):
     session = client.get_session()
     files = [(problem, problems_dir+'/'+problem+'/xls/Mission Analysis Database.xls') for problem in problems]
     analysis_type = 'Walker'

@@ -18,7 +18,7 @@ postgres_port = os.environ['POSTGRES_PORT']
 vassar_db_name = 'daphne'
 
 db_string = f'postgresql+psycopg2://{user}:{password}@{postgres_host}:{postgres_port}/{vassar_db_name}'
-problem_dir = "/app/daphne/VASSAR_resources/problems"
+problem_dir = "/app/vassar_resources/problems"
 
 
 

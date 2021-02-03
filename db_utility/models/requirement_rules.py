@@ -63,8 +63,8 @@ class Requirement_Rule_Case(DeclarativeBase):
 
 
 def index_requirement_rules(problems_dir, session, problem_name):
-    problem_dir = problems_dir + '/' + problem_name + '/xls'  # /app/daphne/VASSAR_resources/problems/SMAP/xls
-    file_path = problem_dir + "/Requirement Rules.xls"        # /app/daphne/VASSAR_resources/problems/SMAP/xls/Requirement Rules.xls
+    problem_dir = problems_dir + '/' + problem_name + '/xls'  # /app/vassar_resources/problems/SMAP/xls
+    file_path = problem_dir + "/Requirement Rules.xls"        # /app/vassar_resources/problems/SMAP/xls/Requirement Rules.xls
 
     # Get the problem ID from the Problems table
     problem_id = get_problem_id(session, problem_name)

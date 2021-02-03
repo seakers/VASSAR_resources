@@ -15,8 +15,8 @@ import time
 
 import pprint
 
-problem_dir = "/app/daphne/VASSAR_resources/problems"
-problems_dir = "/app/daphne/VASSAR_resources/problems"
+problem_dir = "/app/vassar_resources/problems"
+problems_dir = "/app/vassar_resources/problems"
 
 instrument_list = [
     'ACE_CPR',
@@ -340,7 +340,7 @@ def index_lv_join(session, data, lv_id):
 def index_problem_architectures(session, problem_name, problem_id):
     if problem_name != "SMAP" and problem_name != "SMAP_JPL1" and problem_name != "SMAP_JPL2":
         return 0
-    filepath = '/app/daphne/VASSAR_resources/problem_default_archs/' + problem_name + '/default.csv'
+    filepath = '/app/vassar_resources/problem_default_archs/' + problem_name + '/default.csv'
     df = pd.read_csv(filepath, header=0)
 
     for index, row in df.iterrows():

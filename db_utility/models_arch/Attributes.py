@@ -19,7 +19,7 @@ class Attributes:
     inst_file_name = 'AttributeSet.xls'
     id_data = {}
 
-    def __init__(self, client, problems_dir='/app/daphne/VASSAR_resources/problems', group_id=1):
+    def __init__(self, client, problems_dir='/app/vassar_resources/problems', group_id=1):
         self.group_id = group_id
         self.client = client
         self.problems = os.listdir(problems_dir)
