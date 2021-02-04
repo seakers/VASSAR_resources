@@ -116,9 +116,79 @@
     (return ?ass)
     )
 
+;; **********************
+;; SAR PAYLOAD SIZING RULES
+;; ***************************
+(defrule  MANIFEST0::size-SAR-antenna
+  "If a P or L-band SAR antenna is given but the mass and volume are unknown, then estimate said values"
 
+  ?ant <- (DATABASE::Instrument  (Intent "Antenna MW radars -SAR-") (Name ?name) (mass# nil) (dimension-x# ?x) (dimension-y# ?y) (dimension-z# nil) (spectral-bands MW-L|MW-P))
 
+  =>
+  ; "Values estimated from large circular reflector with patch antenna feed"
+  (bind ?z (/ ?x (* 0.45 16)) )
+  (bind ?mDish (* 3.1416 (* (/ ?x 2) (/ ?x 2)) ?z 0.1514163) )
+  (bind ?feedL (* (/ 3.3 30) ?x))
+  (bind ?feedW (/ ?feedL 3))
+  (bind ?mainFeed (* 590 0.05 ?feedL ?feedW) )
+  (bind ?divFeed (* 590 0.0007 (/ ?feedL 3) (/ ?feedW 3) ) )
+  (bind ?mFeed (+ ?mainFeed (* 3 ?divFeed)) )
 
+  ;(printout t ?name " Antenna estimates: [" ?x ", " ?y ", " ?z "], " ?mDish " + " ?mFeed " = " (+ ?mDish ?mFeed) crlf)
+
+  ( modify ?ant (dimension-z# ?z) (mass# (+ ?mDish ?mFeed)) )
+)
+
+(defrule MANIFEST0::size-SAR-mass
+  "If a P or L-band SAR instrument is given but the mass and dimensions are unknown, then estimate said values"
+
+  ?sar <- (DATABASE::Instrument  (Intent "Imaging MW radars -SAR-") (spectral-bands MW-L|MW-P) (Name ?name) (mass# nil)
+                                 (dimension-x# nil) (dimension-y# nil) (dimension-z# nil) (peak-power# ?Pp&~nil))
+  =>
+  ; "Uses empirical peak power to mass relation"
+  (bind ?m (- (* 21.253 (log ?Pp) ) 50.093))
+
+  ; (printout t ?name " electronics mass: " ?m crlf)
+  (modify ?sar (mass# ?m) (dimension-x# 0.6) (dimension-y# 0.6) (dimension-z# 0.3))
+)
+
+(defrule MANIFEST0::estimate-SAR-power
+  "If a P or L-band SAR instrument is given but the average and characteristic power are unknown, then estimate said values"
+
+  ?sar <- (DATABASE::Instrument  (Intent "Imaging MW radars -SAR-") (spectral-bands MW-L|MW-P) (Name ?name) (average-power# nil)
+                                 (peak-power# ?Pp&~nil) (characteristic-power# nil) )
+
+  =>
+  ; "Assumes a duty cycle of 10%"
+  (bind ?Pavg (* 0.1 ?Pp))
+  (bind ?Pchar ?Pavg)
+  ; (printout t ?name " peak, average, and characteristic power: [" ?Pp ", " ?Pavg ", " ?Pchar "]" crlf)
+
+  ( modify ?sar (average-power# ?Pavg) (characteristic-power# ?Pchar) )
+)
+
+(defrule MANIFEST0::estimate-SAR-data-rate
+  "If a P or L-band SAR instrument is given but the data rate is unknown, then estimate said value"
+
+  ?sar <- (DATABASE::Instrument  (Intent "Imaging MW radars -SAR-") (spectral-bands MW-L|MW-P) (Name ?name) (average-data-rate# nil) (number-of-looks# ?Nl&~nil) (characteristic-orbit ?alt) (Horizontal-Spatial-Resolution-Along-track# ?dAT&~nil) (Horizontal-Spatial-Resolution-Cross-track# ?dCT&~nil) (Swath# ?sw))
+  =>
+  ; "Values estimated as basic imager"
+  (bind ?resAT (* ?dAT 0.001 (sqrt ?Nl)))
+  (bind ?resCT (* ?dCT 0.001 (sqrt ?Nl)))
+  (bind ?Vg (/ (sqrt (/ 398600441800000 (* (+ ?alt 63711) 1000)) ) 1000) )
+
+  (bind ?Nb 1.0)
+  (bind ?Nx (/ ?sw ?resCT))
+  (bind ?bpp 8.0)
+
+  ; (printout t ?resAT " " ?resCT " " ?Vg " " ?sw " " ?Nb " " ?Nx " " ?bpp crlf)
+
+  (bind ?Rb (* ?Nb ?Nx ?bpp ?Vg (/ 1 ?resAT)) )
+  (bind ?Rb (* ?Rb 0.000001))
+  ; (printout t ?name " data-rate: " ?Rb " Mbps" crlf)
+
+  ( modify ?sar (average-data-rate# ?Rb) (number-of-looks# nil) (Horizontal-Spatial-Resolution-Along-track# nil) (Horizontal-Spatial-Resolution-Cross-track# nil) (Swath# nil) )
+)
 
 ;; **********************
 ;; SMAP EXAMPLE CAPABILITY RULES
@@ -240,9 +310,9 @@
     )
 
 (defrule MANIFEST::compute-SAR-spatial-resolution
-    ?RAD <- (CAPABILITIES::Manifested-instrument  (Name SAR_1|SAR_2|SAR_3|P-band_SAR|L-band_SAR) (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa&~nil)
+    ?RAD <- (CAPABILITIES::Manifested-instrument  (Name P-band_SAR|L-band_SAR) (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa&~nil)
          (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?theta&~nil) (flies-in ?sat))
-    (CAPABILITIES::Manifested-instrument  (Name SAR_ANT_1|SAR_ANT_2) (dimension-x# ?D&~nil) (flies-in ?sat))
+    (CAPABILITIES::Manifested-instrument  (Name P-band_ANT|L-band_ANT) (dimension-x# ?D&~nil) (flies-in ?sat))
     (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil))
     =>
     (bind ?dtheta (to-deg (/ 3e8 (* ?D ?f)))); lambda/D
