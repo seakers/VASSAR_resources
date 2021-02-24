@@ -19,8 +19,8 @@
 
   (bind ?avionics-list (MatlabFunctions designAvionics ?bps 2 ?m))
   (bind ?av-mass (nth$ 1 ?avionics-list))
-  (bind ?av-power (nth$ 2 ?avionics-list))
-  ;(printout t "avionics power: " ?av-power crlf)
+  (bind ?av-power (nth$ 6 ?avionics-list))
+  (printout t "avionics power: " ?av-power crlf)
   (modify ?miss (avionics-mass# ?av-mass) (avionics-power# ?av-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
 )
 
