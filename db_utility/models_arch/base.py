@@ -10,8 +10,5 @@ vassar_db_name = 'daphne'
 db_string = f'postgresql+psycopg2://{user}:{password}@{postgres_host}:{postgres_port}/{vassar_db_name}'
 
 
-
-
-
 engine = create_engine(db_string, echo=True)
 DeclarativeBase = declarative_base(engine)

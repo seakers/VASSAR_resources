@@ -35,7 +35,6 @@ instrument_list = [
     'HYSP_TIR',
     'CNES_KaRIN',
     'POSTEPS_IRS',
-
     'SMAP_ANT',
     'SMAP_RAD',
     'SMAP_MWR',
@@ -44,7 +43,63 @@ instrument_list = [
     'BIOMASS',
     'ALT',
     'GPS',
-    'MODIS'
+    'MODIS',
+    'ACE-CPR',
+    'ACE-OCI',
+    'ACE-POL',
+    'ACE-LID',
+    'CALIPSO-CALIOP',
+    'CALIPSO-WFC',
+    'CALIPSO-IIR',
+    'EARTHCARE-ATLID',
+    'EARTHCARE-BBR',
+    'EARTHCARE-CPR',
+    'EARTHCARE-MSI',
+    'ICI',
+    'AQUARIUS',
+    'DIAL',
+    'IR-Spectrometer',
+    'ACE_CPR',
+    'ACE_ORCA',
+    'ACE_POL',
+    'ACE_LID',
+    'ASC_LID',
+    'ASC_GCR',
+    'ASC_IRR',
+    'CLAR_TIR',
+    'CLAR_VNIR',
+    'CLAR_GPS',
+    'DESD_SAR',
+    'DESD_LID',
+    'GACM_SWIR',
+    'GACM_MWSP',
+    'GACM_VIS',
+    'GACM_DIAL',
+    'GEO_STEER',
+    'GEO_WAIS',
+    'GEO_GCR',
+    'GPS',
+    'GRAC_RANG',
+    'HYSP_TIR',
+    'HYSP_VIS',
+    'ICE_LID',
+    'LIST_LID',
+    'PATH_GEOSTAR',
+    'SCLP_SAR',
+    'SCLP_MWR',
+    'SMAP_ANT',
+    'SMAP_RAD',
+    'SMAP_MWR',
+    'SWOT_GPS',
+    'SWOT_KaRIN',
+    'SWOT_RAD',
+    'SWOT_MWR',
+    'XOV_SAR',
+    'XOV_RAD',
+    'XOV_MWR',
+    '3D_CLID',
+    '3D_NCLID',
+    'CLOUD_MASK'
 ]
 
 
@@ -68,7 +123,7 @@ def index_group_problems(session, data):
     group_id = data['group_id']
 
 
-    # LAUNCH VEHICLES / ORBIT
+    # LAUNCH VEHICLES / ORBIT: attribute's don't change across problems
     files = [(problem, problems_dir+'/'+problem+'/xls/Mission Analysis Database.xls') for problem in problems]
     for problem, path in files:
         problem_id = data['problems'][problem]
@@ -79,7 +134,9 @@ def index_group_problems(session, data):
     files = [(problem, problems_dir+'/'+problem+'/xls/Instrument Capability Definition.xls') for problem in problems]
     for problem, path in files:
         problem_id = data['problems'][problem]
+        # INSTRUMENT CHARACTERISTICS (instrument attribute values) CHANGE ACROSS PROBLEMS
         index_group_characteristics(session, data, group_id, problem_id, path)
+        # INSTRUMENT CAPABILITIES (measurement attribute values) DO NOT CHANGE ACROSS PROBLEMS, BUT ACROSS INSTRUMENTS
         if problem == 'SMAP':
             index_group_capabilities(session, data, group_id, problem_id, path)
 
@@ -87,9 +144,11 @@ def index_group_problems(session, data):
     files = [(problem, problems_dir+'/'+problem+'/xls/Requirement Rules.xls') for problem in problems]
     for problem, path in files:
         if problem == 'Decadal2017Aerosols':
-            continue
-        problem_id = data['problems'][problem]
-        index_group_requirement_rules(session, data, group_id, problem_id, path)
+            problem_id = data['problems'][problem]
+            # index_decadal_requirement_rules(session, data, group_id, problem_id, path)
+        else:
+            problem_id = data['problems'][problem]
+            index_group_requirement_rules(session, data, group_id, problem_id, path)
 
 
         
@@ -128,6 +187,16 @@ def format_measurement_rule(rule):
     if rule[0] == '"' and rule[-1:] == '"':
         rule = rule[1:-1]
     return rule
+
+
+
+
+def index_decadal_requirement_rules(session, data, group_id, problem_id, path):
+    xls = pd.ExcelFile(path)
+    df = pd.read_excel(xls, 'Attributes', header=0, usecols='A:M')
+    df = df.dropna(how='all')
+    return 0
+
 
 
 def index_group_requirement_rules(session, data, group_id, problem_id, path):
@@ -214,7 +283,13 @@ def index_group_characteristics(session, data, group_id, problem_id, path):
             attr_data = col.split()
             instrument_attribute_name = attr_data[0]
             instrument_attribute_id = validate_dict(data, 'instrument_attributes', instrument_attribute_name) # instrument_attribute_id
-            value = str(attr_data[1])
+            if instrument_attribute_name == 'Intent':
+                attr_data.pop(0)
+                valued = ' '.join(attr_data)
+                value = valued.replace('"','')
+                print(value)
+            else:
+                value = str(attr_data[1])
             entry_id = index_instrument_characteristic(session, group_id, problem_id, instrument_id, instrument_attribute_id, value)
 
 
@@ -291,7 +366,7 @@ class Join__Instrument_Capability(DeclarativeBase):
     measurement_id = Column('measurement_id', Integer, ForeignKey('Measurement.id'))
     measurement_attribute_id = Column('measurement_attribute_id', Integer, ForeignKey('Measurement_Attribute.id'))
     # problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable
-    requirement_rule_case_id = Column('requirement_rule_case_id', Integer, ForeignKey('Requirement_Rule_Case.id')) 
+    requirement_rule_case_id = Column('requirement_rule_case_id', Integer, ForeignKey('Requirement_Rule_Case.id'))
 
     descriptor = Column('descriptor', String, default=False)
     value = Column('value', String, default=False)
@@ -310,7 +385,7 @@ class Join__Instrument_Characteristic(DeclarativeBase):
     group_id = Column('group_id', Integer, ForeignKey('Group.id'))
     instrument_id = Column('instrument_id', Integer, ForeignKey('Instrument.id')) # nullable
     problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable
-    instrument_attribute_id = Column('instrument_attribute_id', Integer, ForeignKey('Instrument_Attribute.id')) 
+    instrument_attribute_id = Column('instrument_attribute_id', Integer, ForeignKey('Instrument_Attribute.id'))
 
     value = Column('value', String, default=False)
 def index_instrument_characteristic(session, group_id, problem_id, instrument_id, instrument_attribute_id, value):
@@ -354,12 +429,10 @@ def index_orbit_attribiute(session, group_id, orbit_id, orbit_attribute_id, valu
 class Join__Launch_Vehicle_Attribute(DeclarativeBase):
     __tablename__ = 'Join__Launch_Vehicle_Attribute'
     id = Column(Integer, primary_key=True)
-
     launch_vehicle_id = Column('launch_vehicle_id', Integer, ForeignKey('Launch_Vehicle.id')) # nullable
     group_id = Column('group_id', Integer, ForeignKey('Group.id'))
     launch_vehicle_attribute_id = Column('launch_vehicle_attribute_id', Integer, ForeignKey('Launch_Vehicle_Attribute.id')) 
-    # problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable # nullable
-    
+    # problem_id = Column('problem_id', Integer, ForeignKey('Problem.id')) # nullable # nullable    
     value = Column('value', String, default=False)
 def index_launch_vehicle_attribiute(session, group_id, launch_vehicle_id, launch_vehicle_attribute_id, value):
     entry = Join__Launch_Vehicle_Attribute(group_id=group_id, launch_vehicle_id=launch_vehicle_id, launch_vehicle_attribute_id=launch_vehicle_attribute_id, value=value)
