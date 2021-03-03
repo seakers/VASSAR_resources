@@ -196,7 +196,7 @@ def index_group_characteristics(session, data, group_id, problem_id, path):
     xls = pd.ExcelFile(path)
     df = pd.read_excel(xls, 'CHARACTERISTICS', header=0)
     df = df.dropna(how='all')
-    col_labels = df.columns.get_values().tolist()
+    col_labels = df.columns.to_numpy().tolist()
 
 
     for index, row in df.iterrows(): # FOR EACH: instrument_id
@@ -235,7 +235,7 @@ def index_mission_analysis(session, data, group_id, problem_id, path, sheet, pro
     df = pd.read_excel(xls, sheet, header=0, keep_default_na=False, dtype=np.unicode_)
     df = df.dropna(how='all')
 
-    col_labels = df.columns.get_values().tolist()
+    col_labels = df.columns.to_numpy().tolist()
 
     for index, row in df.iterrows():
         item_id = data[sheet][row[0]]              # item_id
