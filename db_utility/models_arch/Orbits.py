@@ -82,7 +82,7 @@ class Orbits:
                 # LAUNCH VEHICLES
                 df = pd.read_excel(xls, 'Launch Vehicles', header=0, keep_default_na=False, dtype=np.unicode_)
                 df = df.dropna(how='all')
-                col_labels = df.columns.get_values().tolist()
+                col_labels = df.columns.to_numpy().tolist()
                 for index, row in df.iterrows():
                     lv_id = self.client.get_lv_id(row[0])
                     for idx, col in enumerate(row):
@@ -95,7 +95,7 @@ class Orbits:
                 # ORBITS
                 df = pd.read_excel(xls, 'Power', header=0, keep_default_na=False, dtype=np.unicode_)
                 df = df.dropna(how='all')
-                col_labels = df.columns.get_values().tolist()
+                col_labels = df.columns.to_numpy().tolist()
                 for index, row in df.iterrows():
                     orbit_id = self.client.get_orbit_id(row[0])
                     for idx, col in enumerate(row):

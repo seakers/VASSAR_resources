@@ -118,7 +118,7 @@ class Instruments:
             xls = pd.ExcelFile(path)
             df = pd.read_excel(xls, 'CHARACTERISTICS', header=0)
             df = df.dropna(how='all')
-            col_labels = df.columns.get_values().tolist()
+            col_labels = df.columns.to_numpy().tolist()
             print("------<>", path)
             for index, row in df.iterrows():
                 print('----------------------->', row)
