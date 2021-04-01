@@ -34,7 +34,12 @@ def create_tables():
 
 def drop_tables():
     engine = db_connect()
-    DeclarativeBase.metadata.drop_all(engine)
+    to_delete = []
+    for table, table_obj in DeclarativeBase.metadata.tables.items():
+        print(table, '\n')
+        if table is not 'auth_user':
+            to_delete.append(table_obj)
+    DeclarativeBase.metadata.drop_all(engine, to_delete)
     tables = engine.table_names()
     return tables
 
@@ -72,6 +77,7 @@ def create_vassar_group(name='seakers (default)'):
 
 
 if __name__ == "__main__":
+    print(drop_tables())
     print(create_tables())
     create_vassar_group()
     

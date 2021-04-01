@@ -57,6 +57,12 @@ class Client:
         self.session.commit()
         return entry.id
 
+    def index_dataset(self, name, problem_id, user_id, group_id):
+        entry = Dataset(name=name, problem_id=problem_id, user_id=user_id, group_id=group_id)
+        self.session.add(entry)
+        self.session.commit()
+        return entry.id
+
     def index_authuser_group(self, user_id, group_id, admin=False):
         entry = Join__AuthUser_Group(user_id=user_id, group_id=group_id, admin=admin)
         self.session.add(entry)
@@ -201,8 +207,8 @@ class Client:
         self.session.commit()
         return entry.id
 
-    def index_architecture(self, problem_id, input, science, cost, user_id=None):
-        entry = Architecture(problem_id=problem_id, user_id=user_id, input=input, science=science, cost=cost)
+    def index_architecture(self, problem_id, dataset_id, input, science, cost, user_id=None):
+        entry = Architecture(problem_id=problem_id, dataset_id=dataset_id, user_id=user_id, input=input, science=science, cost=cost)
         self.session.add(entry)
         self.session.commit()
         return entry.id
@@ -520,6 +526,17 @@ class Join__Problem_Launch_Vehicle(DeclarativeBase):
     problem_id    = Column('problem_id', Integer, ForeignKey('Problem.id'))
     launch_vehicle_id = Column('launch_vehicle_id', Integer, ForeignKey('Launch_Vehicle.id'))
 
+
+class Dataset(DeclarativeBase):
+    """Sqlalchemy Dataset model"""
+    __tablename__ = 'Dataset'
+    id = Column(Integer, primary_key=True)
+    problem_id = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    user_id = Column('user_id', Integer, ForeignKey('auth_user.id'), nullable=True)
+    group_id = Column('group_id', Integer, ForeignKey('Group.id'), nullable=True)
+    name = Column('name', String)
+
+
 class Launch_Vehicle(DeclarativeBase):
     """Sqlalchemy broad measurement categories model"""
     __tablename__ = 'Launch_Vehicle'
@@ -699,6 +716,7 @@ class Architecture(DeclarativeBase):
     __tablename__ = 'Architecture'
     id = Column(Integer, primary_key=True)
     problem_id = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    dataset_id = Column('dataset_id', Integer, ForeignKey('Dataset.id'))
     user_id = Column('user_id', Integer, ForeignKey('auth_user.id'))
     input = Column('input', String)
     science = Column('science', Float)
@@ -897,7 +915,7 @@ class Walker_Mission_Analysis(DeclarativeBase):
     mission_architecture = Column('mission_architecture', String)
 
 
-def index_walker_mission_analysis(client, problems_dir='/app/daphne/VASSAR_resources/problems', problems=['Decadal2007']):
+def index_walker_mission_analysis(client, problems_dir='/app/daphne/VASSAR_resources/vassar/problems', problems=['Decadal2007']):
     session = client.get_session()
     files = [(problem, problems_dir+'/'+problem+'/xls/Mission Analysis Database.xls') for problem in problems]
     analysis_type = 'Walker'

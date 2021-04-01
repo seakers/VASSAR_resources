@@ -11,8 +11,8 @@ import xlrd
 import os
 import pandas as pd
 
-problem_dir = "/app/daphne/VASSAR_resources/problems"
-problems_dir = "/app/daphne/VASSAR_resources/problems"
+problem_dir = "/app/daphne/VASSAR_resources/vassar/problems"
+problems_dir = "/app/daphne/VASSAR_resources/vassar/problems"
 
 rule_columns = {
     'panels': 'A:D',

@@ -341,13 +341,14 @@ def index_problem_architectures(session, problem_name, problem_id):
     if problem_name != "SMAP" and problem_name != "SMAP_JPL1" and problem_name != "SMAP_JPL2":
         return 0
     filepath = '/app/daphne/VASSAR_resources/problem_default_archs/' + problem_name + '/default.csv'
+    dataset_id = index_dataset(session, "default", problem_id, None, None)
     df = pd.read_csv(filepath, header=0)
 
     for index, row in df.iterrows():
         input = row[0]
         science = row[1]
         cost = row[2]
-        index_architecture(session, problem_id, input, science, cost)
+        index_architecture(session, problem_id, dataset_id, input, science, cost)
 
 
 
@@ -395,6 +396,21 @@ def get_problem_id(session, problem_name, group_id):
     problem_id = problem_id_query[0]
     print("Found problem ID", problem_name, problem_id, group_id)
     return problem_id
+
+
+class Dataset(DeclarativeBase):
+    """Sqlalchemy broad measurement categories model"""
+    __tablename__ = 'Dataset'
+    id = Column(Integer, primary_key=True)
+    problem_id = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    user_id = Column('user_id', Integer, ForeignKey('auth_user.id'), nullable=True)
+    group_id = Column('group_id', Integer, ForeignKey('Group.id'), nullable=True)
+    name = Column('name', String)
+def index_dataset(session, name, problem_id, user_id, group_id):
+    entry = Dataset(name=name, problem_id=problem_id, user_id=user_id, group_id=group_id)
+    session.add(entry)
+    session.commit()
+    return entry.id
 
 
 
@@ -803,6 +819,7 @@ class Architecture(DeclarativeBase):
     __tablename__ = 'Architecture'
     id = Column(Integer, primary_key=True)
     problem_id = Column('problem_id', Integer, ForeignKey('Problem.id'))
+    dataset_id = Column('dataset_id', Integer, ForeignKey('Dataset.id'))
     user_id = Column('user_id', Integer, ForeignKey('auth_user.id'))
     input = Column('input', String)
     science = Column('science', Float)
@@ -811,8 +828,8 @@ class Architecture(DeclarativeBase):
     improve_hv = Column('improve_hv', Boolean, default=False)
     eval_status = Column('eval_status', Boolean, default=True) # if false, arch needs to be re-evaluated
     critique = Column('critique', String) 
-def index_architecture(session, problem_id, input, science, cost, user_id=None):
-    entry = Architecture(problem_id=problem_id,input=input, science=science, cost=cost, user_id=user_id)
+def index_architecture(session, problem_id, dataset_id, input, science, cost, user_id=None):
+    entry = Architecture(problem_id=problem_id, dataset_id=dataset_id, input=input, science=science, cost=cost, user_id=user_id)
     session.add(entry)
     session.commit()
 

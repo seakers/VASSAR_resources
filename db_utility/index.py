@@ -15,8 +15,6 @@ from models_arch.Client import index_walker_mission_analysis
 default_group_name = 'seakers (default)'
 
 
-
-
 def main():
     client = Client()
     client.drop_tables()
@@ -50,24 +48,6 @@ def main():
 
     req = Requirements(client)
     req.index()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
