@@ -47,7 +47,7 @@
     (bind ?torque (max-disturbance-torque
             ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q))
     (bind ?ctrl-mass (estimate-att-ctrl-mass (compute-RW-momentum ?torque ?a)))
-    (bind ?det-mass (estimate-att-det-mass ?req))
+    (bind ?det-mass (estimate-att-det-mass ?req ?dry-mass))
     (bind ?el-mass (+ (* 4 ?ctrl-mass) (* 3 ?det-mass)))
     (bind ?str-mass (* 0.01 ?dry-mass));
     (bind ?adcs-mass (+ ?el-mass ?str-mass))
@@ -59,8 +59,8 @@
     (bind ?str-pow 0.0)
     (bind ?adcs-pow (+ ?ctrl-pow ?det-pow ?el-pow ?str-pow))
 
-    ;(printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
-    ;(printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
+    (printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
+    (printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
     (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
     )
 
@@ -147,12 +147,16 @@
     (return (map (lambda (?r) (return (moment-of-inertia (/ 1 6) ?m ?r))) ?dims))
     )
 
-(deffunction estimate-att-det-mass (?acc)
+(deffunction estimate-att-det-mass (?acc ?m)
     " This function estimates the mass of the sensor required for attitude determination
     from its knowledge accuracy requirement. It is based on data from BAll Aerospace,
     Honeywell, and SMAD chapter 10 page 327"
+    (printout t "Pointing Accuracy Req " ?acc " " ?m crlf)
 
-    (return (* 1 (** ?acc -0.316)))
+    (return (* (/ 1 3) (** ?acc -0.316)))
+
+    ;(if (<= ?m 30) then (return (* (/ 1 3) (** ?acc -0.316))) );
+    ;(if (> ?m 30) then (return (* 1 (** ?acc -0.316))) );
     )
 
 (deffunction get-star-tracker-mass (?req)

@@ -10,7 +10,6 @@
         						   (orbit-semimajor-axis nil) (factHistory ?fh))
     =>
     (bind ?orb-sa (+ 6378 ?orb-alt))
-		(bind ?a 1)
     (modify ?f (orbit-semimajor-axis (* 1000 ?orb-sa)) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::calculate-orbit-semimajor-axis-sat) " " ?fh "}")))
 )
 

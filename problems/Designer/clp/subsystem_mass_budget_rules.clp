@@ -13,14 +13,15 @@
   (declare (salience 10))
   ?miss <- (MANIFEST::Mission (avionics-mass# nil) (payload-mass# ?m&~nil) (payload-data-rate# ?bps&~nil)(factHistory ?fh))
   =>
-  ;(bind ?obdh-mass-coeff 0.0983)
-  ;(bind ?obdh-mass (* ?m ?obdh-mass-coeff))
-  ;(bind ?obdh-power 0.0)
 
-  (bind ?avionics-list (MatlabFunctions designAvionics ?bps 2 ?m))
-  (bind ?av-mass (nth$ 1 ?avionics-list))
-  (bind ?av-power (nth$ 6 ?avionics-list))
-  (printout t "avionics power: " ?av-power crlf)
+  (bind ?obdh-mass-coeff 0.0983)
+  (bind ?av-mass (* ?m ?obdh-mass-coeff))
+  (bind ?av-power 0.0)
+
+  ;(bind ?avionics-list (MatlabFunctions designAvionics ?bps 2 ?m))
+  ;(bind ?av-mass (nth$ 1 ?avionics-list))
+  ;(bind ?av-power (nth$ 6 ?avionics-list))
+  ;(printout t "avionics power: " ?av-power crlf)
   (modify ?miss (avionics-mass# ?av-mass) (avionics-power# ?av-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
 )
 
