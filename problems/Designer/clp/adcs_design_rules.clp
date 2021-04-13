@@ -59,8 +59,8 @@
     (bind ?str-pow 0.0)
     (bind ?adcs-pow (+ ?ctrl-pow ?det-pow ?el-pow ?str-pow))
 
-    (printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
-    (printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
+    ;(printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
+    ;(printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
     (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
     )
 
@@ -151,12 +151,12 @@
     " This function estimates the mass of the sensor required for attitude determination
     from its knowledge accuracy requirement. It is based on data from BAll Aerospace,
     Honeywell, and SMAD chapter 10 page 327"
-    (printout t "Pointing Accuracy Req " ?acc " " ?m crlf)
+    ;(printout t "Pointing Accuracy Req " ?acc " " ?m crlf)
 
-    (return (* (/ 1 3) (** ?acc -0.316)))
+    ;(return (* (/ 1 3) (** ?acc -0.316)))
 
-    ;(if (<= ?m 30) then (return (* (/ 1 3) (** ?acc -0.316))) );
-    ;(if (> ?m 30) then (return (* 1 (** ?acc -0.316))) );
+    (if (<= ?m 30) then (return (* 1 (** 0.5 -0.316))) );
+    (if (> ?m 30) then (return (* 1 (** ?acc -0.316))) );
     )
 
 (deffunction get-star-tracker-mass (?req)

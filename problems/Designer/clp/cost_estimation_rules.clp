@@ -17,7 +17,7 @@
     (bind ?cost (* 25600 (** (/ ?p 61.5) 0.32) (** (/ ?m 53.8) 0.26)
             (** (/ (* 1000 ?rb) 40.4) 0.11))); in FY04$
     (bind ?cost (/ ?cost 1.097))
-    ;(printout t apply-NICM " " ?instr " = " ?m " " ?p " " ?rb " " ?cost crlf)
+    (printout t apply-NICM " " ?instr " = " ?m " " ?p " " ?rb " " ?cost crlf)
     (return ?cost)
     )
 
@@ -28,6 +28,9 @@
     ?instr <- (CAPABILITIES::Manifested-instrument (cost# nil) (mass# ?m&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
             (developed-by ?whom) (factHistory ?fh))
     =>
+
+    (printout t "Payload cost params: " ?m " " ?p " " ?rb crlf)
+
     (bind ?c0 (apply-NICM ?m ?p ?rb))
     (if (is-domestic ?whom) then (modify ?instr (cost# ?c0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}")))
         else (modify ?instr (cost# 0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}"))))
