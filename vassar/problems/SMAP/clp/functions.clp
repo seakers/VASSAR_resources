@@ -29,7 +29,7 @@
 
 ; UPDATE FOVS ;
 (deffunction update-fovs (?param ?orbit-list)
-    (printout t "--> UPDATING FOVS FOR MEASUREMENT: " ?param " WITH ORBITS: " ?orbit-list crlf)
+    ;(printout t "--> UPDATING FOVS FOR MEASUREMENT: " ?param " WITH ORBITS: " ?orbit-list crlf)
     (bind ?results (run-query* REQUIREMENTS::get-measurement-param-fov-and-orbit ?param))
     (bind ?n (length$ ?orbit-list))
     (bind ?fovs (repeat$ -1 ?n))
@@ -47,7 +47,7 @@
 
 ; UPDATE AGGREGATE FOVS ;
 (deffunction update-aggregate-fovs (?param ?orbit-list)
-    (printout t "--> UPDATING FOVS FOR MEASUREMENT: " ?param " WITH ORBITS: " ?orbit-list crlf)
+    ;(printout t "--> UPDATING FOVS FOR MEASUREMENT: " ?param " WITH ORBITS: " ?orbit-list crlf)
     (bind ?results (run-query* REQUIREMENTS::get-measurement-param-fov-and-orbit ?param))
     (bind ?n (length$ ?orbit-list))
     (bind ?fovs (repeat$ -1 ?n))

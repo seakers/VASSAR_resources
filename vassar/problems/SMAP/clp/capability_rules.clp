@@ -85,7 +85,7 @@
     ?sub <- (MANIFEST::Mission  (Name ?miss) (sat-data-rate-per-orbit# ?rbo&~nil) (factHistory ?fh3))
     =>
     (bind ?dc (min 1.0 (/ (* 1 7 60 500 (/ 1 8192)) ?rbo))); you get 1 7' pass at 500Mbps max
-    (printout t "--> DATA-RATE DUTY-CYCLE (" ?ins1 "): " (/ (* 1 7 60 500 (/ 1 8192)) ?rbo) crlf)
+    ;(printout t "--> DATA-RATE DUTY-CYCLE (" ?ins1 "): " (/ (* 1 7 60 500 (/ 1 8192)) ?rbo) crlf)
     (modify ?l1 (data-rate-duty-cycle# ?dc) (reason "Cumulative spacecraft data rate cannot be downloaded to ground stations") (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::resource-limitations-datarate) " " ?fh1 " S" (call ?i1 getFactId) " S" (call ?sub getFactId) "}")))
 	(modify ?i1 (data-rate-duty-cycle# ?dc) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::resource-limitations-datarate) " " ?fh2 " S" (call ?l1 getFactId) " S" (call ?sub getFactId) "}")))
     ;(if (< ?dc 1.0) then (printout t "resource-limitations-datarate " ?ins1 " dc = " ?dc crlf))

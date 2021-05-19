@@ -29,7 +29,7 @@
         (if (and (numberp ?dc-d) (numberp ?dc-p)) then (bind ?*science-multiplier* (min ?dc-d ?dc-p)) else (bind ?*science-multiplier* 1.0))
         (if (and (numberp ?dc-d) (numberp ?dc-p)) then (bind ?mult (min ?dc-d ?dc-p)) else (bind ?mult 1.0))
         ;(bind ?*science-multiplier* 1.0) (bind ?mult 1.0)
-        (printout t "--> SCIENCE MULTIPLIER: " ?*science-multiplier* crlf)
+        ;(printout t "--> SCIENCE MULTIPLIER: " ?*science-multiplier* crlf)
         (assert (CAPABILITIES::resource-limitations (data-rate-duty-cycle# ?dc-d) (power-duty-cycle# ?dc-p) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::{{instrument.name}}-measurements) " A" (call ?this getFactId) " A" (call ?this2 getFactId) "}"))))
 {% for measurement in instrument.measurements %}
         (assert (REQUIREMENTS::Measurement (Parameter "{{measurement.name}}") (science-multiplier ?mult) {% for attribute in measurement.attributes %}{% if (attribute.value.equalsIgnoreCase("nil")) %}{% else %}({{attribute.key}} {{attribute.value}}) {% endif %}{% endfor %} (taken-by {{instrument.name}}) (flies-in ?miss) (orbit-altitude# ?h) (orbit-RAAN ?raan) (orbit-anomaly# ?ano) (Id {{instrument.name}}{{loop.index}}) (Instrument {{instrument.name}}) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::{{instrument.name}}-measurements) " A" (call ?this getFactId) " A" (call ?this2 getFactId) "}"))
