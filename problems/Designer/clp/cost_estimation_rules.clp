@@ -29,7 +29,7 @@
             (developed-by ?whom) (factHistory ?fh))
     =>
 
-    (printout t "Payload cost params: " ?m " " ?p " " ?rb crlf)
+    ;(printout t "Payload cost params: " ?m " " ?p " " ?rb crlf)
 
     (bind ?c0 (apply-NICM ?m ?p ?rb))
     (if (is-domestic ?whom) then (modify ?instr (cost# ?c0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}")))
@@ -48,7 +48,7 @@
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
 
     (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
-    (printout t "Payload cost: instrument cost = " (* ?cost 1e3) crlf)
+    ;(printout t "Payload cost: instrument cost = " (* ?cost 1e3) crlf)
 
         (modify ?miss (payload-cost# ?cost) (payload-non-recurring-cost# (* 0.8 ?cost))
         (payload-recurring-cost# (* 0.2 ?cost)))
@@ -77,12 +77,12 @@
     (printout t "Therm " ?thm " kg" crlf)
     (printout t "Power " ?epsm " kg" crlf)
 
-    (bind ?str-cost (* 157 (** ?strm 0.83)))
-    (bind ?prop-cost (* 17.8 (** ?prm 0.75)))
-    (bind ?adcs-cost (* 464 (** ?adcm 0.867)))
-    (bind ?comm-cost (* 545 (** ?comm 0.761)))
-    (bind ?therm-cost (* 394 (** ?thm 0.635)))
-    (bind ?pow-cost (* 2.63 (** (* ?epsm ?p) 0.712)))
+    (bind ?str-cost (str-cost-non-recurring ?strm))
+    (bind ?prop-cost (prop-cost-non-recurring ?prm))
+    (bind ?adcs-cost (adcs-cost-non-recurring ?adcm))
+    (bind ?comm-cost (comm-cost-non-recurring ?comm))
+    (bind ?therm-cost (therm-cost-non-recurring ?thm))
+    (bind ?pow-cost (eps-cost-non-recurring ?epsm ?p))
 
     (printout t "Cost - NR" crlf)
     (printout t "Str $" (* ?str-cost 1e3) crlf)
@@ -93,26 +93,64 @@
     (printout t "Power $" (* ?pow-cost 1e3) crlf)
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
-    (modify ?miss (bus-non-recurring-cost# ?cost))
+    (modify ?miss (bus-non-recurring-cost# ?cost) (str-cost-nr# ?str-cost) (prop-cost-nr# ?prop-cost) (adcs-cost-nr# ?adcs-cost)
+              (comm-cost-nr# ?comm-cost) (therm-cost-nr# ?therm-cost) (eps-cost-nr# ?pow-cost) )
     )
+
+  (deffunction str-cost-non-recurring (?strm)
+    (if (< ?strm (* 0.75 54)) then (return 0)
+      else (return (* 157 (** ?strm 0.83)))
+    )
+  )
+
+  (deffunction prop-cost-non-recurring (?prm)
+    (if (< ?prm (* 0.75 81)) then (return 0)
+      else (return (* 17.8 (** ?prm 0.75)))
+    )
+  )
+
+  (deffunction adcs-cost-non-recurring (?adcm)
+    (if (< ?adcm (* 0.75 20)) then (return 0)
+      else (return (* 464 (** ?adcm 0.867)))
+    )
+  )
+
+  (deffunction comm-cost-non-recurring (?comm)
+    (if (< ?comm (* 0.75 12)) then (return 0)
+      else (return (* 545 (** ?comm 0.761)))
+    )
+  )
+
+  (deffunction therm-cost-non-recurring (?thm)
+    (if (< ?comm (* 0.75 3)) then (return 0)
+      else (return (* 394 (** ?thm 0.635)))
+    )
+  )
+
+  (deffunction eps-cost-non-recurring (?epsm ?p)
+    (if (< ?epsm (* 0.75 31)) then (return 0)
+      elif (< ?epsm (* 0.75 100)) then (return (* 62.7 ?epsm))
+      else (return (* 2.63 (** (* ?epsm ?p) 0.712)))
+    )
+  )
 
 ; bus recurring cost
 (defrule COST-ESTIMATION::estimate-bus-TFU-recurring-cost
     "This rule estimates bus recurring cost (TFU) using SMAD CERs"
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (bus-recurring-cost# nil)
+    ?miss <- (MANIFEST::Mission (bus-recurring-cost# nil) (satellite-BOL-power# ?p&~nil)
         (EPS-mass# ?epsm&~nil) (thermal-mass# ?thm&~nil) (avionics-mass# ?comm&~nil)
-        (structure-mass# ?strm &~nil) (propulsion-mass# ?prm&~nil)
+        (structure-mass# ?strm&~nil) (propulsion-mass# ?prm&~nil)
         (ADCS-mass# ?adcm&~nil) (standard-bus ?bus)
         )
     (or (test (eq ?bus nil)) (test (eq ?bus dedicated-class)))
     =>
-    (bind ?str-cost (* 13.1 ?strm))
-    (bind ?prop-cost (* 4.97 (** ?prm 0.823)))
-    (bind ?adcs-cost (* 293 (** ?adcm 0.777)))
-    (bind ?comm-cost (* 635 (** ?comm 0.568)))
-    (bind ?therm-cost (* 50.6 (** ?thm 0.707)))
-    (bind ?pow-cost (* 112 (** ?epsm 0.763)))
+    (bind ?str-cost (str-cost-recurring ?strm))
+    (bind ?prop-cost (prop-cost-recurring ?prm ?strm ?adcm ?comm ?thm ?epsm))
+    (bind ?adcs-cost (adcs-cost-recurring ?adcm))
+    (bind ?comm-cost (comm-cost-recurring ?comm))
+    (bind ?therm-cost (therm-cost-recurring ?thm))
+    (bind ?pow-cost (eps-cost-recurring ?epsm ?p))
 
     (printout t "Cost - Rec" crlf)
     (printout t "Str $" (* ?str-cost 1e3) crlf)
@@ -123,7 +161,50 @@
     (printout t "Power $" (* ?pow-cost 1e3) crlf)
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
-    (modify ?miss (bus-recurring-cost# ?cost))
+    (modify ?miss (bus-recurring-cost# ?cost) (str-cost# ?str-cost) (prop-cost# ?prop-cost) (adcs-cost# ?adcs-cost)
+              (comm-cost# ?comm-cost) (therm-cost# ?therm-cost) (eps-cost# ?pow-cost) )
+    )
+
+    (deffunction str-cost-recurring (?strm)
+      (if (< ?strm (* 0.75 54)) then (return (+ 299 (* 14.2 (log ?strm))))
+        else (return (* 13.1 ?strm))
+      )
+    )
+
+    (deffunction prop-cost-recurring (?prm ?strm ?adcsm ?comm ?thm ?epsm)
+      (bind ?busm (+ ?prm ?strm ?adcsm ?comm ?thm ?epsm))
+
+      (printout t "Dry Mass: " ?busm crlf)
+
+      (if (< ?prm (* 0.75 81)) then (return (+ 65.6 (* 2.19 (** ?busm 1.261))))
+        else (return (* 4.97 (** ?prm 0.823)))
+      )
+    )
+
+    (deffunction adcs-cost-recurring (?adcm)
+      (if (< ?adcm (* 0.75 20)) then (return (+ 1358 (* 8.58 (** ?adcm 2))))
+        else (return (* 293 (** ?adcm 0.777)))
+      )
+    )
+
+    (deffunction comm-cost-recurring (?comm)
+      (if (< ?comm (* 0.75 13)) then (return (+ 484 (* 55 (** ?comm 1.35))))
+        else (return (* 635 (** ?comm 0.568)))
+      )
+    )
+
+    (deffunction therm-cost-recurring (?thm)
+      (if (< ?comm (* 0.75 3)) then (return (+ 299 (* 14.2 ?thm (log ?thm))))
+        else (return (* 50.6 (** ?thm 0.707)))
+      )
+    )
+
+    (deffunction eps-cost-recurring (?epsm ?p)
+      (printout t "EOL Power: " ?p crlf)
+
+      (if (< ?epsm (* 0.75 31)) then (return (+ 131 (* 401 (** ?p 0.452))))
+        else (return (* 112 (** ?epsm 0.763)))
+      )
     )
 
 ; ********************

@@ -46,9 +46,11 @@
     (bind ?q 0.6)
     (bind ?torque (max-disturbance-torque
             ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q))
+
+
     (bind ?ctrl-mass (estimate-att-ctrl-mass (compute-RW-momentum ?torque ?a)))
     (bind ?det-mass (estimate-att-det-mass ?req ?dry-mass))
-    (bind ?el-mass (+ (* 4 ?ctrl-mass) (* 3 ?det-mass)))
+    (bind ?el-mass (+ (* 1 ?ctrl-mass) (* 1 ?det-mass)))
     (bind ?str-mass (* 0.01 ?dry-mass));
     (bind ?adcs-mass (+ ?el-mass ?str-mass))
 
@@ -59,8 +61,10 @@
     (bind ?str-pow 0.0)
     (bind ?adcs-pow (+ ?ctrl-pow ?det-pow ?el-pow ?str-pow))
 
-    ;(printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
-    ;(printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
+    (printout t "adcs req: " ?req crlf)
+    (printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
+    (printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
+
     (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
     )
 

@@ -573,7 +573,7 @@
 "Use values  by default for satellite parameters"
 ?miss <- (MANIFEST::Mission  (ADCS-requirement nil))
 =>
-(modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)
+(modify ?miss (ADCS-requirement 0.1) (propellant-ADCS hydrazine)
  (propellant-injection hydrazine) (slew-angle 2.0)
 )
 )
