@@ -37,7 +37,7 @@
         (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil)
         (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil)
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0))
-        (ADCS-mass# nil) (factHistory ?fh))
+        (ADCS-mass# nil) (factHistory ?fh) (lifetime ?life&~nil))
     =>
     (bind ?Iy (nth$ 2 $?mom)) (bind ?Iz (nth$ 3 $?mom))
     (bind ?x (nth$ 1 $?dim)) (bind ?y (nth$ 2 $?dim)) (bind ?z (nth$ 3 $?dim))
@@ -46,7 +46,7 @@
     (bind ?q 0.6)
     (bind ?torque (max-disturbance-torque
             ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q))
-    (bind ?ctrl-mass (estimate-att-ctrl-mass (compute-RW-momentum ?torque ?a)))
+    (bind ?ctrl-mass (estimate-att-ctrl-mass (compute-RW-momentum ?torque ?a) ?life))
     (bind ?det-mass (estimate-att-det-mass ?req))
     (bind ?el-mass (+ (* 4 ?ctrl-mass) (* 3 ?det-mass)))
     (bind ?str-mass (* 0.01 ?dry-mass));
@@ -128,10 +128,24 @@
     (return (* (/ 1 (sqrt 2)) ?Td 0.25 (orbit-period ?a)))
     )
 
-(deffunction estimate-att-ctrl-mass (?h)
+(deffunction adcs-reliability (?life)
+    "This function estimates the adcs reliability as a function of the satellite lifetime
+    based on work of Joseph H. Saleh doi:10.1016/j.ress.2009.05.004"
+    (return (** (e) (** (/ (* ?life 365) 3831) 0.7182)))
+    )
+
+(deffunction ctrl-redundancy (?life)
+    "This function uses the reliability of the ADCS subsystem based on the work of Joseph H. Saleh
+    and solves for the number of redundant RW.  doi:10.1016/j.ress.2009.05.004"
+    (return (/ (log .95) (* -1 (** (/ (* ?life 365) 3831) 0.7182))))
+    )
+
+(deffunction estimate-att-ctrl-mass (?h ?life)
     "This function estimates the mass of a RW from its momentum storage capacity.
-    It can also be used to estimate the mass of an attitude control system"
-    (return (* 1.5 (** ?h 0.6)))
+    It also takes into account required redundancy from estimated reliability."
+
+    (if (< ?h 10) then (return (* (ctrl-redundancy ?life) (+ 2 (* 0.4 ?h))))); (regular+redundant)*SMAD RW mass estimate
+    (if (< ?h 100) then (return (* (ctrl-redundancy ?life) (+ 5 (* 0.1 ?h)))))
     )
 
 (deffunction estimate-RW-power (?T)
