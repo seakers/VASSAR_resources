@@ -66,8 +66,8 @@
     )
 
 (deffunction get-prop-Isp (?prop)
-    (bind ?props (create$ solid hydrazine LH2))
-    (bind ?Isps (create$ 210 290 450))
+    (bind ?props (create$ solid-comp solid-double solid-comp-double cold-h2 cold-he cold-n2 cold-nh3 cold-co2 mono-n2h4 mono-h2o2 mono-adn bi-mmh-nto bi-ch4-lox bi-h2o2))
+    (bind ?Isps (create$ 242 235 275 272 165 73 96 61 240 200 255 300 380 450))
 
     (bind ?ind (member$ ?prop ?props))
     (if (eq ?ind FALSE) then (printout t "get-prop-Isp: propellant not found" crlf) (return FALSE)
