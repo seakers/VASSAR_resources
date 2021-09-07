@@ -12,12 +12,12 @@
     )
 
 
-(deffunction apply-NICM (?m ?p ?rb)
+(deffunction apply-NICM (?m ?p ?rb ?name)
 
     (bind ?cost (* 25600 (** (/ ?p 61.5) 0.32) (** (/ ?m 53.8) 0.26)
             (** (/ (* 1000 ?rb) 40.4) 0.11))); in FY04$
     (bind ?cost (/ ?cost 1.097))
-    (printout t apply-NICM " " ?instr " = " ?m " " ?p " " ?rb " " ?cost crlf)
+    ;(printout t apply-NICM " " ?name " = " ?m " " ?p " " ?rb " " ?cost crlf)
     (return ?cost)
     )
 
@@ -25,15 +25,26 @@
     "This rule estimates payload cost using a very simplified version of the
     NASA Instrument Cost Model available on-line"
     (declare (salience 25) (no-loop TRUE))
-    ?instr <- (CAPABILITIES::Manifested-instrument (cost# nil) (mass# ?m&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
+    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil&:(> ?m 10)) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
             (developed-by ?whom) (factHistory ?fh))
     =>
 
-    ;(printout t "Payload cost params: " ?m " " ?p " " ?rb crlf)
+    (bind ?c0 (apply-NICM ?m ?p ?rb ?name))
+    ;(printout t "Payload cost params: " ?m " " ?p " " ?rb " " ?name " " ?c0 crlf)
+    (modify ?instr (cost# ?c0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}")))
+    )
 
-    (bind ?c0 (apply-NICM ?m ?p ?rb))
-    (if (is-domestic ?whom) then (modify ?instr (cost# ?c0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}")))
-        else (modify ?instr (cost# 0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}"))))
+(defrule COST-ESTIMATION::estimate-instrument-cost-small
+    "This rule estimates payload cost using a very simplified version of the
+    NASA Instrument Cost Model available on-line"
+    (declare (salience 25) (no-loop TRUE))
+    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil&:(<= ?m 10)) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
+            (developed-by ?whom) (factHistory ?fh))
+    =>
+
+    (bind ?c0 4000)
+    ;(printout t "Payload cost params: " ?m " " ?p " " ?rb " " ?name " " ?c0 crlf)
+    (modify ?instr (cost# ?c0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}")))
     )
 
 
@@ -45,6 +56,7 @@
     ?miss <- (MANIFEST::Mission (payload-cost# nil) (instruments $?payload)
         )
     =>
+    (printout t "Instruments: " $?payload crlf)
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
 
     (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
@@ -52,6 +64,18 @@
 
         (modify ?miss (payload-cost# ?cost) (payload-non-recurring-cost# (* 0.8 ?cost))
         (payload-recurring-cost# (* 0.2 ?cost)))
+    )
+
+(defrule COST-ESTIMATION::estimate-payload-cost-cubesat
+    "This rule estimates payload cost using a very simplified version of the
+    NASA Instrument Cost Model available on-line"
+    (declare (salience 18))
+    ?miss <- (MANIFEST::Mission (payload-mass# ?m&~nil&:(<= ?m 10)) (instruments $?payload)
+        )
+    =>
+    (bind ?cost 4000)
+    (modify ?miss (payload-cost# ?cost) (payload-non-recurring-cost# 3000)
+    (payload-recurring-cost# 1000))
     )
 
 ; ********************
@@ -65,17 +89,17 @@
     ?miss <- (MANIFEST::Mission (bus-non-recurring-cost# nil)
         (satellite-BOL-power# ?p&~nil) (EPS-mass# ?epsm&~nil) (thermal-mass# ?thm&~nil)
         (structure-mass# ?strm &~nil) (propulsion-mass# ?prm&~nil) (avionics-mass# ?comm&~nil)
-        (ADCS-mass# ?adcm&~nil) (standard-bus ?bus)
+        (ADCS-mass# ?adcm&~nil) (standard-bus ?bus) (satellite-dry-mass ?m&~nil&:(> ?m 24))
         )
     (or (test (eq ?bus nil)) (test (eq ?bus dedicated-class)))
     =>
-    (printout t "Mass" crlf)
-    (printout t "Str " ?strm " kg" crlf)
-    (printout t "Prop " ?prm " kg" crlf)
-    (printout t "ADCS " ?adcm " kg" crlf)
-    (printout t "Comm " ?comm " kg" crlf)
-    (printout t "Therm " ?thm " kg" crlf)
-    (printout t "Power " ?epsm " kg" crlf)
+    ;(printout t "Mass" crlf)
+    ;(printout t "Str " ?strm " kg" crlf)
+    ;(printout t "Prop " ?prm " kg" crlf)
+    ;(printout t "ADCS " ?adcm " kg" crlf)
+    ;(printout t "Comm " ?comm " kg" crlf)
+    ;(printout t "Therm " ?thm " kg" crlf)
+    ;(printout t "Power " ?epsm " kg" crlf)
 
     (bind ?str-cost (str-cost-non-recurring ?strm))
     (bind ?prop-cost (prop-cost-non-recurring ?prm))
@@ -84,13 +108,13 @@
     (bind ?therm-cost (therm-cost-non-recurring ?thm))
     (bind ?pow-cost (eps-cost-non-recurring ?epsm ?p))
 
-    (printout t "Cost - NR" crlf)
-    (printout t "Str $" (* ?str-cost 1e3) crlf)
-    (printout t "Prop $" (* ?prop-cost 1e3) crlf)
-    (printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
-    (printout t "Comm $" (* ?comm-cost 1e3) crlf)
-    (printout t "Therm $" (* ?therm-cost 1e3) crlf)
-    (printout t "Power $" (* ?pow-cost 1e3) crlf)
+    ;(printout t "Cost - NR" crlf)
+    ;(printout t "Str $" (* ?str-cost 1e3) crlf)
+    ;(printout t "Prop $" (* ?prop-cost 1e3) crlf)
+    ;(printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
+    ;(printout t "Comm $" (* ?comm-cost 1e3) crlf)
+    ;(printout t "Therm $" (* ?therm-cost 1e3) crlf)
+    ;(printout t "Power $" (* ?pow-cost 1e3) crlf)
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (modify ?miss (bus-non-recurring-cost# ?cost) (str-cost-nr# ?str-cost) (prop-cost-nr# ?prop-cost) (adcs-cost-nr# ?adcs-cost)
@@ -140,8 +164,8 @@
     (declare (salience 10))
     ?miss <- (MANIFEST::Mission (bus-recurring-cost# nil) (satellite-BOL-power# ?p&~nil)
         (EPS-mass# ?epsm&~nil) (thermal-mass# ?thm&~nil) (avionics-mass# ?comm&~nil)
-        (structure-mass# ?strm&~nil) (propulsion-mass# ?prm&~nil)
-        (ADCS-mass# ?adcm&~nil) (standard-bus ?bus)
+        (structure-mass# ?strm &~nil) (propulsion-mass# ?prm&~nil)
+        (ADCS-mass# ?adcm&~nil) (standard-bus ?bus) (satellite-dry-mass ?m&~nil&:(> ?m 24))
         )
     (or (test (eq ?bus nil)) (test (eq ?bus dedicated-class)))
     =>
@@ -152,13 +176,13 @@
     (bind ?therm-cost (therm-cost-recurring ?thm))
     (bind ?pow-cost (eps-cost-recurring ?epsm ?p))
 
-    (printout t "Cost - Rec" crlf)
-    (printout t "Str $" (* ?str-cost 1e3) crlf)
-    (printout t "Prop $" (* ?prop-cost 1e3) crlf)
-    (printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
-    (printout t "Comm $" (* ?comm-cost 1e3) crlf)
-    (printout t "Therm $" (* ?therm-cost 1e3) crlf)
-    (printout t "Power $" (* ?pow-cost 1e3) crlf)
+    ;(printout t "Cost - Rec" crlf)
+    ;(printout t "Str $" (* ?str-cost 1e3) crlf)
+    ;(printout t "Prop $" (* ?prop-cost 1e3) crlf)
+    ;(printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
+    ;(printout t "Comm $" (* ?comm-cost 1e3) crlf)
+    ;(printout t "Therm $" (* ?therm-cost 1e3) crlf)
+    ;(printout t "Power $" (* ?pow-cost 1e3) crlf)
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (modify ?miss (bus-recurring-cost# ?cost) (str-cost# ?str-cost) (prop-cost# ?prop-cost) (adcs-cost# ?adcs-cost)
@@ -207,6 +231,18 @@
       )
     )
 
+(defrule COST-ESTIMATION::cubesat-12U-cost
+    "This rule assigns a rule of thumb 12U cost"
+    (declare (salience 10))
+    ?miss <- (MANIFEST::Mission (bus-recurring-cost# nil)
+        (satellite-dry-mass ?m&~nil&:(<= ?m 24))
+        )
+    =>
+    (bind ?cost 1500)
+
+    (modify ?miss (bus-recurring-cost# ?cost) (bus-non-recurring-cost# 0.0))
+    )
+
 ; ********************
 ; Total spacecraft cost (salience 5)
 ; ********************
@@ -224,7 +260,7 @@
     (bind ?spacecraft (+ ?bus (* ?payl 0.4)))
     (bind ?sat (+ ?spacecraftnr ?spacecraft))
 
-    (printout t crlf "Spacecraft Cost $" (* (+ ?busnr ?bus) 1e3) crlf)
+    ;(printout t crlf "Spacecraft Cost $" (* (+ ?busnr ?bus) 1e3) crlf)
 
     (modify ?miss (spacecraft-non-recurring-cost# ?spacecraftnr)
          (spacecraft-recurring-cost# ?spacecraft) (bus-cost# (+ ?busnr ?bus)) (satellite-cost# ?sat))
@@ -239,7 +275,7 @@
 (defrule COST-ESTIMATION::estimate-integration-and-testing-cost
     "This rule estimates Integration, assembly and testing non recurring and cost using SMAD CERs"
     ?miss <- (MANIFEST::Mission (IAT-non-recurring-cost# nil) (IAT-recurring-cost# nil) (IAT-cost# nil)
-        (spacecraft-non-recurring-cost# ?scnr&~nil) (satellite-dry-mass ?m&~nil)
+        (spacecraft-non-recurring-cost# ?scnr&~nil) (satellite-dry-mass ?m&~nil&:(> ?m 24))
         )
     =>
     (bind ?iatnr (+ 989 (* ?scnr 0.215)))
@@ -249,6 +285,18 @@
          (IAT-recurring-cost# ?iatr) (IAT-cost# ?iat))
     )
 
+(defrule COST-ESTIMATION::estimate-integration-and-testing-cost-cubesat
+    "This rule estimates Integration, assembly and testing non recurring and cost for a cubesat"
+    ?miss <- (MANIFEST::Mission (IAT-non-recurring-cost# nil) (IAT-recurring-cost# nil) (IAT-cost# nil)
+        (spacecraft-non-recurring-cost# ?scnr&~nil) (satellite-dry-mass ?m&~nil&:(<= ?m 24))
+        )
+    =>
+    (bind ?iatnr 500)
+    (bind ?iatr 500)
+    (bind ?iat (+ ?iatr ?iatnr))
+    (modify ?miss (IAT-non-recurring-cost# ?iatnr)
+         (IAT-recurring-cost# ?iatr) (IAT-cost# ?iat))
+    )
 
 ; ********************
 ; Program overhead cost (salience 0)
@@ -256,7 +304,7 @@
 (defrule COST-ESTIMATION::estimate-program-overhead-cost
     "This rule estimates program overhead non recurring and cost using SMAD CERs"
     ?miss <- (MANIFEST::Mission (program-non-recurring-cost# nil) (program-recurring-cost# nil) (program-cost# nil)
-        (spacecraft-non-recurring-cost# ?scnr&~nil) (spacecraft-recurring-cost# ?scr&~nil)
+        (spacecraft-non-recurring-cost# ?scnr&~nil) (spacecraft-recurring-cost# ?scr&~nil) (satellite-dry-mass ?m&~nil&:(> ?m 24))
         )
     =>
     (bind ?prognr (* 1.963 (** ?scnr 0.841)))
@@ -266,6 +314,18 @@
          (program-recurring-cost# ?progr) (program-cost# ?prog))
     )
 
+(defrule COST-ESTIMATION::estimate-program-overhead-cost-cubesat
+    "This rule estimates program overhead non recurring and cost for a cubesat"
+    ?miss <- (MANIFEST::Mission (program-non-recurring-cost# nil) (program-recurring-cost# nil) (program-cost# nil)
+        (spacecraft-non-recurring-cost# ?scnr&~nil) (spacecraft-recurring-cost# ?scr&~nil) (satellite-dry-mass ?m&~nil&:(<= ?m 24))
+        )
+    =>
+    (bind ?prognr 500)
+    (bind ?progr 500)
+    (bind ?prog (+ ?progr ?prognr))
+    (modify ?miss (program-non-recurring-cost# ?prognr)
+         (program-recurring-cost# ?progr) (program-cost# ?prog))
+    )
 
 ; ********************
 ; Operations cost (salience -5)
@@ -276,7 +336,7 @@
     (declare (salience -5))
     ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# nil)
         (lifetime ?life &~nil) (program-cost# ?prog&~nil) (IAT-cost# ?iat&~nil)
-        (sat-data-rate-per-orbit# ?rbo&nil))
+        (sat-data-rate-per-orbit# ?rbo&nil) (satellite-dry-mass ?m&~nil&:(> ?m 24)))
     =>
     (bind ?total-cost (+ ?sat ?prog ?iat))
     (bind ?total-cost (* ?total-cost 0.001097)); correct for inflation and transform to $M
@@ -291,7 +351,7 @@
     (declare (salience -5))
     ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# nil)
         (lifetime ?life &~nil) (program-cost# ?prog&~nil) (IAT-cost# ?iat&~nil)
-        (sat-data-rate-per-orbit# ?rbo&~nil))
+        (sat-data-rate-per-orbit# ?rbo&~nil) (satellite-dry-mass ?m&~nil&:(> ?m 24)))
     =>
     (bind ?total-cost (+ ?sat ?prog ?iat))
     (bind ?total-cost (* ?total-cost 0.001097)); correct for inflation and transform to $M
@@ -300,6 +360,20 @@
     (if (> ?rbo (* 5 60 700 (/ 1 8192))) then (bind ?pen 10.0) else (bind ?pen 1.0))
     ;(printout t "penalty =" ?pen crlf)
     (modify ?miss (operations-cost# (* ?ops-cost ?pen)))
+    )
+
+(defrule COST-ESTIMATION::estimate-operations-cost-cubesat
+    "This rule estimates operations cost for a cubesat using rules of thumb"
+    (declare (salience -5))
+    ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# nil)
+        (lifetime ?life &~nil) (num-of-planes# ?np&~nil) (num-of-sats-per-plane# ?ns&~nil) (satellite-dry-mass ?m&~nil&:(<= ?m 24)))
+    =>
+    ;(bind ?N (* ?np ?ns))
+    ;(bind ?salary (+ 200 (log ?N)))
+    (bind ?salary 100)
+    (bind ?groundpass 550)
+    (bind ?cost (* (+ ?salary ?groundpass) ?life))
+    (modify ?miss (operations-cost# ?cost))
     )
 
 ; ********************
@@ -397,8 +471,18 @@
     (modify ?miss (mission-non-recurring-cost# ?mission-cost))
     )
 
+(defrule COST-ESTIMATION::launch-cost-cubesat-override
+    "Overriding launch cost computation using rule of thumb"
+    (declare (salience 10))
+    ?miss <- (MANIFEST::Mission (launch-cost# ?launch&~nil) (num-of-planes# ?np&~nil) (num-of-sats-per-plane# ?ns&~nil) (satellite-dry-mass ?m&~nil&:(<= ?m 24)))
+    =>
+    (bind ?N (* ?np ?ns))
+    (bind ?cost (* (* ?N 0.1) 12))
+    (modify ?miss (launch-cost# ?cost))
+    )
+
 (defrule COST-ESTIMATION::estimate-total-mission-cost-recurring
-    "Non recurring cost"
+    "Recurring cost"
 
     (declare (salience -10))
     ?miss <- (MANIFEST::Mission (bus-recurring-cost# ?bus&~nil) (payload-recurring-cost# ?payl&~nil)

@@ -14,11 +14,10 @@
 
 (defrule LV-SELECTION1::compute-constellation
 		"Gathers information from all missions to gather payloads of similar orbits into a constellation"
-
-		?m1 <- (MANIFEST::Mission (id ?sat1) (orbit-string ?orb1) (num-of-planes# 1) (num-of-sats-per-plane# ?ns1&~0&~nil) (launch-vehicle ?lv1) (instruments $?ins1) )
-		?m2 <- (MANIFEST::Mission (id ?sat2) (orbit-string ?orb2) (num-of-planes# 1) (num-of-sats-per-plane# ?ns2&~0&~nil) (launch-vehicle ?lv2) (instruments $?ins2) )
-		(test (neq ?m1 ?m2))
-		(test (eq ?ins1 ?ins2))
+		?m1 <- (MANIFEST::Mission (orbit-string ?orb1) (num-of-sats-per-plane# ?ns1&:(> ?ns1 0)&~nil) (launch-vehicle ?lv1) (instruments $?ins1))
+		?m2 <- (MANIFEST::Mission (orbit-string ?orb2) (num-of-sats-per-plane# ?ns2&:(> ?ns2 0)&~nil) (launch-vehicle ?lv2) (instruments $?ins2))
+		(test (neq ?orb1 ?orb2))
+		(test (eq $?ins1 $?ins2))
 		(test (eq ?lv1 ?lv2))
 
 		=>
@@ -34,8 +33,7 @@
 
 		(modify ?m1 (num-of-sats-per-plane# (+ ?ns1 ?nsp)))
 		(modify ?m2 (num-of-sats-per-plane# ?ns2))
-
-		(printout t "Results List: " (+ ?np1 ?npp) " " (+ ?ns1 ?nsp) " " ?np2 " " ?ns2 crlf)
+		;(printout t "Results List: " (+ 1 ?npp) " " (+ ?ns1 ?nsp) " " ?np2 " " ?ns2 crlf)
 )
 
 (defrule LV-SELECTION1::eliminate-empty-missions
@@ -99,7 +97,7 @@
     (bind ?NL-vol (ceil (/ (* (*$ $?dim) ?N) (*$ (MatlabFunctions getLaunchVehicleDimensions ?lv)))))
     ;(printout t "the dimensoins of lv " ?lv " are diam "  (nth$ 1 (MatlabFunctions getLaunchVehicleDimensions ?lv)) " h = " (nth$ 2 (MatlabFunctions getLaunchVehicleDimensions ?lv)) crlf)
     (bind ?NL-diam (ceil (/ (* (max$ ?dim) ?N) (max$ (MatlabFunctions getLaunchVehicleDimensions ?lv)))))
-    (modify ?f (num-launches (max ?NL-mass ?NL-vol ?NL-diam)) (factHistory (str-cat "{R" (?*rulesMap* get LV-SELECTION2::compute-number-of-launches) " " ?fh "}")))
+    (modify ?f (num-launches (* ?np (max ?NL-mass ?NL-vol ?NL-diam))) (factHistory (str-cat "{R" (?*rulesMap* get LV-SELECTION2::compute-number-of-launches) " " ?fh "}")))
 )
 
 (defrule LV-SELECTION4::eliminate-empty-missions
@@ -133,11 +131,14 @@
 )
 
 	; cost rule
-(defrule LV-SELECTION4::eliminate-more-expensive-launch-options
+(defrule LV-SELECTION5::eliminate-more-expensive-launch-options
     "From all feasible options, eliminate the most expensive ones"
 
-    ?m1 <- (MANIFEST::Mission (Name ?name) (launch-vehicle ?lv1&~nil) (launch-cost# ?c1&~nil))
-    (MANIFEST::Mission (Name ?name) (launch-vehicle ?lv2&~?lv1&~nil) (launch-cost# ?c2&~nil&:(< ?c2 ?c1)))
+    ?m1 <- (MANIFEST::Mission (launch-vehicle ?lv1&~nil) (launch-cost# ?c1&~nil) (instruments $?ins1))
+    ?m2 <- (MANIFEST::Mission (launch-vehicle ?lv2&~nil) (launch-cost# ?c2&~nil) (instruments $?ins2))
+    (test (eq $?ins1 $?ins2))
+    (test (neq ?lv1 ?lv2))
+    (test (<= ?c2 ?c1))
 
         =>
 

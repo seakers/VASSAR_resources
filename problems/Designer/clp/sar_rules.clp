@@ -162,7 +162,7 @@
   ; "Assumes a duty cycle of 10%"
   (bind ?Pavg (* 0.1 ?Pp))
   (bind ?Pchar ?Pavg)
-  ; (printout t ?name " peak, average, and characteristic power: [" ?Pp ", " ?Pavg ", " ?Pchar "]" crlf)
+  (printout t ?name " peak, average, and characteristic power: [" ?Pp ", " ?Pavg ", " ?Pchar "]" crlf)
 
   ( modify ?sar (average-power# ?Pavg) (characteristic-power# ?Pchar) )
 )
@@ -245,6 +245,16 @@
     (test (eq (contains$ ?list-of-instruments L-band_SAR) TRUE))
        =>
     (modify ?miss (instruments (add-element$ ?list-of-instruments L-band_ANT)))
+    ;(printout t "payload: " $?list-of-instruments  crlf)
+    )
+
+(defrule MANIFEST::Check-common-dish
+	(declare (salience 100))
+    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
+	(test (eq (contains$ ?list-of-instruments L-band_ANT) TRUE))
+    (test (eq (contains$ ?list-of-instruments P-band_ANT) TRUE))
+       =>
+    (modify ?miss (instruments (del-element$ ?list-of-instruments P-band_ANT)))
     ;(printout t "payload: " $?list-of-instruments  crlf)
     )
 

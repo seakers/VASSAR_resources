@@ -37,7 +37,7 @@
         (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil)
         (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil)
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0))
-        (ADCS-mass# nil) (factHistory ?fh) (lifetime ?life&~nil))
+        (ADCS-mass# nil) (payload-mass# ?m&~nil&:(> ?m 10)) (factHistory ?fh))
     =>
     (bind ?Iy (nth$ 2 $?mom)) (bind ?Iz (nth$ 3 $?mom))
     (bind ?x (nth$ 1 $?dim)) (bind ?y (nth$ 2 $?dim)) (bind ?z (nth$ 3 $?dim))
@@ -62,6 +62,15 @@
     ;(printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
     ;(printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
     (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
+    )
+
+(defrule MASS-BUDGET::design-ADCS-cubesat
+    ?sat <- (MANIFEST::Mission (payload-mass# ?m&~nil&:(<= ?m 10)) (ADCS-mass# nil) (factHistory ?fh))
+    =>
+    (bind ?adcs-mass 3.0)
+    (bind ?adcs-pow 1.0)
+    ;(printout t "cubesat ADCS" crlf)
+    (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS-cubesat) " " ?fh "}")))
     )
 
 

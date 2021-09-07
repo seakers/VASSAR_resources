@@ -31,11 +31,7 @@
   ;(bind ?av-mass (* ?m ?obdh-mass-coeff))
   ;(bind ?av-power 0)
 
-  (bind ?av-mass (+ (* ?m ?obdh-mass-coeff) 0.3))
-  (bind ?av-power 16.0)
-
-  (printout t "avionics mass: " ?av-mass crlf)
-  (printout t "avionics power: " ?av-power crlf)
+  ;(printout t "avionics power: " ?av-power crlf)
   (modify ?miss (avionics-mass# ?av-mass) (avionics-power# ?av-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
 )
 
@@ -51,7 +47,7 @@
     (bind ?obdh_list (MatlabFunctions designComs ?bps ?m ?alt))
     (bind ?obdh-mass (nth$ 1 ?obdh_list))
     (bind ?obdh-power (nth$ 2 ?obdh_list))
-    ;(printout t ?obdh-mass " " ?obdh-power crlf)
+    ;(printout t "Comms mass: " ?obdh-mass ", comms power: " ?obdh-power crlf)
     (modify ?miss (comm-OBDH-mass# ?obdh-mass) (comm-OBDH-power# ?obdh-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
 )
 (defrule MASS-BUDGET::design-comms-subsystem-smallsat
@@ -67,7 +63,7 @@
     (bind ?obdh-power 16)
 
     ;(printout t ?bps " " ?m " " ?alt crlf)
-    (printout t "comms mass and power:" ?obdh-mass " " ?obdh-power crlf)
+    ;(printout t ?obdh-mass " " ?obdh-power crlf)
     (modify ?miss (comm-OBDH-mass# ?obdh-mass) (comm-OBDH-power# ?obdh-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
 )
 
@@ -122,3 +118,21 @@
 ; **************************************
 ; SUPPORTING QUERIES AND FUNCTIONS
 ; **************************************
+
+(defrule MASS-BUDGET::design-12U-cubesat
+    "Designs 12U Cubesat"
+    (declare (salience 10))
+    ?miss <- (MANIFEST::Mission (avionics-mass# nil) (payload-mass# ?m&~nil&:(<= ?m 10)) (factHistory ?fh))
+    =>
+
+    (bind ?av-mass 0.1)
+    (bind ?av-power 1.4)
+    (bind ?comm-mass 1)
+    (bind ?comm-power 1.3)
+    (bind ?adapter-mass 0.0)
+    (bind ?thermal-mass 0.5)
+    (bind ?struct-mass 2.0)
+
+
+    (modify ?miss (avionics-mass# ?av-mass) (avionics-power# ?av-power) (comm-OBDH-mass# ?comm-mass) (comm-OBDH-power# ?comm-power) (adapter-mass ?adapter-mass) (thermal-mass# ?thermal-mass) (structure-mass# ?struct-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-12U-cubesat) " " ?fh "}")))
+    )

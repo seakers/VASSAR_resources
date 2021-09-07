@@ -58,7 +58,7 @@
 (deffunction get-instrument-power (?instr)
     (bind ?result (run-query* search-instrument-by-name ?instr))
     (?result next)
-    (return (?result getDouble ppp))
+    (return (?result getDouble p))
     )
 
 (deffunction get-instrument-datarate (?instr)
@@ -343,6 +343,7 @@
 (defrule MANIFEST::adjust-power-with-orbit
     "Adjust average and peak power from characteristic orbit an power based on square law"
 	(declare (salience 15))
+	(printout t "adjusting power with orbit" crlf)
     ?instr <- (CAPABILITIES::Manifested-instrument (average-power# nil) (orbit-altitude# ?h&~nil) (characteristic-power# ?p&~nil) (characteristic-orbit ?href&~nil) (factHistory ?fh))
     =>
 	(bind ?zep (* ?p (** (/ ?h ?href) 2)))
