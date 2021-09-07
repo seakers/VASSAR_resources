@@ -27,7 +27,7 @@
     ;(printout t "AV power: "  ?obdh-power  crlf)
     ;(printout t "ADCS power: "  ?obdh-power  crlf)
 
-     " "" " ?av-power " " ?adcs-pow " " ?frac " " ?angle " " (orbit-period ?a) " " ?life " " ?m " " ?dod " "
+    ;" "" " ?av-power " " ?adcs-pow " " ?frac " " ?angle " " (orbit-period ?a) " " ?life " " ?m " " ?dod " "
 
     ;(bind ?list (design-EPS ?p ?p ?frac ?angle (orbit-period ?a) ?life ?m ?dod)) ;<- original EPS design algorithm
     (bind ?list (MatlabFunctions designEPS ?p ?pp ?obdh-power ?av-power ?adcs-pow ?frac ?angle (orbit-period ?a) ?life ?m ?dod))

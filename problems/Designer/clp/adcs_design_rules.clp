@@ -37,6 +37,7 @@
         (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil)
         (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil)
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0))
+        (lifetime ?life&~nil)
         (ADCS-mass# nil) (payload-mass# ?m&~nil&:(> ?m 10)) (factHistory ?fh))
     =>
     (bind ?Iy (nth$ 2 $?mom)) (bind ?Iz (nth$ 3 $?mom))
