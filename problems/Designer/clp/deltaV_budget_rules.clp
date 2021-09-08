@@ -45,13 +45,13 @@
         (lifetime ?life&~nil) (factHistory ?fh))
     =>
 
-    (printout t "adcs type: " ?adcs crlf)
+    ;(printout t "adcs type: " ?adcs crlf)
 
     (if (eq ?adcs three-axis) then (bind ?dV 20)
         elif (eq ?adcs grav-gradient) then (bind ?dV 0)
         else (bind ?dV 0))
 
-    (printout t "adcs dV: " ?dV crlf)
+    ;(printout t "adcs dV: " ?dV crlf)
 
     (modify ?miss (delta-V-ADCS (* ?life ?dV)) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::compute-deltaV-ADCS) " " ?fh "}")))
     )

@@ -20,6 +20,16 @@
     (modify ?f  (bus-mass ?bm) (factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-bus-mass-from-payload-mass) " " ?fh "}")))
     )
 
+(defrule PRELIM-MASS-BUDGET::estimate-adcs-power-from-payload-power
+    "This rule uses Table 14-20 in New SMAD to compute ADCS power from payload power."
+
+    ?f <- (MANIFEST::Mission (ADCS-power# nil) (payload-power# ?p&~nil) (factHistory ?fh))
+    =>
+    (bind ?totalp (/ ?p 0.46))
+    (bind ?ap (* ?totalp 0.1))
+    (modify ?f  (ADCS-power# ?ap) (factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-adcs-power-from-payload-power) " " ?fh "}")))
+    )
+
 
 (defrule PRELIM-MASS-BUDGET::estimate-satellite-dry-mass
     "This rule computes the dry mass as the sum of bus and payload mass
@@ -67,15 +77,16 @@
 
 
 
-(defrule PRELIM-MASS-BUDGET::estimate-moments-of-inertia
+(defrule MASS-BUDGET::estimate-moments-of-inertia
     "Guess moments of inertia assuming a perfect box"
     ?sat <- (MANIFEST::Mission (satellite-dry-mass ?m&~nil)
 		(moments-of-inertia $?moi&:(= (length$ ?moi) 0))
-        (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (factHistory ?fh))
+        (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (solar-array-mass ?sam&~nil)
+        (solar-array-area ?saa&~nil) (factHistory ?fh))
 
     =>
-
-    (modify ?sat (moments-of-inertia (box-moment-of-inertia ?m $?dim))(factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-moments-of-inertia) " " ?fh "}")))
+    (printout t "XD" crlf)
+    (modify ?sat (moments-of-inertia (box-panels-moment-of-inertia ?m $?dim ?sam ?saa))(factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-moments-of-inertia) " " ?fh "}")))
     )
 
 
@@ -116,17 +127,26 @@
 (defrule UPDATE-MASS-BUDGET::update-dry-mass
     "Computes the sum of subsystem masses"
     ?miss <- (MANIFEST::Mission (propulsion-mass# ?prop-mass&~nil) (payload-mass# ?payload&~nil)
-        (structure-mass# ?struct-mass&~nil) (adapter-mass ?adap-mass&~nil)
+        (structure-mass# ?struct-mass&~nil)
         (avionics-mass# ?av-mass&~nil) (ADCS-mass# ?adcs-mass&~nil)
         (EPS-mass# ?eps-mass&~nil) (thermal-mass# ?thermal-mass&~nil) (comm-OBDH-mass# ?comm-mass&~nil)
  (propellant-mass-ADCS ?mp1&~nil) (propellant-mass-injection ?mp2&~nil) (factHistory ?fh)(updated2 nil))
     =>
 
     ;(printout t ?prop-mass " " ?struct-mass " " ?eps-mass " " ?adcs-mass " " ?av-mass " " ?payload " " ?thermal-mass " " ?comm-mass crlf)
-    (bind ?sat-mass (+ ?adap-mass ?prop-mass ?struct-mass ?eps-mass ?adcs-mass ?av-mass ?payload ?thermal-mass ?comm-mass)); dry mass
+    (bind ?sat-mass (+ ?prop-mass ?struct-mass ?eps-mass ?adcs-mass ?av-mass ?payload ?thermal-mass ?comm-mass)); dry mass
+    (printout t "Propulsion mass: " ?prop-mass crlf)
+    (printout t "EPS mass       : " ?eps-mass crlf)
+    (printout t "ADCS mass      : " ?adcs-mass crlf)
+    (printout t "Structure mass : " ?struct-mass crlf)
+    (printout t "Avionics mass  : " ?av-mass crlf)
+    (printout t "Payload mass   : " ?payload crlf)
+    (printout t "Thermal mass   : " ?thermal-mass crlf)
+    (printout t "Comms mass     : " ?comm-mass crlf)
+    (printout t "Total mass     : " ?sat-mass crlf)
     (modify ?miss (satellite-dry-mass ?sat-mass)
         (satellite-wet-mass (+ ?sat-mass ?mp1 ?mp2))
-        (satellite-launch-mass (+ ?sat-mass ?mp1 ?mp2 ?adap-mass)) (factHistory (str-cat "{R" (?*rulesMap* get UPDATE-MASS-BUDGET::update-dry-mass) " " ?fh "}"))
+        (satellite-launch-mass (+ ?sat-mass ?mp1 ?mp2)) (factHistory (str-cat "{R" (?*rulesMap* get UPDATE-MASS-BUDGET::update-dry-mass) " " ?fh "}"))
 		(updated2 "yes")
 		); wet mass
 

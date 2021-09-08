@@ -103,15 +103,15 @@
 
 ; adapter
 
-(defrule MASS-BUDGET::add-launch-adapter
+(defrule UPDATE-MASS-BUDGET::add-launch-adapter
     "Computes launch adapter mass as 1% of satellite dry mass"
     (declare (salience 10))
     ?miss <- (MANIFEST::Mission (adapter-mass nil) (satellite-dry-mass ?m&~nil) (factHistory ?fh) )
     =>
 
-    ;(bind ?adapter-mass (* 0.01 ?m)); 0.75
-    (bind ?adapter-mass (* (/ 0.03 0.31) ?m)); 0.75
-    ;(printout t "adapter mass: " ?adapter-mass crlf)
+    (bind ?adapter-mass (* 0.01 ?m)); 0.75
+    ;(bind ?adapter-mass (* (/ 0.03 0.31) ?m)); 0.75
+    (printout t "adapter mass: " ?adapter-mass crlf)
     (modify ?miss (adapter-mass ?adapter-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::add-launch-adapter ) " " ?fh "}")))
     )
 

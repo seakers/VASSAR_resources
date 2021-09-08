@@ -171,6 +171,28 @@
     (return (map (lambda (?r) (return (moment-of-inertia (/ 1 6) ?m ?r))) ?dims))
     )
 
+(deffunction box-panels-moment-of-inertia (?m ?dims ?sam ?saa)
+    (printout t "We in here" crlf)
+    ; Assume that solar panels are extended along the y axis
+    (bind ?x (nth$ 1 ?dims))
+    (bind ?y (nth$ 2 ?dims))
+    (bind ?z (nth$ 3 ?dims))
+    (bind ?msat (- ?m ?sam)) ; subtract solar panel mass from sat mass for accuracy
+    (bind ?mp (/ ?sam 2)) ; 1 panel is half of solar array mass
+    (bind ?d (+ (/ (sqrt ?saa) 2) (/ ?y 2))) ; say that panel CM is half of sqrt of area plus half of y away from sat CM
+
+    ; Cuboid moments of inertia
+    (bind ?Ix (* (/ 1 12) ?msat (+ (** ?y 2) (** ?z 2))))
+    (bind ?Iy (* (/ 1 12) ?msat (+ (** ?x 2) (** ?z 2))))
+    (bind ?Iz (* (/ 1 12) ?msat (+ (** ?x 2) (** ?y 2))))
+
+    ; Adding solar panels
+    (bind ?Ix (+ ?Ix (* (/ 1 6) ?mp (** ?y 2)) (* 2 ?mp (** ?d 2))))
+    (bind ?Iy (+ ?Iy (* (/ 1 6) ?mp (** ?y 2))))
+    (bind ?Iz (+ ?Iz (* (/ 1 6) ?mp (+ (** ?x 2) (** ?y 2))) (* 2 ?mp (** ?d 2))))
+    (return (create$ ?Ix ?Iy ?Iz))
+    )
+
 (deffunction estimate-att-det-mass (?acc)
     " This function estimates the mass of the sensor required for attitude determination
     from its knowledge accuracy requirement. It is based on data from BAll Aerospace,

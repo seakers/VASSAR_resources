@@ -108,13 +108,13 @@
     (bind ?therm-cost (therm-cost-non-recurring ?thm))
     (bind ?pow-cost (eps-cost-non-recurring ?epsm ?p))
 
-    ;(printout t "Cost - NR" crlf)
-    ;(printout t "Str $" (* ?str-cost 1e3) crlf)
-    ;(printout t "Prop $" (* ?prop-cost 1e3) crlf)
-    ;(printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
-    ;(printout t "Comm $" (* ?comm-cost 1e3) crlf)
-    ;(printout t "Therm $" (* ?therm-cost 1e3) crlf)
-    ;(printout t "Power $" (* ?pow-cost 1e3) crlf)
+    (printout t "Cost - NR" crlf)
+    (printout t "Str $" (* ?str-cost 1e3) crlf)
+    (printout t "Prop $" (* ?prop-cost 1e3) crlf)
+    (printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
+    (printout t "Comm $" (* ?comm-cost 1e3) crlf)
+    (printout t "Therm $" (* ?therm-cost 1e3) crlf)
+    (printout t "Power $" (* ?pow-cost 1e3) crlf)
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (modify ?miss (bus-non-recurring-cost# ?cost) (str-cost-nr# ?str-cost) (prop-cost-nr# ?prop-cost) (adcs-cost-nr# ?adcs-cost)
@@ -176,13 +176,13 @@
     (bind ?therm-cost (therm-cost-recurring ?thm))
     (bind ?pow-cost (eps-cost-recurring ?epsm ?p))
 
-    ;(printout t "Cost - Rec" crlf)
-    ;(printout t "Str $" (* ?str-cost 1e3) crlf)
-    ;(printout t "Prop $" (* ?prop-cost 1e3) crlf)
-    ;(printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
-    ;(printout t "Comm $" (* ?comm-cost 1e3) crlf)
-    ;(printout t "Therm $" (* ?therm-cost 1e3) crlf)
-    ;(printout t "Power $" (* ?pow-cost 1e3) crlf)
+    (printout t "Cost - Rec" crlf)
+    (printout t "Str $" (* ?str-cost 1e3) crlf)
+    (printout t "Prop $" (* ?prop-cost 1e3) crlf)
+    (printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
+    (printout t "Comm $" (* ?comm-cost 1e3) crlf)
+    (printout t "Therm $" (* ?therm-cost 1e3) crlf)
+    (printout t "Power $" (* ?pow-cost 1e3) crlf)
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (modify ?miss (bus-recurring-cost# ?cost) (str-cost# ?str-cost) (prop-cost# ?prop-cost) (adcs-cost# ?adcs-cost)
@@ -224,11 +224,12 @@
     )
 
     (deffunction eps-cost-recurring (?epsm ?p)
-      (printout t "EOL Power: " ?p crlf)
-
+      ;(printout t "BOL Power: " ?p crlf)
+      ; relations from 3rd edition of SMAD
       (if (< ?epsm (* 0.75 31)) then (return (+ 131 (* 401 (** ?p 0.452))))
         else (return (* 112 (** ?epsm 0.763)))
       )
+
     )
 
 (defrule COST-ESTIMATION::cubesat-12U-cost
@@ -260,7 +261,7 @@
     (bind ?spacecraft (+ ?bus (* ?payl 0.4)))
     (bind ?sat (+ ?spacecraftnr ?spacecraft))
 
-    ;(printout t crlf "Spacecraft Cost $" (* (+ ?busnr ?bus) 1e3) crlf)
+    (printout t crlf "Spacecraft Cost $" (* (+ ?busnr ?bus) 1e3) crlf)
 
     (modify ?miss (spacecraft-non-recurring-cost# ?spacecraftnr)
          (spacecraft-recurring-cost# ?spacecraft) (bus-cost# (+ ?busnr ?bus)) (satellite-cost# ?sat))
