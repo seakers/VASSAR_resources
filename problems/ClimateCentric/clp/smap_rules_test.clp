@@ -131,7 +131,7 @@
     "If we manifest the SMAP radar, radiometer, or both, then we need to 
     manifest the share dish"
     (declare (salience 100))
-    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
+    ?miss <- (MANIFEST::Satellite (instruments $?list-of-instruments))
     (test (eq (contains$ ?list-of-instruments SMAP_ANT) FALSE))
     (test (eq (contains$ ?list-of-instruments SMAP_MWR) TRUE))
     
@@ -145,7 +145,7 @@
 (defrule MANIFEST0::SMAP-add-common-dish-to-RAD
     "If we manifest the SMAP radar, radiometer, or both, then we need to manifest the share dish"
 	(declare (salience 100))
-    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
+    ?miss <- (MANIFEST::Satellite (instruments $?list-of-instruments))
 	(test (eq (contains$ ?list-of-instruments SMAP_ANT) FALSE))
     (test (eq (contains$ ?list-of-instruments SMAP_RAD) TRUE))
     ;(test (eq (subsetp (create$ SMAP_MWR) ?list-of-instruments) TRUE))
@@ -425,7 +425,7 @@
 
 (defrule MANIFEST::put-ADCS-values-by-default
 "Use values  by default for satellite parameters"
-?miss <- (MANIFEST::Mission  (ADCS-requirement nil))
+?miss <- (MANIFEST::Satellite  (ADCS-requirement nil))
 =>
 (modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)
  (propellant-injection hydrazine) (slew-angle 2.0)

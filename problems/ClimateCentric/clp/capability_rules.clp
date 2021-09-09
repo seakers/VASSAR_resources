@@ -82,7 +82,7 @@
     (declare (salience 10))
     ?l1 <- (CAPABILITIES::can-measure (instrument ?ins1) (in-orbit ?miss) (can-take-measurements yes) (data-rate-duty-cycle# nil) (factHistory ?fh1))
     ?i1 <- (CAPABILITIES::Manifested-instrument (Name ?ins1&~nil) (flies-in ?miss&~nil) (factHistory ?fh2))
-    ?sub <- (MANIFEST::Mission  (Name ?miss) (sat-data-rate-per-orbit# ?rbo&~nil) (factHistory ?fh3))
+    ?sub <- (MANIFEST::Satellite  (Name ?miss) (sat-data-rate-per-orbit# ?rbo&~nil) (factHistory ?fh3))
     =>
     (bind ?dc (min 1.0 (/ (* 1 7 60 500 (/ 1 8192)) ?rbo))); you get 1 7' pass at 500Mbps max
     (modify ?l1 (data-rate-duty-cycle# ?dc) (reason "Cumulative spacecraft data rate cannot be downloaded to ground stations") (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::resource-limitations-datarate) " " ?fh1 " S" (call ?i1 getFactId) " S" (call ?sub getFactId) "}")))
@@ -94,7 +94,7 @@
     (declare (salience 10))
     ?l1 <- (CAPABILITIES::can-measure (instrument ?ins1) (in-orbit ?miss) (can-take-measurements yes) (power-duty-cycle# nil) (factHistory ?fh1))
 	?i1 <- (CAPABILITIES::Manifested-instrument (Name ?ins1&~nil) (flies-in ?miss&~nil) (factHistory ?fh2))
-    ?sub <- (MANIFEST::Mission  (satellite-BOL-power# ?pow&~nil) (factHistory ?fh3))
+    ?sub <- (MANIFEST::Satellite  (satellite-BOL-power# ?pow&~nil) (factHistory ?fh3))
     =>
     (bind ?dc (min 1.0 (/ 10000 ?pow)))
     (modify ?l1 (power-duty-cycle# ?dc) (reason "Cumulative spacecraft power exceeds 10kW") (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::resource-limitations-power) " " ?fh1 " S" (call ?i1 getFactId) " S" (call ?sub getFactId) "}")))

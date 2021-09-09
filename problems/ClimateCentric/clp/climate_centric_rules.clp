@@ -456,7 +456,7 @@
 
 (defrule MANIFEST::put-ADCS-values-by-default
 "Use values  by default for satellite parameters"
-?miss <- (MANIFEST::Mission  (ADCS-requirement nil) (factHistory ?fh))
+?miss <- (MANIFEST::Satellite  (ADCS-requirement nil) (factHistory ?fh))
 =>
 (modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)
  (propellant-injection hydrazine) (slew-angle 2.0) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::put-ADCS-values-by-default) " " ?fh "}"))

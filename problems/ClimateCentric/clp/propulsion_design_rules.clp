@@ -5,7 +5,7 @@
 
 (defrule MANIFEST::get-Isp-injection
     "This rule estimates the Isp injection from the type of propellant"
-    ?miss <- (MANIFEST::Mission (propellant-injection ?prop&~nil) (Isp-injection nil) (factHistory ?fh))
+    ?miss <- (MANIFEST::Satellite (propellant-injection ?prop&~nil) (Isp-injection nil) (factHistory ?fh))
     =>
     
     (modify ?miss (Isp-injection (get-prop-Isp ?prop)) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::get-Isp-injection) " " ?fh "}")))
@@ -13,7 +13,7 @@
 
 (defrule MANIFEST::get-Isp-ADCS
     "This rule estimates the Isp ADCS from the type of propellant"
-    ?miss <- (MANIFEST::Mission (propellant-ADCS ?prop&~nil) (Isp-ADCS nil) (factHistory ?fh))
+    ?miss <- (MANIFEST::Satellite (propellant-ADCS ?prop&~nil) (Isp-ADCS nil) (factHistory ?fh))
     =>
     
     (modify ?miss (Isp-ADCS (get-prop-Isp ?prop)) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::get-Isp-ADCS) " " ?fh "}")))
@@ -23,7 +23,7 @@
     "This rule computes the propellant mass necessary for the DeltaV 
     using the rocket equation and assuming a certain Isp."
     
-    ?miss <- (MANIFEST::Mission (satellite-dry-mass ?dry-mass&~nil) 
+    ?miss <- (MANIFEST::Satellite (satellite-dry-mass ?dry-mass&~nil) 
          (delta-V-injection ?dV-i&~nil) (delta-V ?dV&~nil)
         (Isp-injection ?Isp-i&~nil) (Isp-ADCS ?Isp-a&~nil) 
         (propellant-mass-injection nil) (propellant-mass-ADCS nil) (factHistory ?fh))
@@ -37,7 +37,7 @@
     "Computes dry AKM mass using rules of thumb: 
     94% of wet AKM mass is propellant, 6% motor"
     
-    ?miss <- (MANIFEST::Mission (propulsion-mass# nil) 
+    ?miss <- (MANIFEST::Satellite (propulsion-mass# nil) 
         (propellant-mass-injection ?m&~nil) (factHistory ?fh))
 
         =>

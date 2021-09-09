@@ -14,7 +14,7 @@
      Use a factor 4.0 from TDRS 7, in new SMAD page 952. Note that this rule and 
     import-bus-mass-from-DB are never applicable at the same time."
     
-    ?f <- (MANIFEST::Mission (bus nil) (bus-mass nil) (payload-mass# ?m&~nil) (factHistory ?fh))
+    ?f <- (MANIFEST::Satellite (bus nil) (bus-mass nil) (payload-mass# ?m&~nil) (factHistory ?fh))
     =>
     (bind ?bm (* 4.0 ?m))
     (modify ?f  (bus-mass ?bm) (factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-bus-mass-from-payload-mass) " " ?fh "}")))   
@@ -25,14 +25,14 @@
     "This rule computes the dry mass as the sum of bus and payload mass
     (including antennae mass)."
     
-    ?f <- (MANIFEST::Mission (satellite-dry-mass nil) (bus-mass ?bm&~nil) (payload-mass# ?m&~nil) (factHistory ?fh))
+    ?f <- (MANIFEST::Satellite (satellite-dry-mass nil) (bus-mass ?bm&~nil) (payload-mass# ?m&~nil) (factHistory ?fh))
     =>
     (modify ?f  (satellite-dry-mass (+ ?m ?bm))(factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-satellite-dry-mass) " " ?fh "}")))    
     )
 
 (defrule MANIFEST::calculate-satellite-payload-dimensions
     "This rule calculates the total payload dimensions of a satellite"
-    ?f <- (MANIFEST::Mission (instruments $?payls) (payload-dimensions $?pdims) (factHistory ?fh))
+    ?f <- (MANIFEST::Satellite (instruments $?payls) (payload-dimensions $?pdims) (factHistory ?fh))
     (test (eq (length$ ?pdims) 0))
     =>
     (bind ?dims (create$ 0.0 0.0 0.0))
@@ -56,7 +56,7 @@
 (defrule PRELIM-MASS-BUDGET::estimate-dimensions
     "Estimate dimensions assuming a perfect cube of size given 
     by average density, see SMAD page 337"
-    ?sat <- (MANIFEST::Mission (satellite-dry-mass ?m&~nil) 
+    ?sat <- (MANIFEST::Satellite (satellite-dry-mass ?m&~nil) 
         (satellite-dimensions $?dim&:(eq (length$ $?dim) 0)) (factHistory ?fh))
     
     =>
@@ -69,7 +69,7 @@
 	
 (defrule PRELIM-MASS-BUDGET::estimate-moments-of-inertia
     "Guess moments of inertia assuming a perfect box"
-    ?sat <- (MANIFEST::Mission (satellite-dry-mass ?m&~nil)
+    ?sat <- (MANIFEST::Satellite (satellite-dry-mass ?m&~nil)
 		(moments-of-inertia $?moi&:(= (length$ ?moi) 0))
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (factHistory ?fh))
     
@@ -93,7 +93,7 @@
 
 (defrule CLEAN2::clean
     (declare (no-loop TRUE))
-    ?sat <- (MANIFEST::Mission)
+    ?sat <- (MANIFEST::Satellite)
     =>
     (modify ?sat (satellite-dry-mass nil) (satellite-wet-mass nil) 
         (satellite-dimensions (create$ )) (moments-of-inertia (create$ )))
@@ -102,7 +102,7 @@
 
 (defrule CLEAN1::clean
     (declare (no-loop TRUE))
-    ?sat <- (MANIFEST::Mission)
+    ?sat <- (MANIFEST::Satellite)
     =>
     (modify ?sat (delta-V-ADCS nil) (satellite-BOL-power# nil)
         (delta-V-injection nil) (delta-V-drag nil) (delta-V-deorbit nil) (delta-V nil)
@@ -114,7 +114,7 @@
 
 (defrule UPDATE-MASS-BUDGET::update-dry-mass
     "Computes the sum of subsystem masses"
-    ?miss <- (MANIFEST::Mission (propulsion-mass# ?prop-mass&~nil) 
+    ?miss <- (MANIFEST::Satellite (propulsion-mass# ?prop-mass&~nil) 
         (structure-mass# ?struct-mass&~nil) (adapter-mass ?adap-mass&~nil)
         (avionics-mass# ?av-mass&~nil) (ADCS-mass# ?adcs-mass&~nil) 
         (EPS-mass# ?eps-mass&~nil) (thermal-mass# ?thermal-mass&~nil)
@@ -134,7 +134,7 @@
 (defrule UPDATE-MASS-BUDGET::update-dimensions
     "Estimate dimensions assuming a perfect cube of size given 
     by average density"
-    ?sat <- (MANIFEST::Mission (satellite-dry-mass ?m&~nil) (factHistory ?fh) (updated nil))
+    ?sat <- (MANIFEST::Satellite (satellite-dry-mass ?m&~nil) (factHistory ?fh) (updated nil))
     
     =>
    
@@ -147,7 +147,7 @@
 
 (defrule UPDATE-MASS-BUDGET::update-moments-of-inertia
     "Guess moments of inertia assuming a perfect box"
-    ?sat <- (MANIFEST::Mission (satellite-dry-mass ?m&~nil) 
+    ?sat <- (MANIFEST::Satellite (satellite-dry-mass ?m&~nil) 
         (solar-array-area ?Aa&~nil) (solar-array-mass ?msa&~nil)  
         (moments-of-inertia $?mom&:(eq (length$ $?mom) 0))
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (factHistory ?fh))
@@ -166,7 +166,7 @@
 
 (defquery MASS-BUDGET::get-mass-budget
     (declare (variables ?name))
-    ?miss <- (MANIFEST::Mission (Name ?name) (adapter-mass ?adap&~nil) (propulsion-mass# ?prop-mass&~nil) (structure-mass# ?struct-mass&~nil)
+    ?miss <- (MANIFEST::Satellite (Name ?name) (adapter-mass ?adap&~nil) (propulsion-mass# ?prop-mass&~nil) (structure-mass# ?struct-mass&~nil)
         (avionics-mass# ?av-mass&~nil) (ADCS-mass# ?adcs-mass&~nil) (EPS-mass# ?eps-mass&~nil) (propellant-mass-injection ?mp1) (propellant-mass-ADCS ?mp2)
         (thermal-mass# ?thermal-mass&~nil) (payload-mass# ?payload&~nil) (satellite-dry-mass ?dry) (satellite-wet-mass ?wet) (satellite-launch-mass ?launch)
         )

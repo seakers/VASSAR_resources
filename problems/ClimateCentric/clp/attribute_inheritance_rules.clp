@@ -1,5 +1,5 @@
 ﻿;; *********************************
-;; Mission - mission inheritance
+;; Satellite - Satellite inheritance
 ;; *********************************
 
 (batch (str-cat ?*app_path* "/clp/orbit_rules.clp"))
@@ -111,7 +111,7 @@
 ; populate payload mass
 (defrule MANIFEST::populate-payload-mass
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (instruments $?payload) (payload-mass# nil) (factHistory ?fh))
+    ?miss <- (MANIFEST::Satellite (instruments $?payload) (payload-mass# nil) (factHistory ?fh))
     =>
     (bind ?m (compute-payload-mass $?payload))
     (modify ?miss (payload-mass# ?m) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::populate-payload-mass) " " ?fh "}")))
@@ -122,7 +122,7 @@
 ; populate payload power
 (defrule MANIFEST::populate-payload-power
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (instruments $?payload) (payload-power# nil) (factHistory ?fh))
+    ?miss <- (MANIFEST::Satellite (instruments $?payload) (payload-power# nil) (factHistory ?fh))
     =>
     (bind ?p (compute-payload-power $?payload))
     (modify ?miss (payload-power# ?p) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::populate-payload-power) " " ?fh "}")))
@@ -130,7 +130,7 @@
 
 (defrule MANIFEST::populate-payload-peak-power
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (instruments $?payload) (payload-peak-power# nil) (factHistory ?fh))
+    ?miss <- (MANIFEST::Satellite (instruments $?payload) (payload-peak-power# nil) (factHistory ?fh))
     =>
     (bind ?peak (compute-payload-peak-power $?payload))
     (modify ?miss (payload-peak-power# ?peak)(factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::populate-payload-peak-power) " " ?fh "}"))))
@@ -138,7 +138,7 @@
 ; populate payload data rate
 (defrule MANIFEST::populate-payload-data-rate
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (instruments $?payload) (orbit-period# ?P&~nil) (payload-data-rate# nil) (factHistory ?fh))
+    ?miss <- (MANIFEST::Satellite (instruments $?payload) (orbit-period# ?P&~nil) (payload-data-rate# nil) (factHistory ?fh))
     =>
     (bind ?rb (compute-payload-data-rate $?payload))
     (bind ?rbo (/ (* ?rb 1.2 ?P) (* 1024 8))); (GByte/orbit) 20% overhead
@@ -148,7 +148,7 @@
 ; populate payload dimensions
 (defrule MANIFEST::populate-payload-dimensions
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (instruments $?payload) (payload-dimensions# $?pd) (factHistory ?fh))
+    ?miss <- (MANIFEST::Satellite (instruments $?payload) (payload-dimensions# $?pd) (factHistory ?fh))
     (test (eq (length$ ?pd) 0))
     =>
     (bind ?dim (compute-payload-dimensions ?payload))
@@ -156,13 +156,13 @@
     )
 
 ;; **********************************
-;; Mission ==> Instrument inheritance (control)
+;; Satellite ==> Instrument inheritance (control)
 ;; **********************************
 
 (defrule MANIFEST0::assert-manifested-instruments
     (declare (salience 20))
 
-    ?miss <- (MANIFEST::Mission (Name ?name) (mission-architecture ?arch) (num-of-planes# ?nplanes) (num-of-sats-per-plane# ?nsats) (orbit-altitude# ?h) (orbit-inclination ?inc) (instruments $?list-of-instruments))
+    ?miss <- (MANIFEST::Satellite (Name ?name) (mission-architecture ?arch) (num-of-planes# ?nplanes) (num-of-sats-per-plane# ?nsats) (orbit-altitude# ?h) (orbit-inclination ?inc) (instruments $?list-of-instruments))
     
        =>
     (foreach ?x $?list-of-instruments (assert (CAPABILITIES::Manifested-instrument (Name ?x) (flies-in ?name)  (mission-architecture ?arch) (num-of-planes# ?nplanes) (num-of-sats-per-plane# ?nsats) (num-of-planes# ?nplanes) (orbit-altitude# ?h) (orbit-inclination ?inc) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST2::assert-manifested-instruments) " A" (call ?miss getFactId) "}")))))
@@ -171,7 +171,7 @@
 
 
 ;; **********************************
-;; Mission ==> Instrument inheritance (calculated attributes)
+;; Satellite ==> Instrument inheritance (calculated attributes)
 ;; **********************************
 
 (defrule MANIFEST::get-instrument-spectral-bands-from-database
@@ -423,8 +423,8 @@
 
 
 ;; ****************
-;; Rules for synthesis of alternative mission architectures trading accuracy for spatial resolution,
-;; temporal resolution, or vertical spatial resolution. All these missions will be declared, and
+;; Rules for synthesis of alternative Satellite architectures trading accuracy for spatial resolution,
+;; temporal resolution, or vertical spatial resolution. All these Satellites will be declared, and
 ;; rules can be added so that only one of each can be selected
 (defrule CAPABILITIES-UPDATE::basic-diurnal-cycle
 ?meas<- (REQUIREMENTS::Measurement (diurnal-cycle nil) (orbit-inclination ?inc&~nil) (orbit-RAAN ?raan&~nil) (factHistory ?fh))
