@@ -3,6 +3,7 @@ import os
 from models_arch.base import DeclarativeBase
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker, mapper
+from sqlalchemy.dialects import postgresql
 from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Time, Enum, ForeignKey, Table, CheckConstraint, Boolean, ARRAY, and_
 import pandas as pd
 
@@ -779,6 +780,17 @@ class ObjectiveScoreExplanation(DeclarativeBase):
     architecture_id = Column('architecture_id', Integer, ForeignKey('Architecture.id'))
     subobjective_id = Column('subobjective_id', Integer, ForeignKey('Stakeholder_Needs_Subobjective.id'))
     satisfaction = Column('satisfaction', Float)
+
+class SubobjectiveScoreExplanation(DeclarativeBase):
+    """Explanations for the science scopre of a subobjective"""
+    __tablename__ = 'SubobjectiveScoreExplanation'
+    id = Column(Integer, primary_key=True)
+    architecture_id = Column('architecture_id', Integer, ForeignKey('Architecture.id'))
+    subobjective_id = Column('subobjective_id', Integer, ForeignKey('Stakeholder_Needs_Subobjective.id'))
+    measurement_attribute_values = Column('measurement_attribute_values', postgresql.JSONB)
+    score = Column('score', Float)
+    taken_by = Column('taken_by', String)
+    justifications = Column('justifications', postgresql.JSONB)
 
 
  #  _                     _
