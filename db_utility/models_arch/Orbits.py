@@ -51,13 +51,15 @@ class Orbits:
             'SSO-800-SSO-DD'
         ]
 
-
+        # GROUP ORBITS
         for orb in self.orbits:
             self.client.index_orbit(orb)
+
+        # PROBLEM ORBITS
         for problem, path in self.files:
             df = pd.read_excel(path, 'Power', header=0)
             for index, row in df.iterrows():
-                if (problem == 'SMAP' or problem == 'Decadal2007' or problem == 'Decadal2017Aerosols') and row[0] not in smap_orbit_list:
+                if (problem in ['SMAP', 'SMAP_JPL1', 'SMAP_JPL2']) and row[0] not in smap_orbit_list:
                     continue
                 self.client.index_problem_orbit(
                     self.client.get_problem_id(problem),

@@ -66,9 +66,11 @@ class Instruments:
             'BIOMASS'
         ]
 
-        # INSTRUMENTS
+        # GROUP INSTRUMENTS
         for instr in self.instruments:
             self.client.index_instrument(instr)
+
+        # PROBLEM INSTRUMENTS
         for problem, path in self.files:
             problem_insts = xlrd.open_workbook(path).sheet_names()
             problem_insts.remove('del')
@@ -77,7 +79,7 @@ class Instruments:
                 problem_insts.remove('CHARACTERISTICS_old')
             for inst in problem_insts:
                 if inst in self.insts_true:
-                    if problem == 'SMAP' and inst not in smap_insts:
+                    if (problem in ['SMAP', 'SMAP_JPL1', 'SMAP_JPL2']) and inst not in smap_insts:
                         continue
                     self.client.index_problem_instrument(
                         self.client.get_problem_id(problem),

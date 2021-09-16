@@ -232,9 +232,7 @@ class Client:
         self.session.commit()
         return entry.id
 
-
-    def index_requirement_rule_attribute(self, problem_id, subobjective_id, measurement_id, measurement_attribute_id,
-                                         type, thresholds, scores, justification):
+    def index_requirement_rule_attribute(self, problem_id, subobjective_id, measurement_id, measurement_attribute_id, type, thresholds, scores, justification):
         entry = Requirement_Rule_Attribute(problem_id=problem_id, subobjective_id=subobjective_id,
                                            measurement_id=measurement_id,
                                            measurement_attribute_id=measurement_attribute_id, type=type,
@@ -243,8 +241,7 @@ class Client:
         self.session.commit()
         return entry.id
 
-    def index_requirement_rule_case(self, problem_id, subobjective_id, measurement_id, objective_id,
-                                    rule, value, text, description):
+    def index_requirement_rule_case(self, problem_id, subobjective_id, measurement_id, objective_id, rule, value, text, description):
         entry = Requirement_Rule_Case(problem_id=problem_id, subobjective_id=subobjective_id,
                                       measurement_id=measurement_id, objective_id=objective_id,
                                       rule=rule, value=value, text=text, description=description)
@@ -258,7 +255,6 @@ class Client:
         self.session.add(entry)
         self.session.commit()
         return entry.id
-
 
     def index_stakeholder_panel(self, problem_id, name, description, weight, index_id):
         entry = Stakeholder_Needs_Panel(problem_id=problem_id, name=name, description=description, weight=weight, index_id=index_id)
