@@ -1,9 +1,3 @@
-;(require* modules "C:\\Users\\dani\\Documents\\My Dropbox\\Marc - Dani\\SCAN\\clp\\modules.clp")
-;(require* templates "C:\\Users\\dani\\Documents\\My Dropbox\\Marc - Dani\\SCAN\\clp\\templates.clp")
-;(require* more-templates "C:\\Users\\dani\\Documents\\My Dropbox\\Marc - Dani\\SCAN\\clp\\more_templates.clp")
-;(require* functions "C:\\Users\\dani\\Documents\\My Dropbox\\Marc - Dani\\SCAN\\clp\\functions.clp")
-
-
 ; ******************************************
 ;                  ADCS DESIGN
 ;                    (4 rules)
@@ -18,42 +12,51 @@
     (modify ?sat (ADCS-type ?typ) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::set-ADCS-type) " " ?fh "}")))
     )
 
-(defrule MASS-BUDGET::estimate-drag-coefficient
+(defrule MASS-BUDGET::estimate-drag-coefficient ; TODO remove from Mission Manifest?
     ?sat <- (MANIFEST::Mission (drag-coefficient nil) (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (factHistory ?fh))
     =>
     (modify ?sat (drag-coefficient (estimate-drag-coeff $?dim)) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::estimate-drag-coefficient) " " ?fh "}")))
     )
 
-(defrule MASS-BUDGET::estimate-residual-dipole
+(defrule MASS-BUDGET::estimate-residual-dipole ; TODO remove from Mission Manifest?
     " Anywhere between 0.1 and 20Am^2, 1Am2 for small satellite"
     ?sat <- (MANIFEST::Mission (residual-dipole nil) (factHistory ?fh))
     =>
-    (modify ?sat (residual-dipole 5.0) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::estimate-residual-dipole) " " ?fh "}")))
+    (modify ?sat (residual-dipole 5.0) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::estimate-residual-dipole) " " ?fh "}"))) ; TODO this just randomly sets it to 5???
     )
 
-(defrule MASS-BUDGET::design-ADCS
+(defrule MASS-BUDGET::design-ADCS ; TODO add to RULES.md
     ?sat <- (MANIFEST::Mission (ADCS-requirement ?req&~nil) (satellite-dry-mass ?dry-mass&~nil)
         (moments-of-inertia $?mom&:(> (length$ $?mom) 0)) (orbit-semimajor-axis ?a&~nil)
         (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil)
-        (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil)
+        (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil) (slew-rate ?slew-rate)
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0))
-        (lifetime ?life&~nil)
-        (ADCS-mass# nil) (payload-mass# ?m&~nil&:(> ?m 10)) (factHistory ?fh))
+        (ADCS-mass# nil) (factHistory ?fh))
     =>
     (bind ?Iy (nth$ 2 $?mom)) (bind ?Iz (nth$ 3 $?mom))
     (bind ?x (nth$ 1 $?dim)) (bind ?y (nth$ 2 $?dim)) (bind ?z (nth$ 3 $?dim))
     (bind ?As (* ?x ?y))
     (bind ?cpscg (* 0.2 ?x)) (bind ?cpacg (* 0.2 ?x))
     (bind ?q 0.6)
+    (if (neq ?slew-rate nil) then
+        (bind ?slew-momentum (calculate-slew-momentum ?Iy ?Iz ?slew-rate))
+     else
+        (bind ?slew-momentum 0)
+    )
+    ;(bind ?slew-momentum (calculate-slew-momentum ?Iy ?Iz ?slew-rate))
+    ;(printout t "Iy: " ?Iy ", Iz: " ?Iz crlf)
+    ;(printout t "slew momentum: " ?slew-momentum crlf)
     (bind ?torque (max-disturbance-torque
             ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q))
-    (bind ?ctrl-mass (estimate-att-ctrl-mass (compute-RW-momentum ?torque ?a) ?life))
-    (bind ?det-mass (estimate-att-det-mass ?req))
+    ;(printout t "disturbance momentum: " (compute-RW-momentum ?torque ?a) crlf)
+    (bind ?mom (max (compute-RW-momentum ?torque ?a) ?slew-momentum))
+    (bind ?ctrl-mass (estimate-att-ctrl-mass ?mom))
+    (bind ?det-mass (estimate-att-det-mass ?req ?dry-mass))
     (bind ?el-mass (+ (* 4 ?ctrl-mass) (* 3 ?det-mass)))
     (bind ?str-mass (* 0.01 ?dry-mass));
     (bind ?adcs-mass (+ ?el-mass ?str-mass))
 
-    ;(+ (/ (* (- y2 y1) (- x x1)) (- x2 x1)) y1)
+    ;(+ (/ (* (- y2 y1) (- x x1)) (- x2 x1)) y1) TODO figure out where these came from
     (bind ?ctrl-pow (+ (/ (* (- 200 0) (- ?ctrl-mass 0.0)) (- 15 0)) 0) )
     (bind ?det-pow (+ (/ (* (- 3 0) (- ?ctrl-mass 0.1)) (- 2 0.1)) 0))
     (bind ?el-pow 0.0)
@@ -63,15 +66,6 @@
     ;(printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
     ;(printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
     (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
-    )
-
-(defrule MASS-BUDGET::design-ADCS-cubesat
-    ?sat <- (MANIFEST::Mission (payload-mass# ?m&~nil&:(<= ?m 10)) (ADCS-mass# nil) (factHistory ?fh))
-    =>
-    (bind ?adcs-mass 3.0)
-    (bind ?adcs-pow 1.0)
-    ;(printout t "cubesat ADCS" crlf)
-    (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS-cubesat) " " ?fh "}")))
     )
 
 
@@ -130,6 +124,11 @@
             (compute-disturbances ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q)))
     )
 
+(deffunction calculate-slew-momentum (?Iy ?Iz ?sr)
+    (bind ?I (max ?Iy ?Iz))
+    (return (* ?I ?sr))
+    )
+
 (deffunction compute-RW-momentum (?Td ?a)
     "This function computes the momentum storage capacity that a RW
     needs to have to compensate for a permanent sinusoidal disturbance torque
@@ -138,29 +137,10 @@
     (return (* (/ 1 (sqrt 2)) ?Td 0.25 (orbit-period ?a)))
     )
 
-(deffunction adcs-reliability (?life)
-    "This function estimates the adcs reliability as a function of the satellite lifetime
-    based on work of Joseph H. Saleh doi:10.1016/j.ress.2009.05.004"
-    (return (** (e) (** (/ (* ?life 365) 3831) 0.7182)))
-    )
-
-(deffunction ctrl-redundancy (?life)
-    "This function uses the reliability of the ADCS subsystem based on the work of Joseph H. Saleh
-    and solves for the number of redundant RW.  doi:10.1016/j.ress.2009.05.004"
-    (return (/ (log .95) (* -1 (** (/ (* ?life 365) 3831) 0.7182))))
-    )
-
-(deffunction estimate-att-ctrl-mass (?h ?life)
+(deffunction estimate-att-ctrl-mass (?h)
     "This function estimates the mass of a RW from its momentum storage capacity.
-    It also takes into account required redundancy from estimated reliability."
-
-    (if (< ?h 10) then (return (* (ctrl-redundancy ?life) (+ 2 (* 0.4 ?h))))); (regular+redundant)*SMAD RW mass estimate
-    (if (< ?h 100) then (return (* (ctrl-redundancy ?life) (+ 5 (* 0.1 ?h)))))
-    )
-
-(deffunction estimate-RW-power (?T)
-    "This function estimates the power of a RW from its torque authority"
-    (return (* 200 ?T))
+    It can also be used to estimate the mass of an attitude control system"
+    (return (* 1.5 (** ?h 0.6)))
     )
 
 (deffunction moment-of-inertia (?k ?m ?r)
@@ -171,39 +151,14 @@
     (return (map (lambda (?r) (return (moment-of-inertia (/ 1 6) ?m ?r))) ?dims))
     )
 
-(deffunction box-panels-moment-of-inertia (?m ?dims ?sam ?saa)
-    (printout t "We in here" crlf)
-    ; Assume that solar panels are extended along the y axis
-    (bind ?x (nth$ 1 ?dims))
-    (bind ?y (nth$ 2 ?dims))
-    (bind ?z (nth$ 3 ?dims))
-    (bind ?msat (- ?m ?sam)) ; subtract solar panel mass from sat mass for accuracy
-    (bind ?mp (/ ?sam 2)) ; 1 panel is half of solar array mass
-    (bind ?d (+ (/ (sqrt ?saa) 2) (/ ?y 2))) ; say that panel CM is half of sqrt of area plus half of y away from sat CM
-
-    ; Cuboid moments of inertia
-    (bind ?Ix (* (/ 1 12) ?msat (+ (** ?y 2) (** ?z 2))))
-    (bind ?Iy (* (/ 1 12) ?msat (+ (** ?x 2) (** ?z 2))))
-    (bind ?Iz (* (/ 1 12) ?msat (+ (** ?x 2) (** ?y 2))))
-
-    ; Adding solar panels
-    (bind ?Ix (+ ?Ix (* (/ 1 6) ?mp (** ?y 2)) (* 2 ?mp (** ?d 2))))
-    (bind ?Iy (+ ?Iy (* (/ 1 6) ?mp (** ?y 2))))
-    (bind ?Iz (+ ?Iz (* (/ 1 6) ?mp (+ (** ?x 2) (** ?y 2))) (* 2 ?mp (** ?d 2))))
-    (return (create$ ?Ix ?Iy ?Iz))
-    )
-
-(deffunction estimate-att-det-mass (?acc)
+(deffunction estimate-att-det-mass (?acc ?m)
     " This function estimates the mass of the sensor required for attitude determination
     from its knowledge accuracy requirement. It is based on data from BAll Aerospace,
     Honeywell, and SMAD chapter 10 page 327"
+    ;(printout t "Pointing Accuracy Req " ?acc " " ?m crlf)
 
-    (return (* 1 (** ?acc -0.316)))
-    )
+    ;(return (* (/ 1 3) (** ?acc -0.316)))
 
-(deffunction get-star-tracker-mass (?req)
-    (if (< ?req 0.1) then (return 24.5)); Ball HAST
-    (if (< ?req 3) then (return 9.5)); Ball CT-602
-    (if (< ?req 5) then (return 6.5)); Ball CT-633
-    (if (< ?req 52) then (return 3.2)); Ball HAST
+    (if (<= ?m 30) then (return (* 1 (** 0.5 -0.316))) );
+    (if (> ?m 30) then (return (* 1 (** ?acc -0.316))) );
     )

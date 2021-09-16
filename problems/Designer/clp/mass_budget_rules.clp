@@ -77,16 +77,15 @@
 
 
 
-(defrule MASS-BUDGET::estimate-moments-of-inertia
+(defrule PRELIM-MASS-BUDGET::estimate-moments-of-inertia
     "Guess moments of inertia assuming a perfect box"
     ?sat <- (MANIFEST::Mission (satellite-dry-mass ?m&~nil)
 		(moments-of-inertia $?moi&:(= (length$ ?moi) 0))
-        (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (solar-array-mass ?sam&~nil)
-        (solar-array-area ?saa&~nil) (factHistory ?fh))
+        (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (factHistory ?fh))
 
     =>
     (printout t "XD" crlf)
-    (modify ?sat (moments-of-inertia (box-panels-moment-of-inertia ?m $?dim ?sam ?saa))(factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-moments-of-inertia) " " ?fh "}")))
+    (modify ?sat (moments-of-inertia (box-moment-of-inertia ?m $?dim))(factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-moments-of-inertia) " " ?fh "}")))
     )
 
 
@@ -179,7 +178,7 @@
     (bind ?Ix (* 0.01 (** ?m (/ 5 3))))
     (bind ?Iz (+ ?Ix (* ?msa (** ?La 2))))
     (bind ?moments (create$ ?Ix ?Ix ?Iz))
-    (modify ?sat (moments-of-inertia ?moments) (factHistory (str-cat "{R" (?*rulesMap* get UPDATE-MASS-BUDGET::update-moments-of-inertia) " " ?fh "}")))
+    (modify ?sat (moments-of-inertia (box-panels-moment-of-inertia ?m $?dim ?msa ?Aa)) (factHistory (str-cat "{R" (?*rulesMap* get UPDATE-MASS-BUDGET::update-moments-of-inertia) " " ?fh "}")))
     )
 
 ; *********** Supporting queries and functions
