@@ -8,7 +8,7 @@
 ;                  ADCS DESIGN
 ;                    (4 rules)
 ; ******************************************
- 
+
 (defrule MASS-BUDGET::set-ADCS-type
     ?sat <- (MANIFEST::Mission (ADCS-requirement ?adcs&~nil) (ADCS-type nil)  (factHistory ?fh))
     =>
@@ -32,9 +32,9 @@
     )
 
 (defrule MASS-BUDGET::design-ADCS
-    ?sat <- (MANIFEST::Mission (ADCS-requirement ?req&~nil) (satellite-dry-mass ?dry-mass&~nil) 
+    ?sat <- (MANIFEST::Mission (ADCS-requirement ?req&~nil) (satellite-dry-mass ?dry-mass&~nil)
         (moments-of-inertia $?mom&:(> (length$ $?mom) 0)) (orbit-semimajor-axis ?a&~nil)
-        (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil)  
+        (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil)
         (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil)
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0))
         (ADCS-mass# nil) (factHistory ?fh))
@@ -44,12 +44,12 @@
     (bind ?As (* ?x ?y))
     (bind ?cpscg (* 0.2 ?x)) (bind ?cpacg (* 0.2 ?x))
     (bind ?q 0.6)
-    (bind ?torque (max-disturbance-torque 
+    (bind ?torque (max-disturbance-torque
             ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q))
     (bind ?ctrl-mass (estimate-att-ctrl-mass (compute-RW-momentum ?torque ?a)))
     (bind ?det-mass (estimate-att-det-mass ?req))
     (bind ?el-mass (+ (* 4 ?ctrl-mass) (* 3 ?det-mass)))
-    (bind ?str-mass (* 0.01 ?dry-mass)); 
+    (bind ?str-mass (* 0.01 ?dry-mass));
     (bind ?adcs-mass (+ ?el-mass ?str-mass))
     (modify ?sat (ADCS-mass# ?adcs-mass)(factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
     )
@@ -61,14 +61,14 @@
     "This function computes the gravity gradient disturbance torque.
     See SMAD page 367. Verified OK 9/18/12. "
     ; Tg = 3/2.*muE.*(1./R.^3).*(Iz-Iy).*sin(2.*theta.*Rad);
-    
+
     (return (* 1.5 3.986e14 (/ 1 (** ?a 3)) (- ?Iz ?Iy) (sin ?off-nadir)))
     )
 
 (deffunction aero-torque (?Cd ?As ?a ?cpacg)
     "This function computes the aerodynamic disturbance torque.
     See SMAD page 367. Verified OK 9/18/12."
-    ; 
+    ;
     (bind ?V (orbit-velocity ?a ?a))
     (bind ?rho (atmospheric-density (r-to-h ?a)))
     (return (* 0.5 ?rho ?As ?V ?V ?Cd ?cpacg))
@@ -87,11 +87,11 @@
     )
 
 (deffunction estimate-drag-coeff (?list)
-    "This function estimates the drag coefficient from the 
+    "This function estimates the drag coefficient from the
     dimensions of the satellite based on the article by Wallace et al
-    Refinements in the Determination of Satellite Drag Coefficients: 
+    Refinements in the Determination of Satellite Drag Coefficients:
     Method for Resolving Density Discrepancies"
-    
+
     (bind ?L-over-D (/ (max$ ?list) (min$ ?list)))
     (if (> ?L-over-D 3.0) then (return 3.3)
         else (return 2.2))
@@ -106,7 +106,7 @@
     )
 
 (deffunction max-disturbance-torque (?a ?off-nadir ?Iy ?Iz ?Cd  ?As ?cpacg ?cpscg ?sun-angle ?D ?q)
-    (return (max$ 
+    (return (max$
             (compute-disturbances ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q)))
     )
 
@@ -114,7 +114,7 @@
     "This function computes the momentum storage capacity that a RW
     needs to have to compensate for a permanent sinusoidal disturbance torque
     that accumulates over a 1/4 period"
-    
+
     (return (* (/ 1 (sqrt 2)) ?Td 0.25 (orbit-period ?a)))
     )
 
@@ -139,15 +139,15 @@
 
 (deffunction estimate-att-det-mass (?acc)
     " This function estimates the mass of the sensor required for attitude determination
-    from its knowledge accuracy requirement. It is based on data from BAll Aerospace, 
+    from its knowledge accuracy requirement. It is based on data from BAll Aerospace,
     Honeywell, and SMAD chapter 10 page 327"
-    
+
     (return (* 10 (** ?acc -0.316)))
     )
 
 (deffunction get-star-tracker-mass (?req)
-    (if (< ?req 0.1) then (return 24.5)); Ball HAST 
-    (if (< ?req 3) then (return 9.5)); Ball CT-602 
+    (if (< ?req 0.1) then (return 24.5)); Ball HAST
+    (if (< ?req 3) then (return 9.5)); Ball CT-602
     (if (< ?req 5) then (return 6.5)); Ball CT-633
-    (if (< ?req 52) then (return 3.2)); Ball HAST 
+    (if (< ?req 52) then (return 3.2)); Ball HAST
     )
