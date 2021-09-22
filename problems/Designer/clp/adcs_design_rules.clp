@@ -40,16 +40,19 @@
     (bind ?q 0.6)
     (if (neq ?slew-rate nil) then
         (bind ?slew-momentum (calculate-slew-momentum ?Iy ?Iz ?slew-rate))
+        (bind ?slew-torque (slew-torque ?Iy ?Iz 90 30)) ; 90 degrees, 30 seconds
      else
         (bind ?slew-momentum 0)
+        (bind ?slew-torque 0)
     )
     ;(bind ?slew-momentum (calculate-slew-momentum ?Iy ?Iz ?slew-rate))
     ;(printout t "Iy: " ?Iy ", Iz: " ?Iz crlf)
     ;(printout t "slew momentum: " ?slew-momentum crlf)
-    (bind ?torque (max-disturbance-torque
+    (bind ?dist-torque (max-disturbance-torque
             ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q))
     ;(printout t "disturbance momentum: " (compute-RW-momentum ?torque ?a) crlf)
-    (bind ?mom (max (compute-RW-momentum ?torque ?a) ?slew-momentum))
+    (bind ?mom (max (compute-RW-momentum ?dist-torque ?a) ?slew-momentum))
+    (bind ?torque (max ?slew-torque ?dist-torque))
     (bind ?ctrl-mass (estimate-att-ctrl-mass ?mom))
     (bind ?det-mass (estimate-att-det-mass ?req ?dry-mass))
     (bind ?el-mass (+ (* 4 ?ctrl-mass) (* 3 ?det-mass)))
@@ -62,6 +65,8 @@
     (bind ?el-pow 0.0)
     (bind ?str-pow 0.0)
     (bind ?adcs-pow (+ ?ctrl-pow ?det-pow ?el-pow ?str-pow))
+
+    (bind ?ctrl-pow (* 200.0 ?torque))
 
     ;(printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
     ;(printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
@@ -129,6 +134,11 @@
     (return (* ?I ?sr))
     )
 
+(deffunction slew-torque (?Iy ?Iz ?time ?deg)
+    (bind ?I (max ?Iy ?Iz))
+    (return (* 4 ?I ?deg 3.1415 (/ 1 180) (/ 1 (** 30 2))))
+    )
+
 (deffunction compute-RW-momentum (?Td ?a)
     "This function computes the momentum storage capacity that a RW
     needs to have to compensate for a permanent sinusoidal disturbance torque
@@ -149,6 +159,28 @@
 
 (deffunction box-moment-of-inertia (?m ?dims)
     (return (map (lambda (?r) (return (moment-of-inertia (/ 1 6) ?m ?r))) ?dims))
+    )
+
+(deffunction box-panels-moment-of-inertia (?m ?dims ?sam ?saa)
+    (printout t "We in here" crlf)
+    ; Assume that solar panels are extended along the y axis
+    (bind ?x (nth$ 1 ?dims))
+    (bind ?y (nth$ 2 ?dims))
+    (bind ?z (nth$ 3 ?dims))
+    (bind ?msat (- ?m ?sam)) ; subtract solar panel mass from sat mass for accuracy
+    (bind ?mp (/ ?sam 2)) ; 1 panel is half of solar array mass
+    (bind ?d (+ (/ (sqrt ?saa) 2) (/ ?y 2))) ; say that panel CM is half of sqrt of area plus half of y away from sat CM
+
+    ; Cuboid moments of inertia
+    (bind ?Ix (* (/ 1 12) ?msat (+ (** ?y 2) (** ?z 2))))
+    (bind ?Iy (* (/ 1 12) ?msat (+ (** ?x 2) (** ?z 2))))
+    (bind ?Iz (* (/ 1 12) ?msat (+ (** ?x 2) (** ?y 2))))
+
+    ; Adding solar panels
+    (bind ?Ix (+ ?Ix (* (/ 1 6) ?mp (** ?y 2)) (* 2 ?mp (** ?d 2))))
+    (bind ?Iy (+ ?Iy (* (/ 1 6) ?mp (** ?y 2))))
+    (bind ?Iz (+ ?Iz (* (/ 1 6) ?mp (+ (** ?x 2) (** ?y 2))) (* 2 ?mp (** ?d 2))))
+    (return (create$ ?Ix ?Iy ?Iz))
     )
 
 (deffunction estimate-att-det-mass (?acc ?m)
