@@ -36,6 +36,7 @@
 (defmodule UPDATE-MASS-BUDGET)
 (defmodule SAT-CONFIGURATION)
 (defmodule COST-ESTIMATION)
+(defmodule INFLATION)
 (defmodule PRECOMPUTE-SCIENCE)
 (defmodule HARD-CONSTRAINTS)
 (defmodule SEARCH-HEURISTICS)

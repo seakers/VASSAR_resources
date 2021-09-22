@@ -73,13 +73,13 @@
 
 (deffunction estimate-fraction-sunlight (?a)
     "Estimate fraction of sunlight based on circular orbit"
-	;(if (< ?a 7000000) then
-	;	(bind ?rho (Earth-subtend-angle ?a))
-	;	(bind ?Bs 25)
-	;	(bind ?phi (* 2 (acos (/ (cos ?rho) (cos ?Bs)))))
-	;	(return (- 1 (/ ?phi 360)))
-	;else (return 0.99))
-	return 0.99
+	(if (< ?a 7000000) then
+		(bind ?rho (Earth-subtend-angle ?a))
+		(bind ?Bs 25)
+		(bind ?phi (* 2 (acos (/ (cos ?rho) (cos ?Bs)))))
+		(return (- 1 (/ ?phi 360)))
+	else (return 0.99))
+	;return 0.99
     )
 
 (deffunction get-orbit-altitude (?orbit-str)
