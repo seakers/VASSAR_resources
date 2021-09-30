@@ -101,9 +101,12 @@ class Instruments:
                     measurement_name = self.get_measurement_name(row[1])
                     meas_id = None
                     if self.client.does_meas_exist(measurement_name) is None:
+                        # Index: Measurement
                         meas_id = self.client.index_measurement(measurement_name)
                     else:
                         meas_id = self.client.get_measurement_id(measurement_name)
+
+                    # Index: Join__Instrument_Measurement
                     self.client.index_instrument_measurement(
                         meas_id,
                         self.client.get_instrument_id(sheet),
@@ -146,7 +149,8 @@ class Instruments:
                     self.client.index_instrument_characteristic(problem_id, instrument_id, instrument_attribute_id, value)
 
             # INSTRUMENT CAPABILITIES (measurement attribute values) DO NOT CHANGE ACROSS PROBLEMS, BUT ACROSS INSTRUMENTS
-            if problem == 'SMAP' or problem == 'Decadal2007' or problem == 'Decadal2017Aerosols':
+            # if problem == 'SMAP' or problem == 'Decadal2007' or problem == 'Decadal2017Aerosols':
+            if problem == 'SMAP' or problem == 'ClimateCentric':
                 xls = pd.ExcelFile(path)
                 sheets = xls.sheet_names
                 for sheet in sheets:
@@ -161,7 +165,6 @@ class Instruments:
                         for idx, col in enumerate(row):
                             if idx == 0 or idx == 1:
                                 continue
-                            print('------> DDDDD', col, sheet)
                             measurement_data = self.get_measurement_attribute_data(col)
                             measurement_attribute_id = measurement_data[0]
                             value = measurement_data[1]
