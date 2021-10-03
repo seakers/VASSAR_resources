@@ -16,6 +16,9 @@ class Architectures:
     def index(self):
         for problem in self.problems:
             if problem != "SMAP" and problem != "SMAP_JPL1" and problem != "SMAP_JPL2":
+                if problem in ["ClimateCentric", 'ClimateCentric_1', 'ClimateCentric_2']:
+                    problem_id = self.client.get_problem_id(problem)
+                    dataset_id = self.client.index_dataset("default", problem_id, None, None)
                 continue
             problem_id = self.client.get_problem_id(problem)
             dataset_id = self.client.index_dataset("default", problem_id, None, None)
