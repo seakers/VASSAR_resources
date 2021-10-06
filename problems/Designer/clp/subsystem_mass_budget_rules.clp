@@ -3,17 +3,16 @@
 ;;   4 rules
 ;; ***************
 
-; power
-
-;(batch ".\\clp\\eps_design_rules.clp")
-
-; avionics
+; avionics TODO make avionics_rules.clp
 (defrule MASS-BUDGET::design-avionics-subsystem
   "Computes avionics subsystem mass using rules of thumb"
   (declare (salience 10))
   ?miss <- (MANIFEST::Mission (avionics-mass# nil) (payload-mass# ?m&~nil&:(> ?m 15)) (payload-data-rate# ?bps&~nil) (factHistory ?fh))
   =>
 
+  ; SMAD 3rd ed, typical values Table 11-29
+  ; TODO include complexity as parameter, adjust CDH sizing accordingly
+  ; TODO look for CERs?
   (bind ?avionics-list (MatlabFunctions designAvionics ?bps 2 ?m))
   (bind ?av-mass (nth$ 1 ?avionics-list))
   (bind ?av-power (nth$ 6 ?avionics-list))
@@ -36,18 +35,19 @@
 )
 
 
-; comms-obdh
+; comms-obdh TODO make comms_design_rules.clp
 (defrule MASS-BUDGET::design-comms-subsystem
     "Computes comm subsystem mass using rules of thumb"
     (declare (salience 10))
     ?miss <- (MANIFEST::Mission (comm-OBDH-mass# nil) (satellite-dry-mass ?m&~nil) (payload-mass# ?pm&~nil&:(> ?pm 30)) (payload-data-rate# ?bps&~nil) (orbit-altitude# ?alt&~nil) (factHistory ?fh))
     =>
-
+    ; ?bps is in Mbps
     ;(printout t ?bps " " ?m " " ?alt crlf)
-    (bind ?obdh_list (MatlabFunctions designComs ?bps ?m ?alt))
+    (bind ?bps (+ ?bps (/ 8000 1e6))) ; SMAD 3rd ed Table 11-19 gives 8000 bps for telemetry and command
+    (bind ?obdh_list (MatlabFunctions designComms ?bps ?m ?alt))
     (bind ?obdh-mass (nth$ 1 ?obdh_list))
     (bind ?obdh-power (nth$ 2 ?obdh_list))
-    ;(printout t "Comms mass: " ?obdh-mass ", comms power: " ?obdh-power crlf)
+    ;(printout t ?obdh-mass " " ?obdh-power crlf)
     (modify ?miss (comm-OBDH-mass# ?obdh-mass) (comm-OBDH-power# ?obdh-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))
 )
 (defrule MASS-BUDGET::design-comms-subsystem-smallsat
@@ -70,7 +70,7 @@
 ; adcs
 ;(batch ".\\clp\\adcs_design_rules.clp")
 
-; thermal
+; thermal TODO make thermal_design_rules.clp
 (defrule MASS-BUDGET::design-thermal-subsystem
     "Computes thermal subsystem mass using rules of thumb"
     (declare (salience 10))
@@ -83,11 +83,7 @@
     (modify ?miss (thermal-mass# ?thermal-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-thermal-subsystem) " " ?fh "}")))
     )
 
-; propulsion
-
-;(batch ".\\clp\\propulsion_design_rules.clp")
-
-; structure
+; structure TODO make structure_design_rules.clp
 
 (defrule MASS-BUDGET::design-structure-subsystem
     "Computes structure subsystem mass using rules of thumb"
@@ -101,7 +97,7 @@
     (modify ?miss (structure-mass# ?struct-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-structure-subsystem) " " ?fh "}")))
     )
 
-; adapter
+; adapter TODO move to main mass budget file
 
 (defrule UPDATE-MASS-BUDGET::add-launch-adapter
     "Computes launch adapter mass as 1% of satellite dry mass"

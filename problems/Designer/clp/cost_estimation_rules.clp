@@ -169,6 +169,15 @@
         )
     (or (test (eq ?bus nil)) (test (eq ?bus dedicated-class)))
     =>
+    ;(printout t "Mass" crlf)
+    ;(printout t "Str " ?strm " kg" crlf)
+    ;(printout t "Prop " ?prm " kg" crlf)
+    ;(printout t "ADCS " ?adcm " kg" crlf)
+    ;(printout t "Comm " ?comm " kg" crlf)
+    ;(printout t "Therm " ?thm " kg" crlf)
+    ;(printout t "Power " ?epsm " kg" crlf)
+
+    ;Calls recurring cost estimation relations from SMAD 3rd Edition. If subsystem mass is under the range of validity for large satellite relations, small sat CERs are used
     (bind ?str-cost (str-cost-recurring ?strm))
     (bind ?prop-cost (prop-cost-recurring ?prm ?strm ?adcm ?comm ?thm ?epsm))
     (bind ?adcs-cost (adcs-cost-recurring ?adcm))
@@ -176,13 +185,14 @@
     (bind ?therm-cost (therm-cost-recurring ?thm))
     (bind ?pow-cost (eps-cost-recurring ?epsm ?p))
 
-    (printout t "Cost - Rec" crlf)
-    (printout t "Str $" (* ?str-cost 1e3) crlf)
-    (printout t "Prop $" (* ?prop-cost 1e3) crlf)
-    (printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
-    (printout t "Comm $" (* ?comm-cost 1e3) crlf)
-    (printout t "Therm $" (* ?therm-cost 1e3) crlf)
-    (printout t "Power $" (* ?pow-cost 1e3) crlf)
+    ;(printout t "Cost - Rec" crlf)
+    ;(printout t "Str $" (* ?str-cost 1e3) crlf)
+    ;(printout t "Prop $" (* ?prop-cost 1e3) crlf)
+    ;(printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
+    ;(printout t "Comm $" (* ?comm-cost 1e3) crlf)
+    ;(printout t "Therm $" (* ?therm-cost 1e3) crlf)
+    ;(printout t "Power $" (* ?pow-cost 1e3) crlf)
+    ; TODO same as above
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (modify ?miss (bus-recurring-cost# ?cost) (str-cost# ?str-cost) (prop-cost# ?prop-cost) (adcs-cost# ?adcs-cost)
@@ -257,8 +267,8 @@
         )
     (or (test (eq ?sbus nil)) (test (eq ?sbus dedicated-class)))
     =>
-    (bind ?spacecraftnr (+ ?busnr (* ?payl 0.6)))
-    (bind ?spacecraft (+ ?bus (* ?payl 0.4)))
+    (bind ?spacecraftnr (+ ?busnr (* ?payl 0.6))) ; TODO source?
+    (bind ?spacecraft (+ ?bus (* ?payl 0.4))) ; TODO source?
     (bind ?sat (+ ?spacecraftnr ?spacecraft))
 
     (printout t crlf "Spacecraft Cost $" (* (+ ?busnr ?bus) 1e3) crlf)
@@ -273,7 +283,7 @@
 ; ********************
 
 ; IA&T cost
-(defrule COST-ESTIMATION::estimate-integration-and-testing-cost
+(defrule COST-ESTIMATION::estimate-integration-and-testing-cost ; TODO sources
     "This rule estimates Integration, assembly and testing non recurring and cost using SMAD CERs"
     ?miss <- (MANIFEST::Mission (IAT-non-recurring-cost# nil) (IAT-recurring-cost# nil) (IAT-cost# nil)
         (spacecraft-non-recurring-cost# ?scnr&~nil) (satellite-dry-mass ?m&~nil&:(> ?m 24))
@@ -302,7 +312,7 @@
 ; ********************
 ; Program overhead cost (salience 0)
 ; ********************
-(defrule COST-ESTIMATION::estimate-program-overhead-cost
+(defrule COST-ESTIMATION::estimate-program-overhead-cost ; TODO sources
     "This rule estimates program overhead non recurring and cost using SMAD CERs"
     ?miss <- (MANIFEST::Mission (program-non-recurring-cost# nil) (program-recurring-cost# nil) (program-cost# nil)
         (spacecraft-non-recurring-cost# ?scnr&~nil) (spacecraft-recurring-cost# ?scr&~nil) (satellite-dry-mass ?m&~nil&:(> ?m 24))
@@ -521,7 +531,6 @@
                                 (prop-cost# ?prop&~nil) (adcs-cost# ?adcs&~nil) (comm-cost# ?comm&~nil)
                                 (therm-cost# ?therm&~nil) (eps-cost# ?eps&~nil) (launch-date ?ld&~nil))
     =>
-    (printout t 'AHHHHHHHHHHHHHHHHH' crlf)
     (bind ?miss-r (MatlabFunctions inflate ?miss-r 2000 ?ld))
     (bind ?miss-nr (MatlabFunctions inflate ?miss-nr 2000 ?ld))
     (bind ?lc (MatlabFunctions inflate ?lc 2000 ?ld))
@@ -576,6 +585,3 @@
         )
     (return (map (lambda (?x) (return (/ ?x 1000))) ?list))
     )
-;(defrule COST-ESTIMATION::estimate-programmatic-risk
-;    "This rule assesses programmatic risk from initial TRL of the instruments"
-;    )

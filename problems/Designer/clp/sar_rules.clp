@@ -1,3 +1,5 @@
+; TODO rewrite this whole file into general instrument_rules.clp
+
 ;; **********************
 ;; SAR EXAMPLE ENUMERATION RULES
 ;; ***************************

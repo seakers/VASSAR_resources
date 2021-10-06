@@ -1,5 +1,3 @@
-; TODO (MAJOR) rewrite all measurement parameters to common naming scheme (derived from OSCAR, maybe)
-
 ;; *****************
 ;; SYNERGY RULES (USED!)
 ;; *****************
@@ -90,17 +88,6 @@
 ;; Emergent measurements and data products
 ;; **********************
 
-(defrule SYNERGIES::seafloor-topography 
-    "Seafloor topography measurements can be inferred from sea level height and ocean mass distribution measurements"
-    ?slh <- (REQUIREMENTS::Measurement (Parameter "3.2.1 Sea level height") (Id ?id1))
-    ?grv <- (REQUIREMENTS::Measurement (Parameter "3.2.6 Ocean mass distribution") (Id ?id2))
-    (SYNERGIES::cross-registered (measurements $?m))
-    (test (member$ ?id1 $?m))
-    (test (member$ ?id2 $?m))
-       
-    =>
-    (duplicate ?slh (Id (str-cat ?id1 "-syn-" ?id2)) (Parameter "3.2.2 seafloor topography") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::seafloor-topography) " D" (call ?slh getFactId) " S" (call ?grv getFactId) "}"))  ))
-
 ;; river plumes and sediment fluxes from ocean color
 (defrule SYNERGIES::river-plumes-from-ocean-color "River plumes and sediment fluxes can be measured with an ocean color measurement of sufficient horizontal spatial resolution"
         ?oc <- (REQUIREMENTS::Measurement (Parameter "3.1.1 Ocean color - 410-680nm (Chlorophyll absorption and fluorescence, pigments, phytoplankton, CDOM)") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id1) (Temporal-resolution ?tr))
@@ -130,28 +117,6 @@
     (test (SameOrBetter Horizontal-Spatial-Resolution ?hsr Very-high-1-10m))
     =>
     (duplicate ?topo (Id (str-cat ?id1 "-syn")) (Parameter "2.6.4 hydrocarbon reservoir monitoring") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::flood-monitoring-from-hires-topography) " D" (call ?topo getFactId) "}"))))
-
-;; groundwater storage from gravity measurement
-(defrule SYNERGIES::groundwater-storage-from-gravity "Groundwater storage can be inferred from precise gravity measurements"
-        ?grav <- (REQUIREMENTS::Measurement (Parameter "5.1.1 Geoid and gravity field variations") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id1))
-    =>
-    (duplicate ?grav (Id (str-cat ?id1 "-syn")) (Parameter "2.7.3 groundwater storage") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::groundwater-storage-from-gravity) " D" (call ?grav getFactId) "}")) ))
-
-;; glacier mass balance from gravity measurement
-(defrule SYNERGIES::glacier-mass-balance-from-gravity "Glacier mass balance measurements can be inferred from precise gravity measurements using ice topography measurements"
-        ?grav <- (REQUIREMENTS::Measurement (Parameter "5.1.1 Geoid and gravity field variations") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (taken-by ?ins1) (Id ?id1))
-    	?topo <- (REQUIREMENTS::Measurement (Parameter "4.1.5 Ice Sheet topography") (Id ?id2) (taken-by ?ins2))
-    	(SYNERGIES::cross-registered (measurements $?m))
-    	(test (member$ ?id1 $?m))
-    	(test (member$ ?id2 $?m))
-    =>
-    (duplicate ?topo (Id (str-cat ?id1 "-syn" ?id2)) (taken-by (str-cat ?ins1 "-syn" ?ins2)) (Parameter "4.1.3 glacier mass balance")(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::glacier-mass-balance-from-gravity) " D" (call ?topo getFactId) " S" (call ?grav getFactId) "}"))))
-
-;; ocean mass distribution from gravity measurement
-(defrule SYNERGIES::ocean-mass-distribution-from-gravity "Ocean mass distribution can be inferred from precise gravity measurements"
-        ?grav <- (REQUIREMENTS::Measurement (Parameter "5.1.1 Geoid and gravity field variations") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id1))
-    =>
-    (duplicate ?grav (Id (str-cat ?id1 "-syn")) (Parameter "3.2.6 Ocean mass distribution") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::ocean-mass-distribution-from-gravity) " D" (call ?grav getFactId) ))))
 
 ; 1.8.16 Visible atmospheric plumes from aerosol measurement?
 (defrule SYNERGIES::visible-atmospheric-plume-from-aerosols "Visible atmospheric plumes can be measured from high temporal and spatial resolution multispectral aerosol measurements"
