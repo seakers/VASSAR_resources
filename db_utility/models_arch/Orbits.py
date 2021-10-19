@@ -51,6 +51,14 @@ class Orbits:
             'SSO-800-SSO-DD'
         ]
 
+        climate_centric_orbit_list = [
+                    'GEO-36000-equat-NA', 'LEO-275-polar-NA', 'LEO-400-polar-NA', 'LEO-600-polar-NA',
+                    'LEO-800-polar-NA', 'SSO-400-SSO-DD', 'SSO-400-SSO-AM', 'SSO-400-SSO-noon',
+                    'SSO-400-SSO-PM', 'SSO-600-SSO-DD', 'SSO-600-SSO-AM', 'SSO-600-SSO-noon',
+                    'SSO-600-SSO-PM', 'SSO-800-SSO-DD', 'SSO-800-SSO-AM', 'SSO-800-SSO-noon',
+                    'SSO-800-SSO-PM', 'LEO-275-equat-NA', 'SSO-1000-SSO-AM', 'LEO-600-equat-NA'
+        ]
+
         # GROUP ORBITS
         for orb in self.orbits:
             self.client.index_orbit(orb)
@@ -60,6 +68,8 @@ class Orbits:
             df = pd.read_excel(path, 'Power', header=0)
             for index, row in df.iterrows():
                 if (problem in ['SMAP', 'SMAP_JPL1', 'SMAP_JPL2']) and row[0] not in smap_orbit_list:
+                    continue
+                if (problem in ['ClimateCentric', 'ClimateCentric_1', 'ClimateCentric_2']) and row[0] not in climate_centric_orbit_list:
                     continue
                 self.client.index_problem_orbit(
                     self.client.get_problem_id(problem),

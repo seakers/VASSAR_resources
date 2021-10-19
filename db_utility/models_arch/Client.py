@@ -723,6 +723,11 @@ class Architecture(DeclarativeBase):
     eval_status = Column('eval_status', Boolean, default=True) # if false, arch needs to be re-evaluated
     critique = Column('critique', String)
 
+    ## ai4se
+    programmatic_risk = Column('programmatic_risk', Float)
+    fairness = Column('fairness', Float)
+    data_continuity = Column('data_continuity', Float)
+
 class ArchitectureCostInformation(DeclarativeBase):
     __tablename__ = 'ArchitectureCostInformation'
     id = Column(Integer, primary_key=True)
