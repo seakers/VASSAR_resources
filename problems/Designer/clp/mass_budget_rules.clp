@@ -84,7 +84,6 @@
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (factHistory ?fh))
 
     =>
-    (printout t "XD" crlf)
     (modify ?sat (moments-of-inertia (box-moment-of-inertia ?m $?dim))(factHistory (str-cat "{R" (?*rulesMap* get PRELIM-MASS-BUDGET::estimate-moments-of-inertia) " " ?fh "}")))
     )
 
@@ -134,15 +133,15 @@
 
     ;(printout t ?prop-mass " " ?struct-mass " " ?eps-mass " " ?adcs-mass " " ?av-mass " " ?payload " " ?thermal-mass " " ?comm-mass crlf)
     (bind ?sat-mass (+ ?prop-mass ?struct-mass ?eps-mass ?adcs-mass ?av-mass ?payload ?thermal-mass ?comm-mass)); dry mass
-    (printout t "Propulsion mass: " ?prop-mass crlf)
-    (printout t "EPS mass       : " ?eps-mass crlf)
-    (printout t "ADCS mass      : " ?adcs-mass crlf)
-    (printout t "Structure mass : " ?struct-mass crlf)
-    (printout t "Avionics mass  : " ?av-mass crlf)
-    (printout t "Payload mass   : " ?payload crlf)
-    (printout t "Thermal mass   : " ?thermal-mass crlf)
-    (printout t "Comms mass     : " ?comm-mass crlf)
-    (printout t "Total mass     : " ?sat-mass crlf)
+    ;(printout t "Propulsion mass: " ?prop-mass crlf)
+    ;(printout t "EPS mass       : " ?eps-mass crlf)
+    ;(printout t "ADCS mass      : " ?adcs-mass crlf)
+    ;(printout t "Structure mass : " ?struct-m(ass crlf)
+    ;(printout t "Avionics mass  : " ?av-mass crlf)
+    ;(printout t "Payload mass   : " ?payload crlf)
+    ;(printout t "Thermal mass   : " ?thermal-mass crlf)
+    ;(printout t "Comms mass     : " ?comm-mass crlf)
+    ;(printout t "Total mass     : " ?sat-mass crlf)
     (modify ?miss (satellite-dry-mass ?sat-mass)
         (satellite-wet-mass (+ ?sat-mass ?mp1 ?mp2))
         (satellite-launch-mass (+ ?sat-mass ?mp1 ?mp2)) (factHistory (str-cat "{R" (?*rulesMap* get UPDATE-MASS-BUDGET::update-dry-mass) " " ?fh "}"))

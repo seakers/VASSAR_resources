@@ -56,7 +56,7 @@
     ?miss <- (MANIFEST::Mission (payload-cost# nil) (instruments $?payload)
         )
     =>
-    (printout t "Instruments: " $?payload crlf)
+    ;(printout t "Instruments: " $?payload crlf)
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
 
     (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
@@ -108,13 +108,13 @@
     (bind ?therm-cost (therm-cost-non-recurring ?thm))
     (bind ?pow-cost (eps-cost-non-recurring ?epsm ?p))
 
-    (printout t "Cost - NR" crlf)
-    (printout t "Str $" (* ?str-cost 1e3) crlf)
-    (printout t "Prop $" (* ?prop-cost 1e3) crlf)
-    (printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
-    (printout t "Comm $" (* ?comm-cost 1e3) crlf)
-    (printout t "Therm $" (* ?therm-cost 1e3) crlf)
-    (printout t "Power $" (* ?pow-cost 1e3) crlf)
+    ;(printout t "Cost - NR" crlf)
+    ;(printout t "Str $" (* ?str-cost 1e3) crlf)
+    ;(printout t "Prop $" (* ?prop-cost 1e3) crlf)
+    ;(printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
+    ;(printout t "Comm $" (* ?comm-cost 1e3) crlf)
+    ;(printout t "Therm $" (* ?therm-cost 1e3) crlf)
+    ;(printout t "Power $" (* ?pow-cost 1e3) crlf)
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (modify ?miss (bus-non-recurring-cost# ?cost) (str-cost-nr# ?str-cost) (prop-cost-nr# ?prop-cost) (adcs-cost-nr# ?adcs-cost)
@@ -167,13 +167,13 @@
     (bind ?therm-cost (therm-cost-recurring ?thm))
     (bind ?pow-cost (eps-cost-recurring ?epsm ?p))
 
-    (printout t "Cost - Rec" crlf)
-    (printout t "Str $" (* ?str-cost 1e3) crlf)
-    (printout t "Prop $" (* ?prop-cost 1e3) crlf)
-    (printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
-    (printout t "Comm $" (* ?comm-cost 1e3) crlf)
-    (printout t "Therm $" (* ?therm-cost 1e3) crlf)
-    (printout t "Power $" (* ?pow-cost 1e3) crlf)
+    ;(printout t "Cost - Rec" crlf)
+    ;(printout t "Str $" (* ?str-cost 1e3) crlf)
+    ;(printout t "Prop $" (* ?prop-cost 1e3) crlf)
+    ;(printout t "ADCS $" (* ?adcs-cost 1e3) crlf)
+    ;(printout t "Comm $" (* ?comm-cost 1e3) crlf)
+    ;(printout t "Therm $" (* ?therm-cost 1e3) crlf)
+    ;(printout t "Power $" (* ?pow-cost 1e3) crlf)
 
     (bind ?cost (+ ?str-cost ?prop-cost ?adcs-cost ?comm-cost ?therm-cost ?pow-cost)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (modify ?miss (bus-recurring-cost# ?cost) (str-cost# ?str-cost) (prop-cost# ?prop-cost) (adcs-cost# ?adcs-cost)
@@ -187,7 +187,7 @@
     (deffunction prop-cost-recurring (?prm ?strm ?adcsm ?comm ?thm ?epsm)
       (bind ?busm (+ ?prm ?strm ?adcsm ?comm ?thm ?epsm))
 
-      (printout t "Dry Mass: " ?busm crlf)
+      ;(printout t "Dry Mass: " ?busm crlf)
 
       (if (< ?prm (* 0.75 81)) then (return (+ 65.6 (* 2.19 (** ?busm 1.261))))
         else (return (* 4.97 (** ?prm 0.823)))
@@ -244,7 +244,7 @@
     (bind ?spacecraft (+ ?bus (* ?payl 0.4)))
     (bind ?sat (+ ?spacecraftnr ?spacecraft))
 
-    (printout t crlf "Spacecraft Cost $" (* (+ ?busnr ?bus) 1e3) crlf)
+    ;(printout t crlf "Spacecraft Cost $" (* (+ ?busnr ?bus) 1e3) crlf)
 
     (modify ?miss (spacecraft-non-recurring-cost# ?spacecraftnr)
          (spacecraft-recurring-cost# ?spacecraft) (bus-cost# (+ ?busnr ?bus)) (satellite-cost# ?sat))

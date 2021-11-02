@@ -28,8 +28,8 @@
   =>
 
   (bind ?obdh-mass-coeff 0.0983)
-  ;(bind ?av-mass (* ?m ?obdh-mass-coeff))
-  ;(bind ?av-power 0)
+  (bind ?av-mass (* ?m ?obdh-mass-coeff))
+  (bind ?av-power 0)
 
   ;(printout t "avionics power: " ?av-power crlf)
   (modify ?miss (avionics-mass# ?av-mass) (avionics-power# ?av-power) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-avionics-subsystem) " " ?fh "}")))

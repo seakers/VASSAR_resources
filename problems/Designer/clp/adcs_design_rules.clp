@@ -162,7 +162,6 @@
     )
 
 (deffunction box-panels-moment-of-inertia (?m ?dims ?sam ?saa)
-    (printout t "We in here" crlf)
     ; Assume that solar panels are extended along the y axis
     (bind ?x (nth$ 1 ?dims))
     (bind ?y (nth$ 2 ?dims))
