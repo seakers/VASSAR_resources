@@ -28,7 +28,7 @@
 (defrule MASS-BUDGET::design-ADCS ; TODO add to RULES.md
     ?sat <- (MANIFEST::Mission (ADCS-requirement ?req&~nil) (satellite-dry-mass ?dry-mass&~nil)
         (moments-of-inertia $?mom&:(> (length$ $?mom) 0)) (orbit-semimajor-axis ?a&~nil)
-        (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil)
+        (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil) (payload-mass# ?m&~nil&:(> ?m 15))
         (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil) (slew-rate ?slew-rate)
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0))
         (ADCS-mass# nil) (factHistory ?fh))
@@ -70,6 +70,19 @@
 
     ;(printout t "adcs mass: " ?ctrl-mass " " ?det-mass " " ?el-mass " " ?str-mass " " ?adcs-mass crlf)
     ;(printout t "adcs power: " ?ctrl-pow " " ?det-pow " " ?adcs-pow crlf)
+    (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
+    )
+
+(defrule MASS-BUDGET::design-ADCS-smallsat ; TODO add to RULES.md
+    ?sat <- (MANIFEST::Mission (ADCS-requirement ?req&~nil) (satellite-dry-mass ?dry-mass&~nil)
+        (moments-of-inertia $?mom&:(> (length$ $?mom) 0)) (orbit-semimajor-axis ?a&~nil)
+        (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil) (payload-mass# ?m&~nil&:(<= ?m 15))
+        (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil) (slew-rate ?slew-rate)
+        (satellite-dimensions $?dim&:(> (length$ $?dim) 0))
+        (ADCS-mass# nil) (factHistory ?fh))
+    =>
+    (bind ?adcs-mass 0.855) ; BCT XACT-15
+    (bind ?adcs-pow 10) ; source: idk
     (modify ?sat (ADCS-mass# ?adcs-mass) (ADCS-power# ?adcs-pow) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-ADCS) " " ?fh "}")))
     )
 
