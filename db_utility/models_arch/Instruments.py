@@ -29,9 +29,12 @@ class Instruments:
             instruments = instruments + wb.sheet_names()
             true_insts = true_insts + self.get_characteristic_insts(wb)
         self.instruments = list(dict.fromkeys(instruments))
-        self.instruments.remove('del')
-        self.instruments.remove('CHARACTERISTICS')
-        self.instruments.remove('CHARACTERISTICS_old')
+        if self.instruments.count('del') > 0:
+            self.instruments.remove('del')
+        if self.instruments.count('CHARACTERISTICS') > 0:
+            self.instruments.remove('CHARACTERISTICS')
+        if self.instruments.count('CHARACTERISTICS_old') > 0:
+            self.instruments.remove('CHARACTERISTICS_old')
         self.insts_true = true_insts
 
 
