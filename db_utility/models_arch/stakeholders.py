@@ -22,7 +22,7 @@ rule_columns = {
 
 
 def index_group_stakeholders(session, data, client):
-    problems = os.listdir(problem_dir)
+    problems = ["SMAP", "ClimateCentric"]
     group_id = 1
 
     
