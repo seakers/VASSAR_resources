@@ -22,7 +22,7 @@ class Attributes:
     def __init__(self, client, problems_dir='/app/daphne/VASSAR_resources/vassar/problems', group_id=1):
         self.group_id = group_id
         self.client = client
-        self.problems = os.listdir(problems_dir)
+        self.problems = ["SMAP", "ClimateCentric"]
         self.files = [(problem, problems_dir + '/' + problem + '/xls/' + self.inst_file_name) for problem in self.problems]
 
 
@@ -33,7 +33,7 @@ class Attributes:
 
 
     def index_fuzzy_rules(self):
-        problem_to_index = ['SMAP', 'Decadal2017Aerosols', 'Decadal2007']
+        problem_to_index = ['SMAP', 'ClimateCentric']
         for problem, path in self.files:
             if (problem in problem_to_index):
                 problem_id = self.client.get_problem_id(problem)

@@ -21,7 +21,7 @@ class Orbits:
     def __init__(self, client, problem_dir="/app/daphne/VASSAR_resources/vassar/problems"):
         self.client = client
         self.problem_dir = problem_dir
-        self.problems = os.listdir(problem_dir)
+        self.problems = ["SMAP", "ClimateCentric"]
         self.files = [(problem, problem_dir + '/' + problem + '/xls/' + self.orb_file_name) for problem in self.problems]
         orbs = []
         for problem, path in self.files:

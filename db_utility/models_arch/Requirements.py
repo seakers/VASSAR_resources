@@ -18,7 +18,7 @@ class Requirements:
     def __init__(self, client, problems_dir='/app/daphne/VASSAR_resources/vassar/problems', group_id=1):
         self.group_id = group_id
         self.client = client
-        self.problems = os.listdir(problems_dir)
+        self.problems = ["SMAP", "ClimateCentric"]
         self.files = [(problem, problems_dir + '/' + problem + '/xls/' + self.inst_file_name) for problem in self.problems]
 
 
