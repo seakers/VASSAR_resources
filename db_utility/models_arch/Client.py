@@ -727,7 +727,7 @@ class Architecture(DeclarativeBase):
     programmatic_risk = Column('programmatic_risk', Float)
     fairness = Column('fairness', Float)
     data_continuity = Column('data_continuity', Float)
-    eval_idx = Column('eval_idx', Integer, default=0)
+    eval_idx = Column('eval_idx', Integer, default=0, nullable=True)
 
 class ArchitectureCostInformation(DeclarativeBase):
     __tablename__ = 'ArchitectureCostInformation'

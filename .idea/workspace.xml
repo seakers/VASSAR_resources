@@ -3,10 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4a736992-eab0-4dce-813c-46901ff29bf0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/db_utility/models_arch/Client.py" beforeDir="false" afterPath="$PROJECT_DIR$/db_utility/models_arch/Client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db_utility/models_arch/Orbits.py" beforeDir="false" afterPath="$PROJECT_DIR$/db_utility/models_arch/Orbits.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vassar/problems/ClimateCentric_1/xls/.~lock.Aggregation Rules.xls#" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vassar/problems/Decadal2007/xls/.~lock.Instrument Capability Definition.xls#" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vassar/problems/Decadal2017Aerosols/xls/.~lock.Requirement Rules.xls#" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,6 +36,7 @@
       <workItem from="1631805558153" duration="5427000" />
       <workItem from="1632848047575" duration="4775000" />
       <workItem from="1633537523129" duration="889000" />
+      <workItem from="1635953255953" duration="1000" />
     </task>
     <servers />
   </component>
