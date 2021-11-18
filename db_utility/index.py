@@ -22,7 +22,7 @@ def main():
     client.initialize()
 
     # 1. Index default group
-    client.index_group(default_group_name)
+    client.goc_group(default_group_name)
 
     # 2. Index problems from excel files
     Problems(client).index()

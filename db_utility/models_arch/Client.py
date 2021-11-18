@@ -40,9 +40,17 @@ class Client:
         to_delete = []
         for table, table_obj in DeclarativeBase.metadata.tables.items():
             print(table, '\n')
-            if table is not 'auth_user':
+            if table not in ['auth_user', 'Group']:
                 to_delete.append(table_obj)
         DeclarativeBase.metadata.drop_all(self.engine, to_delete)
+
+    # GET OR CREATE
+    def goc_group(self, group_name):
+        group_id = self.get_group_id(group_name)
+        if group_id is None:
+            return self.index_group(group_name)
+        return group_id
+
 
 
     # INDEX
@@ -279,6 +287,12 @@ class Client:
 
 
     # QUERY
+    def get_group_id(self, name):
+        group_id_query = self.session.query(Group.id, Group.name).filter(Group.name == name).first()
+        if group_id_query is None:
+            return group_id_query
+        return group_id_query[0]
+
     def get_measurement_attribute_id(self, name, group_id=1):
         meas_attrs = self.session.query(Measurement_Attribute.id, Measurement_Attribute.name).filter(Measurement_Attribute.name == name).filter(Measurement_Attribute.group_id == group_id).first()
         meas_attr_id = meas_attrs[0]
