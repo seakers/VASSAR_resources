@@ -17,7 +17,7 @@
     =>
     (if (<> ?bn ?sn) then
     (call ?*q* addElement (new java.lang.String
-        (str-cat "It is desirable to have satellites of similar size: satellite " ?bn " more than " ?sn " " (format nil "%2.2f" ?r) "." )))))
+        (str-cat "It is desirable to have satellites of similar size: satellite " ?bn " is bigger than " ?sn " by a ratio of " (format nil "%2.2f" ?r) "." )))))
 
 
 
@@ -27,7 +27,7 @@
     =>
     (if (<> ?bn ?sn) then
     (call ?*q* addElement (new java.lang.String
-        (str-cat "It is desirable to have satellites of similar cost: satellite " ?bn " more than " ?sn " " (format nil "%2.2f" ?r) ".")))))
+        (str-cat "It is desirable to have satellites of similar cost: satellite " ?bn " costs more than " ?sn " by a ratio of " (format nil "%2.2f" ?r) ".")))))
 
 
 
