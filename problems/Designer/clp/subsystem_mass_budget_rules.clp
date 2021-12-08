@@ -92,7 +92,7 @@
 (defrule MASS-BUDGET::design-structure-subsystem
     "Computes structure subsystem mass using rules of thumb"
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (structure-mass# nil) (payload-mass# ?m&~nil) (factHistory ?fh))
+    ?miss <- (MANIFEST::Mission (structure-mass# nil) (payload-mass# ?m&~nil&:(> ?m 5)) (factHistory ?fh))
     =>
 
     ;(bind ?struct-mass (* 0.5462 ?m)); 0.75
@@ -111,7 +111,7 @@
 
     (bind ?adapter-mass (* 0.01 ?m)); 0.75
     ;(bind ?adapter-mass (* (/ 0.03 0.31) ?m)); 0.75
-    (printout t "adapter mass: " ?adapter-mass crlf)
+    ;(printout t "adapter mass: " ?adapter-mass crlf)
     (modify ?miss (adapter-mass ?adapter-mass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::add-launch-adapter ) " " ?fh "}")))
     )
 
@@ -122,7 +122,7 @@
 (defrule MASS-BUDGET::design-12U-cubesat
     "Designs 12U Cubesat"
     (declare (salience 10))
-    ?miss <- (MANIFEST::Mission (avionics-mass# nil) (payload-mass# ?m&~nil&:(<= ?m 10)) (factHistory ?fh))
+    ?miss <- (MANIFEST::Mission (structure-mass# nil) (payload-mass# ?m&~nil&:(<= ?m 5)) (factHistory ?fh))
     =>
 
     (bind ?av-mass 0.1)
