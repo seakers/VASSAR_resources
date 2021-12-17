@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4a736992-eab0-4dce-813c-46901ff29bf0" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db_utility/models_arch/Client.py" beforeDir="false" afterPath="$PROJECT_DIR$/db_utility/models_arch/Client.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -21,7 +22,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$USER_HOME$/repos/seakers/cost-estimator-ca" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
   </component>
@@ -37,6 +38,8 @@
       <workItem from="1632848047575" duration="4775000" />
       <workItem from="1633537523129" duration="889000" />
       <workItem from="1635953255953" duration="1000" />
+      <workItem from="1638583107705" duration="2503000" />
+      <workItem from="1638805584465" duration="1837000" />
     </task>
     <servers />
   </component>

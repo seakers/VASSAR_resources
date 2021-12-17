@@ -729,19 +729,24 @@ class Architecture(DeclarativeBase):
     problem_id = Column('problem_id', Integer, ForeignKey('Problem.id'))
     dataset_id = Column('dataset_id', Integer, ForeignKey('Dataset.id'))
     user_id = Column('user_id', Integer, ForeignKey('auth_user.id'))
+
+
     input = Column('input', String)
+
     science = Column('science', Float)
     cost = Column('cost', Float)
+    programmatic_risk = Column('programmatic_risk', Float)
+    fairness = Column('fairness', Float)
+    data_continuity = Column('data_continuity', Float)
+
+
     ga = Column('ga', Boolean, default=False)
     improve_hv = Column('improve_hv', Boolean, default=False)
     eval_status = Column('eval_status', Boolean, default=True) # if false, arch needs to be re-evaluated
     critique = Column('critique', String)
 
-    ## ai4se
-    programmatic_risk = Column('programmatic_risk', Float)
-    fairness = Column('fairness', Float)
-    data_continuity = Column('data_continuity', Float)
     eval_idx = Column('eval_idx', Integer, default=0, nullable=True)
+
 
 class ArchitectureCostInformation(DeclarativeBase):
     __tablename__ = 'ArchitectureCostInformation'
