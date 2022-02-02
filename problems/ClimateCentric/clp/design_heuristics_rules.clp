@@ -85,13 +85,13 @@
 	
 (defrule HEURISTICS1::compute-data-rate-duty-cycle
 	"This rule computes the data rate duty cycle for the current satellite.
-	Assumes 1 seven minute pass at 500Mbps max."
+	Assumes 2 ten minute passes at 475Mbps max."
 	
 	?m <- (MANIFEST::Satellite (data-rate-duty-cycle# nil) (orbit-period# ?orbper&~nil) (payload-data-rate# ?pdr) (factHistory ?fh))
 	=>
 ;	(printout t "Data-rate duty cycle computed" crlf)
 	(bind ?perorb (/ (* (* ?orbper 1.2) ?pdr) (* 1024 8)))
-	(bind ?drdc (/ (* (* (* (* (/ 1 8192) 500) 60) 7) 1) ?perorb))
+	(bind ?drdc (/ (* (* (* (* (/ 1 8192) 475) 60) 10) 2) ?perorb))
 	(modify ?m (data-rate-duty-cycle# ?drdc) (factHistory (str-cat "{R" (?*rulesMap* get HEURISTICS-COMPUTATION1::compute-data-rate-duty-cycle) " " ?fh "}")))
 	)
 
