@@ -162,7 +162,7 @@
   ; "Assumes a duty cycle of 10%"
   (bind ?Pavg (* 0.1 ?Pp))
   (bind ?Pchar ?Pavg)
-  (printout t ?name " peak, average, and characteristic power: [" ?Pp ", " ?Pavg ", " ?Pchar "]" crlf)
+  ;(printout t ?name " peak, average, and characteristic power: [" ?Pp ", " ?Pavg ", " ?Pchar "]" crlf)
 
   ( modify ?sar (average-power# ?Pavg) (characteristic-power# ?Pchar) )
 )
