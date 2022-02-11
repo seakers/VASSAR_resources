@@ -60,7 +60,7 @@
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
 
     (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
-    (printout t "Payload cost: instrument cost = " (* ?cost 1e3) crlf)
+    ;(printout t "Payload cost: instrument cost = " (* ?cost 1e3) crlf)
 
         (modify ?miss (payload-cost# ?cost) (payload-non-recurring-cost# (* 0.8 ?cost))
         (payload-recurring-cost# (* 0.2 ?cost)))
