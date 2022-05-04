@@ -16,7 +16,7 @@
 
     (bind ?cost (* 25600 (** (/ ?p 61.5) 0.32) (** (/ ?m 53.8) 0.26)
             (** (/ (* 1000 ?rb) 40.4) 0.11))); in FY04$
-    (bind ?cost (/ ?cost 1.097))
+    ;(bind ?cost (/ ?cost 1.097))
     ;(printout t apply-NICM " " ?name " = " ?m " " ?p " " ?rb " " ?cost crlf)
     (return ?cost)
     )
@@ -61,7 +61,7 @@
 
     (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     ;(printout t "Payload cost: instrument cost = " (* ?cost 1e3) crlf)
-
+    (bind ?cost (MatlabFunctions inflate ?cost 2004 2010))
         (modify ?miss (payload-cost# ?cost) (payload-non-recurring-cost# (* 0.8 ?cost))
         (payload-recurring-cost# (* 0.2 ?cost)))
     )
@@ -508,12 +508,13 @@
     (bind ?miss-nr (MatlabFunctions inflate ?miss-nr 2010 ?ld))
     (bind ?lc (MatlabFunctions inflate ?lc 2010 ?ld))
     (bind ?bus-r (MatlabFunctions inflate ?bus-r 2010 ?ld))
-    (bind ?pay-r (MatlabFunctions inflate ?pay-r 2004 ?ld))
+    (bind ?bus-nr (MatlabFunctions inflate ?bus-nr 2010 ?ld))
+    (bind ?pay-r (MatlabFunctions inflate ?pay-r 2010 ?ld))
     (bind ?prog-r (MatlabFunctions inflate ?prog-r 2010 ?ld))
     (bind ?iat-r (MatlabFunctions inflate ?iat-r 2010 ?ld))
     (bind ?ops-r (MatlabFunctions inflate ?ops-r 2010 ?ld))
     (bind ?launch-r (MatlabFunctions inflate ?launch-r 2010 ?ld))
-    (bind ?payl-nr (MatlabFunctions inflate ?payl-nr 2004 ?ld))
+    (bind ?payl-nr (MatlabFunctions inflate ?payl-nr 2010 ?ld))
     (bind ?prog-nr (MatlabFunctions inflate ?prog-nr 2010 ?ld))
     (bind ?iat-nr (MatlabFunctions inflate ?iat-nr 2010 ?ld))
     (bind ?bus (MatlabFunctions inflate ?bus 2010 ?ld))

@@ -228,15 +228,15 @@
 
     )
 
-(defrule MANIFEST0::Add-common-dish-to-PSAR
-	(declare (salience 100))
-    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
-	  (test (eq (contains$ ?list-of-instruments P-band_ANT) FALSE))
-    (test (eq (contains$ ?list-of-instruments P-band_SAR) TRUE))
-       =>
-    (modify ?miss (instruments (add-element$ ?list-of-instruments P-band_ANT)))
-    ;(printout t "payload: " $?list-of-instruments  crlf)
-    )
+;(defrule MANIFEST0::Add-common-dish-to-PSAR
+;	(declare (salience 100))
+;    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
+;	  (test (eq (contains$ ?list-of-instruments P-band_ANT) FALSE))
+;    (test (eq (contains$ ?list-of-instruments P-band_SAR) TRUE))
+;       =>
+;    (modify ?miss (instruments (add-element$ ?list-of-instruments P-band_ANT)))
+;    ;(printout  t "payload: " $?list-of-instruments  crlf)
+;    )
 
 (defrule MANIFEST0::Add-common-dish-to-LSAR
 	(declare (salience 100))

@@ -93,11 +93,11 @@
     (bind ?N (* ?np ?ns))
     (bind ?perf (get-performance ?lv ?orb (to-km (r-to-h ?a)) ?i))
     ;(printout t "the perf of lv " ?lv " for orbit "  ?orb " a = " ?a " i = " ?i " is " ?perf crlf)
-    (bind ?NL-mass (ceil (/ (* ?m ?N) ?perf)))
-    (bind ?NL-vol (ceil (/ (* (*$ $?dim) ?N) (*$ (MatlabFunctions getLaunchVehicleDimensions ?lv)))))
+    (bind ?NL-mass (ceil (/ (* ?m ?ns) ?perf)))
+    ;(bind ?NL-vol (ceil (/ (* (*$ $?dim) ?N) (*$ (MatlabFunctions getLaunchVehicleDimensions ?lv)))))
     ;(printout t "the dimensoins of lv " ?lv " are diam "  (nth$ 1 (MatlabFunctions getLaunchVehicleDimensions ?lv)) " h = " (nth$ 2 (MatlabFunctions getLaunchVehicleDimensions ?lv)) crlf)
-    (bind ?NL-diam (ceil (/ (* (max$ ?dim) ?N) (max$ (MatlabFunctions getLaunchVehicleDimensions ?lv)))))
-    (modify ?f (num-launches (* ?np (max ?NL-mass ?NL-vol ?NL-diam))) (factHistory (str-cat "{R" (?*rulesMap* get LV-SELECTION2::compute-number-of-launches) " " ?fh "}")))
+    ;(bind ?NL-diam (ceil (/ (* (max$ ?dim) ?N) (max$ (MatlabFunctions getLaunchVehicleDimensions ?lv)))))
+    (modify ?f (num-launches (* ?np ?NL-mass)) (factHistory (str-cat "{R" (?*rulesMap* get LV-SELECTION2::compute-number-of-launches) " " ?fh "}")))
 )
 
 (defrule LV-SELECTION4::eliminate-empty-missions
