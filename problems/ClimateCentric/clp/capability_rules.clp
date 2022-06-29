@@ -84,7 +84,7 @@
     ?i1 <- (CAPABILITIES::Manifested-instrument (Name ?ins1&~nil) (flies-in ?miss&~nil) (factHistory ?fh2))
     ?sub <- (MANIFEST::Satellite  (Name ?miss) (sat-data-rate-per-orbit# ?rbo&~nil) (factHistory ?fh3))
     =>
-    (bind ?dc (min 1.0 (/ (* 1 7 60 500 (/ 1 8192)) ?rbo))); you get 1 7' pass at 500Mbps max
+    (bind ?dc (min 1.0 (/ (* 2 10 60 475 (/ 1 8192)) ?rbo))); you get 2 10' pass at 475Mbps max
     (modify ?l1 (data-rate-duty-cycle# ?dc) (reason "Cumulative spacecraft data rate cannot be downloaded to ground stations") (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::resource-limitations-datarate) " " ?fh1 " S" (call ?i1 getFactId) " S" (call ?sub getFactId) "}")))
 	(modify ?i1 (data-rate-duty-cycle# ?dc) (factHistory (str-cat "{R" (?*rulesMap* get CAPABILITIES::resource-limitations-datarate) " " ?fh2 " S" (call ?l1 getFactId) " S" (call ?sub getFactId) "}")))
     ;(if (< ?dc 1.0) then (printout t "resource-limitations-datarate " ?ins1 " dc = " ?dc crlf))
