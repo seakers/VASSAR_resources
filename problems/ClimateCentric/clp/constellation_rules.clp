@@ -175,7 +175,7 @@
 		(bind ?results (run-query* CONSTELLATION-COST-ESTIMATION::search-satellite-by-id ?current-id))
 		(while (?results next)
 			(bind ?s (?results getObject sat))
-			(modify ?s (launch-cost# (/ (* ?num ?ccost) ?n-sats)) (factHistory (str-cat "{C" (?*rulesMap* get CONSTELLATION-COST-ESTIMATION::compute-constellation-launch-cost) " " ?s.factHistory "}"))))
+			(modify ?s (launch-cost# (/ (* ?num ?ccost) ?n-sats)) (launch-cost (fuzzyscprod (cost-fv ?ccost 10) ?num))(factHistory (str-cat "{C" (?*rulesMap* get CONSTELLATION-COST-ESTIMATION::compute-constellation-launch-cost) " " ?s.factHistory "}"))))
 	)
 	)
 	
@@ -269,7 +269,7 @@
 	
 (defquery CONSTELLATION-COST-ESTIMATION::search-satellite-by-id
 	(declare (variables ?id1))
-	?sat <- (MANIFEST::Satellite (id ?id1) (satellite-wet-mass ?m) (satellite-launch-mass ?lm) (satellite-dimensions $?dim) (num-of-planes# ?np) (lv-pack-efficiency# ?pf) (launch-cost# nil) (num-of-sats-per-plane# ?ns) (factHistory ?fh2))
+	?sat <- (MANIFEST::Satellite (id ?id1) (satellite-wet-mass ?m) (satellite-launch-mass ?lm) (satellite-dimensions $?dim) (num-of-planes# ?np) (lv-pack-efficiency# ?pf) (launch-cost# nil) (launch-cost nil) (num-of-sats-per-plane# ?ns) (factHistory ?fh2))
 	)
 	
 (defquery CONSTELLATION-COST-ESTIMATION::search-satellite-by-id-pf
