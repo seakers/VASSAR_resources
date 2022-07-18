@@ -9,12 +9,13 @@
 ;                  (2 rules)
 ; ******************************************
 
-(defrule DESIGN-PREP::load-eps-facts
-    ?orig <- (MANIFEST::Mission (Propulsion-Injection nil) (factHistory ?fh))
+(defrule MANIFEST::catalog-data
+    ?miss <- (MANIFEST::Mission (SA-component nil) (battery-component nil) (SA-orientation nil) (num-battery nil) (solar-array-area nil) (factHistory ?fh))
     =>
-
-    (modify ?orig (Propulsion-Injection Chemical) (factHistory (str-cat "{R" (?*rulesMap* get DESIGN-PREP::assert-all-injection-types) " " ?fh "}")))
-    (duplicate ?orig (Propulsion-Injection Electric) (factHistory (str-cat "{R" (?*rulesMap* get DESIGN-PREP::assert-all-injection-types) " " ?fh "}")))
+    (bind ?list (MatlabFunctions catalogEps 1))
+    (bind ?array (nth$ 1 ?list)) (bind ?batt (nth$ 2 ?list)) (bind ?orient (nth$ 3 ?list))
+    (bind ?num (nth$ 4 ?list)) (bind ?area (nth$ 5 ?list))
+    (modify ?miss (SA-component ?array) (battery-component ?batt) (SA-orientation ?orient) (num-battery ?num) (solar-array-area ?area) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::catalog-data) " " ?fh "}")))
     )
 
 

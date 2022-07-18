@@ -52,3 +52,4 @@
 (defmodule CRITIQUE-COST-PARAM)
 (defmodule DESIGN-PREP)
 (defmodule PROPULSION-SELECTION)
+(defmodule LOAD-CATALOG)
