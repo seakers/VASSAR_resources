@@ -65,7 +65,7 @@
     ?miss <- (MANIFEST::Mission (bus-non-recurring-cost# nil)
         (satellite-BOL-power# ?p&~nil) (EPS-mass# ?epsm&~nil) (thermal-mass# ?thm&~nil)
         (structure-mass# ?strm &~nil) (propulsion-mass# ?prm&~nil) (avionics-mass# ?comm&~nil)
-        (ADCS-mass# ?adcm&~nil) (standard-bus ?bus)
+        (ADCS-mass# ?adcm&~nil) (standard-bus ?bus) (Propulsion-ADCS ?type&~nil) (propulsion-power ?power)
         )
     (or (test (eq ?bus nil)) (test (eq ?bus dedicated-class)))
     =>
@@ -78,7 +78,7 @@
     (printout t "Power " ?epsm " kg" crlf)
 
     (bind ?str-cost (str-cost-non-recurring ?strm))
-    (bind ?prop-cost (prop-cost-non-recurring ?prm))
+    (bind ?prop-cost (prop-cost-non-recurring ?prm ?type ?power))
     (bind ?adcs-cost (adcs-cost-non-recurring ?adcm))
     (bind ?comm-cost (comm-cost-non-recurring ?comm))
     (bind ?therm-cost (therm-cost-non-recurring ?thm))
@@ -103,8 +103,9 @@
     )
   )
 
-  (deffunction prop-cost-non-recurring (?prm)
-    (if (< ?prm (* 0.75 81)) then (return 0)
+  (deffunction prop-cost-non-recurring (?prm ?type ?power)
+    (if (eq ?type Electric) then (return (* 1.5 (string ?power) 1000))   
+      elif (< ?prm (* 0.75 81)) then (return 0)
       else (return (* 17.8 (** ?prm 0.75)))
     )
   )
@@ -140,13 +141,13 @@
     (declare (salience 10))
     ?miss <- (MANIFEST::Mission (bus-recurring-cost# nil) (satellite-BOL-power# ?p&~nil)
         (EPS-mass# ?epsm&~nil) (thermal-mass# ?thm&~nil) (avionics-mass# ?comm&~nil)
-        (structure-mass# ?strm&~nil) (propulsion-mass# ?prm&~nil)
+        (structure-mass# ?strm&~nil) (propulsion-mass# ?prm&~nil) (Propulsion-ADCS ?type&~nil) (propulsion-power ?power)
         (ADCS-mass# ?adcm&~nil) (standard-bus ?bus)
         )
     (or (test (eq ?bus nil)) (test (eq ?bus dedicated-class)))
     =>
     (bind ?str-cost (str-cost-recurring ?strm))
-    (bind ?prop-cost (prop-cost-recurring ?prm ?strm ?adcm ?comm ?thm ?epsm))
+    (bind ?prop-cost (prop-cost-recurring ?prm ?strm ?adcm ?comm ?thm ?epsm ?type ?power))
     (bind ?adcs-cost (adcs-cost-recurring ?adcm))
     (bind ?comm-cost (comm-cost-recurring ?comm))
     (bind ?therm-cost (therm-cost-recurring ?thm))
@@ -171,14 +172,23 @@
       )
     )
 
-    (deffunction prop-cost-recurring (?prm ?strm ?adcsm ?comm ?thm ?epsm)
+    (deffunction prop-cost-recurring (?prm ?strm ?adcsm ?comm ?thm ?epsm ?type ?power)
       (bind ?busm (+ ?prm ?strm ?adcsm ?comm ?thm ?epsm))
 
       (printout t "Dry Mass: " ?busm crlf)
 
-      (if (< ?prm (* 0.75 81)) then (return (+ 65.6 (* 2.19 (** ?busm 1.261))))
+      (if (eq ?type Electric) then (return (* (ep-cost ?power) 1000))
+        elif (< ?prm (* 0.75 81)) then (return (+ 65.6 (* 2.19 (** ?busm 1.261))))
         else (return (* 4.97 (** ?prm 0.823)))
       )
+    )
+
+    (deffunction string (?power)
+      (return (* (+ 2 (* 3.4588 (** ?power .34823))) .92))
+    )
+
+    (deffunction ep-cost (?power)
+      (return (+ (* (string ?power) (** 1 .766)) (* .1 ?power)))
     )
 
     (deffunction adcs-cost-recurring (?adcm)

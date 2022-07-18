@@ -33,7 +33,7 @@
     ;(bind ?list (matlabf get_instrument_list))
     ;(if (listp ?list) then (return ?list) else (return (create$ ?list)))
     (bing ?list (MatlabFunction getInstrumentList))
-    (printout t ?list crlf)
+    ;(printout t ?list crlf)
   (return ?list)
     )
 
@@ -167,6 +167,16 @@
   ( modify ?sar (average-power# ?Pavg) (characteristic-power# ?Pchar) )
 )
 
+(defrule MANIFEST::duty-cycle
+
+  ?miss <- (MANIFEST::Mission (payload-power# ?avg&~nil) (payload-peak-power# ?peak&~nil))
+	
+       =>
+    
+    (modify ?miss (power-duty-cycle# (/ ?avg ?peak)))
+
+    )
+
 (defrule MANIFEST0::estimate-SAR-data-rate
   "If a P or L-band SAR instrument is given but the data rate is unknown, then estimate said value"
 
@@ -246,6 +256,13 @@
        =>
     (modify ?miss (instruments (add-element$ ?list-of-instruments L-band_ANT)))
     ;(printout t "payload: " $?list-of-instruments  crlf)
+    )
+
+(defrule MANIFEST::output-num-instruments
+	
+    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments) (num-of-instruments# nil))
+       =>
+    (modify ?miss (num-of-instruments# (length$ ?list-of-instruments)))
     )
 
 (deffunction compute-swath-conical-MWR (?h ?half-scan ?off-nadir)
@@ -365,8 +382,8 @@
       (Field-of-view# 35.0)
       )
 
-    (printout t "f = " ?f ", h = " ?h ", hg = " ?hg ", res-az = " ?res-az ", res-el = " ?res-el
-                ", lambda = " ?lambda ", th_i = " ?th-incidence ", angular-res = " ?dtheta ", fov = " 35.0 crlf)
+    ;(printout t "f = " ?f ", h = " ?h ", hg = " ?hg ", res-az = " ?res-az ", res-el = " ?res-el
+    ;            ", lambda = " ?lambda ", th_i = " ?th-incidence ", angular-res = " ?dtheta ", fov = " 35.0 crlf)
     )
 
 (defrule compute-sensitivity-to-soil-moisture-in-vegetation
@@ -573,7 +590,7 @@
 "Use values  by default for satellite parameters"
 ?miss <- (MANIFEST::Mission  (ADCS-requirement nil))
 =>
-(modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS mono-n2h4)
+(modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS mono-n2h4) 
  (propellant-injection mono-n2h4) (slew-angle 2.0)
 )
 )

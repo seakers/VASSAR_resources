@@ -144,8 +144,8 @@
     "This function estimates the mass of a RW from its momentum storage capacity.
     It also takes into account required redundancy from estimated reliability."
 
-    (if (< ?h 10) then (return (* (ctrl-redundancy ?life) (+ 2 (* 0.4 ?h))))); (regular+redundant)*SMAD RW mass estimate
-    (if (< ?h 100) then (return (* (ctrl-redundancy ?life) (+ 5 (* 0.1 ?h)))))
+    (if (< ?h 10) then (return (* (ctrl-redundancy ?life) (+ 2 (* 0.4 ?h))))  ; (regular+redundant)*SMAD RW mass estimate
+     else (return (* (ctrl-redundancy ?life) (+ 5 (* 0.1 ?h)))))
     )
 
 (deffunction estimate-RW-power (?T)

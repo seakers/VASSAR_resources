@@ -13,29 +13,27 @@
 )
 
 (defrule LV-SELECTION1::compute-constellation
-		"Gathers information from all missions to gather payloads of similar orbits into a constellation"
+      "Gathers information from all missions to gather payloads of similar orbits into a constellation"
+      ?m1 <- (MANIFEST::Mission (orbit-string ?orb1) (num-of-sats-per-plane# ?ns1&:(> ?ns1 0)&~nil) (launch-vehicle ?lv1) (instruments $?ins1))
+      ?m2 <- (MANIFEST::Mission (orbit-string ?orb2) (num-of-sats-per-plane# ?ns2&:(> ?ns2 0)&~nil) (launch-vehicle ?lv2) (instruments $?ins2))
+      (test (neq ?orb1 ?orb2))
+      (test (eq $?ins1 $?ins2))
+      (test (eq ?lv1 ?lv2))
 
-		?m1 <- (MANIFEST::Mission (id ?sat1) (orbit-string ?orb1) (num-of-planes# 1) (num-of-sats-per-plane# ?ns1&~0&~nil) (launch-vehicle ?lv1) (instruments $?ins1) )
-		?m2 <- (MANIFEST::Mission (id ?sat2) (orbit-string ?orb2) (num-of-planes# 1) (num-of-sats-per-plane# ?ns2&~0&~nil) (launch-vehicle ?lv2) (instruments $?ins2) )
-		(test (neq ?m1 ?m2))
-		(test (eq ?ins1 ?ins2))
-		(test (eq ?lv1 ?lv2))
+      =>
 
-		=>
+      ;(printout t ?orb1 " " ?orb2 " " ?lv1 crlf)
 
-		;(printout t ?orb1 " " ?orb2 " " ?lv1 crlf)
+      (bind ?list (MatlabFunctions countSats ?orb1 ?orb2 ?ns1 ?ns2))
 
-		(bind ?list (MatlabFunctions countSats ?orb1 ?orb2 ?ns1 ?ns2))
+      (bind ?npp (nth$ 1 ?list))
+      (bind ?nsp (nth$ 2 ?list))
+      (bind ?np2 (nth$ 3 ?list))
+      (bind ?ns2 (nth$ 4 ?list))
 
-		(bind ?npp (nth$ 1 ?list))
-		(bind ?nsp (nth$ 2 ?list))
-		(bind ?np2 (nth$ 3 ?list))
-		(bind ?ns2 (nth$ 4 ?list))
-
-		(modify ?m1 (num-of-sats-per-plane# (+ ?ns1 ?nsp)))
-		(modify ?m2 (num-of-sats-per-plane# ?ns2))
-
-		(printout t "Results List: " (+ ?np1 ?npp) " " (+ ?ns1 ?nsp) " " ?np2 " " ?ns2 crlf)
+      (modify ?m1 (num-of-sats-per-plane# (+ ?ns1 ?nsp)))
+      (modify ?m2 (num-of-sats-per-plane# ?ns2))
+      ;(printout t "Results List: " (+ 1 ?npp) " " (+ ?ns1 ?nsp) " " ?np2 " " ?ns2 crlf)
 )
 
 (defrule LV-SELECTION1::eliminate-empty-missions

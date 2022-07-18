@@ -458,8 +458,8 @@
 "Use values  by default for satellite parameters"
 ?miss <- (MANIFEST::Mission  (ADCS-requirement nil) (factHistory ?fh))
 =>
-(modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)
- (propellant-injection hydrazine) (slew-angle 2.0) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::put-ADCS-values-by-default) " " ?fh "}"))
+(modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS mono-n2h4) 
+ (propellant-injection mono-n2h4) (slew-angle 2.0) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::put-ADCS-values-by-default) " " ?fh "}"))
 )
 )
 ;(defrule CAPABILITIES::cross-register-measurements-from-cross-registered-instruments;

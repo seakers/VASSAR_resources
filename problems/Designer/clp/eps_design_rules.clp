@@ -9,6 +9,15 @@
 ;                  (2 rules)
 ; ******************************************
 
+(defrule DESIGN-PREP::load-eps-facts
+    ?orig <- (MANIFEST::Mission (Propulsion-Injection nil) (factHistory ?fh))
+    =>
+
+    (modify ?orig (Propulsion-Injection Chemical) (factHistory (str-cat "{R" (?*rulesMap* get DESIGN-PREP::assert-all-injection-types) " " ?fh "}")))
+    (duplicate ?orig (Propulsion-Injection Electric) (factHistory (str-cat "{R" (?*rulesMap* get DESIGN-PREP::assert-all-injection-types) " " ?fh "}")))
+    )
+
+
 (defrule MASS-BUDGET::estimate-depth-of-discharge
     ?sat <- (MANIFEST::Mission (orbit-type ?typ&~nil) (orbit-RAAN ?raan&~nil)
         (depth-of-discharge nil) (factHistory ?fh))
@@ -19,7 +28,9 @@
 (defrule MASS-BUDGET::design-EPS
     ?miss<- (MANIFEST::Mission (payload-power# ?p&~nil) (payload-peak-power# ?pp&~nil) (comm-OBDH-power# ?obdh-power&~nil) (avionics-power# ?av-power&~nil)
     (depth-of-discharge ?dod&~nil) (orbit-semimajor-axis ?a&~nil) (orbit-type ?typ&~nil) (worst-sun-angle ?angle&~nil) (fraction-sunlight ?frac&~nil) (ADCS-power# ?adcs-pow&~nil)
-    (EPS-mass# nil) (satellite-dry-mass ?m&~nil) (satellite-BOL-power# nil) (lifetime ?life&~nil) (factHistory ?fh))
+    (EPS-mass# nil) (satellite-dry-mass ?m&~nil) (satellite-BOL-power# nil) (lifetime ?life&~nil) (bus-BOL-power ?bus) (battery-type ?batt) (SA-type ?array)
+    (battery-mass ?mbatt) (num-battery ?nbatt) (cpu-mass ?mcpu) (reg-conv-mass ?mrc) (wiring-mass ?mwiring) (SA-component ?SA-component) 
+    (battery-component ?battery-component) (solar-array-area ?area) (factHistory ?fh))
 
     =>
     ;(printout t "Payload power: " ?p " " ?pp crlf)
@@ -27,14 +38,16 @@
     ;(printout t "AV power: "  ?obdh-power  crlf)
     ;(printout t "ADCS power: "  ?obdh-power  crlf)
 
-     " "" " ?av-power " " ?adcs-pow " " ?frac " " ?angle " " (orbit-period ?a) " " ?life " " ?m " " ?dod " "
+    ;" "" " ?av-power " " ?adcs-pow " " ?frac " " ?angle " " (orbit-period ?a) " " ?life " " ?m " " ?dod " "
 
     ;(bind ?list (design-EPS ?p ?p ?frac ?angle (orbit-period ?a) ?life ?m ?dod)) ;<- original EPS design algorithm
-    (bind ?list (MatlabFunctions designEPS ?p ?pp ?obdh-power ?av-power ?adcs-pow ?frac ?angle (orbit-period ?a) ?life ?m ?dod))
+    (bind ?list (MatlabFunctions newEPS ?p ?pp ?obdh-power ?av-power ?adcs-pow ?frac ?angle (orbit-period ?a) ?life ?m ?dod ?area ?SA-component ?battery-component ?nbatt))
 
-    (bind ?epsm (nth$ 1 ?list)) (bind ?pow (nth$ 2 ?list)) (bind ?area (nth$ 3 ?list)) (bind ?samass (nth$ 4 ?list))
+    (bind ?epsm (nth$ 1 ?list)) (bind ?pow (nth$ 2 ?list)) (bind ?area (nth$ 3 ?list)) (bind ?samass (nth$ 4 ?list)) (bind ?batt (nth$ 5 ?list)) (bind ?array (nth$ 6 ?list))
+    (bind ?mbatt (nth$ 7 ?list)) (bind ?nbatt (nth$ 8 ?list)) (bind ?mcpu (nth$ 9 ?list)) (bind ?mrc (nth$ 10 ?list)) (bind ?mwiring (nth$ 11 ?list))
     ;(printout t "BOL power: " ?pow crlf)
-    (modify ?miss (EPS-mass# ?epsm) (satellite-BOL-power# ?pow) (solar-array-area ?area) (solar-array-mass ?samass) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-EPS) " " ?fh "}")))
+    (modify ?miss (EPS-mass# ?epsm) (bus-BOL-power 0) (satellite-BOL-power# ?pow) (solar-array-area ?area) (solar-array-mass ?samass) (battery-type ?batt) (SA-type ?array)
+    (battery-mass ?mbatt) (num-battery ?nbatt) (cpu-mass ?mcpu) (reg-conv-mass ?mrc) (wiring-mass ?mwiring) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::design-EPS) " " ?fh "}")))
     )
 
 
