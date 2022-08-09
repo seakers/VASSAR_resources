@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Time, Enum, ForeignKey, Table, CheckConstraint, Boolean
 from sqlalchemy.orm import relationship
-from models_arch.base import DeclarativeBase
+from models.base import DeclarativeBase
 from sqlalchemy.engine.url import URL
 
-from models_arch.stakeholders import Stakeholder_Needs_Subobjective, Stakeholder_Needs_Objective, Stakeholder_Needs_Panel
+from models.stakeholders import Stakeholder_Needs_Subobjective, Stakeholder_Needs_Objective, Stakeholder_Needs_Panel
 
-from models_arch.django_models import auth_user
+from models.django_models import auth_user
 
 # from models.django_models import auth_user
 

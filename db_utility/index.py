@@ -1,15 +1,15 @@
-from models_arch.Client import Client
-from models_arch.Problems import Problems
-from models_arch.Architectures import Architectures
-from models_arch.Instruments import Instruments
-from models_arch.Orbits import Orbits
-from models_arch.Attributes import Attributes
-from models_arch.Requirements import Requirements
+from models.Client import Client
+from models.Problems import Problems
+from models.Architectures import Architectures
+from models.Instruments import Instruments
+from models.Orbits import Orbits
+from models.Attributes import Attributes
+from models.Requirements import Requirements
 
 
-from models_arch.stakeholders import index_group_stakeholders
+from models.stakeholders import index_group_stakeholders
 
-from models_arch.Client import index_walker_mission_analysis
+from models.Client import index_walker_mission_analysis
 
 
 default_group_name = 'seakers (default)'

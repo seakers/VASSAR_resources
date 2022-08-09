@@ -1,6 +1,6 @@
 import os
 
-from models_arch.base import DeclarativeBase
+from models.base import DeclarativeBase
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker, mapper
 from sqlalchemy.dialects import postgresql

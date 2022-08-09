@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Time, Enum, ForeignKey, Table, CheckConstraint, Boolean, ARRAY
 from sqlalchemy.orm import relationship
-from models_arch.base import DeclarativeBase
+from models.base import DeclarativeBase
 from sqlalchemy.engine.url import URL
 
-from models_arch.stakeholders import Stakeholder_Needs_Subobjective
-from models_arch.globals import get_measurement_name, get_measurement_id, get_measurement_attribute_id, index_measurement
-from models_arch.stakeholders import get_subobjective_id
+from models.stakeholders import Stakeholder_Needs_Subobjective
+from models.globals import get_measurement_name, get_measurement_id, get_measurement_attribute_id, index_measurement
+from models.stakeholders import get_subobjective_id
 
 # from models.django_models import auth_user
 

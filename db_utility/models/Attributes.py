@@ -1,7 +1,7 @@
 import os
 import xlrd
 import pandas as pd
-# from models_arch.base import DeclarativeBase
+# from models.base import DeclarativeBase
 
 
 global_attributes = [
