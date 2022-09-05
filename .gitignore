@@ -5,3 +5,4 @@ __pycache__/
 /problems/ClimateCentric/xls/.*
 /problems/SMAP/xls/.*
 /venv/*
+.idea
