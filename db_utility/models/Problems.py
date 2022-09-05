@@ -13,7 +13,7 @@ class Problems:
     def __init__(self, client, problem_dir="/app/daphne/VASSAR_resources/vassar/problems"):
         self.client       = client
         self.problem_dir  = problem_dir
-        self.problems     = ["ClimateCentric", "SMAP"]
+        self.problems     = ["SMAP", "ClimateCentric"]
         self.problem_dirs = [problem_dir+'/'+problem for problem in self.problems]
 
     def index(self):

@@ -18,12 +18,14 @@ class Client:
     postgres_host = os.environ['POSTGRES_HOST']
     postgres_port = os.environ['POSTGRES_PORT']
     vassar_db_name = 'daphne'
-    db_string = f'postgresql+psycopg2://{user}:{password}@{postgres_host}:{postgres_port}/{vassar_db_name}'
+    # db_string = f'postgresql+psycopg2://{user}:{password}@{postgres_host}:{postgres_port}/{vassar_db_name}'
+    db_string = 'postgresql+psycopg2://daphne:xxxxxxxxxxxx@daphne-dev-database.csl99y1ur3jh.us-east-2.rds.amazonaws.com:5432/daphne'
 
     def __init__(self):
         self.engine = create_engine(self.db_string, echo=True)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
+        print('--> SESSION', self.session)
 
     def initialize(self):
         self.drop_tables()
