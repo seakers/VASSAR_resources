@@ -1,4 +1,4 @@
-
+import os
 from models.base import DeclarativeBase
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker, mapper
@@ -14,8 +14,8 @@ import pandas as pd
 
 class Client:
 
-    user = os.environ['USER']
-    password = os.environ['PASSWORD']
+    user = os.environ['SQL_USER']
+    password = os.environ['SQL_PASSWORD']
     postgres_host = os.environ['POSTGRES_HOST']
     postgres_port = os.environ['POSTGRES_PORT']
     vassar_db_name = 'daphne'
