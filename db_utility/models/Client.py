@@ -1,4 +1,3 @@
-import os
 
 from models.base import DeclarativeBase
 from sqlalchemy import create_engine, MetaData, Table
@@ -7,7 +6,9 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Time, Enum, ForeignKey, Table, CheckConstraint, Boolean, ARRAY, and_
 import pandas as pd
 
-
+# import os, sys
+# sys.path.append('/app/aws')
+# from Database import Database
 
 
 
@@ -20,6 +21,8 @@ class Client:
     vassar_db_name = 'daphne'
     # db_string = f'postgresql+psycopg2://{user}:{password}@{postgres_host}:{postgres_port}/{vassar_db_name}'
     db_string = 'postgresql+psycopg2://daphne:xxxxxxxxxxxx@daphne-dev-database.csl99y1ur3jh.us-east-2.rds.amazonaws.com:5432/daphne'
+    # db_string = Database().get_connection_url(prefix='postgresql+psycopg2')
+
 
     def __init__(self):
         self.engine = create_engine(self.db_string, echo=True)
@@ -947,7 +950,7 @@ class Walker_Mission_Analysis(DeclarativeBase):
     mission_architecture = Column('mission_architecture', String)
 
 
-def index_walker_mission_analysis(client, problems_dir='/app/daphne/VASSAR_resources/vassar/problems', problems=['SMAP']):
+def index_walker_mission_analysis(client, problems_dir='/app/vassar/problems', problems=['SMAP']):
     session = client.get_session()
     files = [(problem, problems_dir+'/'+problem+'/xls/Mission Analysis Database.xls') for problem in problems]
     analysis_type = 'Walker'

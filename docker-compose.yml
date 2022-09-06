@@ -1,13 +1,21 @@
 version: '3.7'
 services:
   resources:
-    image: python:3.8-slim-buster
+    build:
+      dockerfile: Dockerfile
+      context: .
     volumes:
       - type: bind
         source: .
         target: /app
     tty: true
     container_name: resources
+    command: bash
+    environment:
+      - USER=daphne
+      - PASSWORD=xxxxxxxxxxxx
+      - POSTGRES_HOST=daphne-dev-database.csl99y1ur3jh.us-east-2.rds.amazonaws.com
+      - POSTGRES_PORT=5432
 networks:
   default:
     name: daphne-network

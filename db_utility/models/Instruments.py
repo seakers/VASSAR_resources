@@ -17,7 +17,7 @@ class Instruments:
 
 
 
-    def __init__(self, client, problems_dir='/app/daphne/VASSAR_resources/vassar/problems', group_id=1):
+    def __init__(self, client, problems_dir='/app/vassar/problems', group_id=1):
         self.group_id = group_id
         self.client = client
         self.problems = ["SMAP", "ClimateCentric"]

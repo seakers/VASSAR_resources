@@ -15,8 +15,8 @@ import numpy as np
 import json
 import math
 
-problem_dir = "/app/daphne/VASSAR_resources/problems"
-problems_dir = "/app/daphne/VASSAR_resources/problems"
+problem_dir = "/app/problems"
+problems_dir = "/app/problems"
 
 
 instrument_list = [

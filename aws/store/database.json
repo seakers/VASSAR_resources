@@ -1,0 +1,33 @@
+{
+    "database": {
+        "AllocatedStorage": 20,
+        "AutoMinorVersionUpgrade": true,
+        "AvailabilityZone": "us-east-2a",
+        "BackupRetentionPeriod": 7,
+        "BackupTarget": "region",
+        "CopyTagsToSnapshot": true,
+        "DBInstanceClass": "db.t3.small",
+        "DBInstanceIdentifier": "daphne-dev-database",
+        "DBName": "daphne",
+        "DBParameterGroupName": "default.postgres13",
+        "DBSubnetGroupName": "daphne-dev-subnet-group",
+        "DeletionProtection": false,
+        "EnableCustomerOwnedIp": false,
+        "Engine": "postgres",
+        "EngineVersion": "13.4",
+        "MasterUserPassword": "xxxxxxxxxxxx",
+        "MasterUsername": "daphne",
+        "MaxAllocatedStorage": 1000,
+        "MonitoringInterval": 60,
+        "MonitoringRoleArn": "arn:aws:iam::923405430231:role/rds-monitoring-role",
+        "MultiAZ": false,
+        "NetworkType": "IPV4",
+        "OptionGroupName": "default:postgres-13",
+        "PubliclyAccessible": true,
+        "StorageEncrypted": true,
+        "StorageType": "gp2",
+        "VpcSecurityGroupIds": [
+            "sg-03871503ca9368508"
+        ]
+    }
+}

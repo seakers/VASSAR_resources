@@ -6,7 +6,7 @@ class Architectures:
 
 
 
-    def __init__(self, client, problem_dir="/app/daphne/VASSAR_resources/vassar/problems"):
+    def __init__(self, client, problem_dir="/problems"):
         self.client = client
         self.problem_dir = problem_dir
         self.problems = ["SMAP", "ClimateCentric"]
@@ -19,7 +19,7 @@ class Architectures:
         for problem in self.problems:
             problem_id = self.client.get_problem_id(problem)
             dataset_id = self.client.index_dataset("default", problem_id, None, None)
-            filepath = '/app/daphne/VASSAR_resources/problem_default_archs/' + problem + '/default.csv'
+            filepath = '/app/problem_default_archs/' + problem + '/default.csv'
             if os.path.isfile(filepath):
                 df = pd.read_csv(filepath, header=0)
                 for index, row in df.iterrows():

@@ -10,7 +10,7 @@ class Problems:
 
     problem_map = {}
 
-    def __init__(self, client, problem_dir="/app/daphne/VASSAR_resources/vassar/problems"):
+    def __init__(self, client, problem_dir="/app/vassar/problems"):
         self.client       = client
         self.problem_dir  = problem_dir
         self.problems     = ["SMAP", "ClimateCentric"]
