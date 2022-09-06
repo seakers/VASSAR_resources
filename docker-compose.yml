@@ -12,10 +12,12 @@ services:
     container_name: resources
     command: bash
     environment:
-      - USER=daphne
-      - PASSWORD=xxxxxxxxxxxx
-      - POSTGRES_HOST=daphne-dev-database.csl99y1ur3jh.us-east-2.rds.amazonaws.com
-      - POSTGRES_PORT=5432
+      - USER=${USER}
+      - PASSWORD=${PASSWORD}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 networks:
   default:
     name: daphne-network
