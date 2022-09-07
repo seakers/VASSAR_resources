@@ -23,11 +23,11 @@ RUN pip3 install --no-cache-dir -r ./requirements.txt
 
 # Func 1: index vassar database
 WORKDIR /app/db_utility
-CMD python3 index.py
+# CMD python3 index.py
 
 # Func 2: recreate database
-WORKDIR /app/aws
-CMD python3 recreate.py
+# WORKDIR /app/aws
+# CMD python3 recreate.py
 
 
 
