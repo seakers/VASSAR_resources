@@ -341,7 +341,7 @@
     (bind ?total-cost (* ?total-cost 0.001097)); correct for inflation and transform to $M
     (bind ?ops-cost (* (* 0.035308 (** ?total-cost 0.928)) ?life)); NASA MOCM in FY04$M
     (bind ?ops-cost (/ ?ops-cost 0.001097)); back to FY00$k
-    (if (> ?rbo (* 5 60 700 (/ 1 8192))) then (bind ?pen 10.0) else (bind ?pen 1.0))
+    (if (> ?rbo (* 5 60 700 (/ 1 8192))) then (bind ?pen 1.0) else (bind ?pen 1.0))
     ;(printout t "penalty =" ?pen crlf)
     (modify ?miss (operations-cost# (* ?ops-cost ?pen)))
     )
