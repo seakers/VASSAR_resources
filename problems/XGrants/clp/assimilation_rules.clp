@@ -55,7 +55,7 @@
 	?meas <- (REQUIREMENTS::Measurement (Parameter ?p) (Temporal-resolution# nil) (Temporal-resolution nil) (Coverage ?region)(factHistory ?fh))
 	=>
 	(if (eq ?region Global) then (bind ?tr ?new-time) else (bind ?tr ?new-time-us))
-	(printout t ?tr crlf)
+	;(printout t ?tr crlf)
 	(modify ?meas (Temporal-resolution# ?tr) (VSWIR-Temporal ?tr) (avg-revisit-time-global# ?new-time) (avg-revisit-time-US# (adapt-GEO-revisit ?new-time-us))(factHistory (str-cat "{R" (?*rulesMap* get ASSIMILATION2::modify-temporal-resolution) " " ?fh " S" (call ?sub getFactId) "}")))
 )
 
