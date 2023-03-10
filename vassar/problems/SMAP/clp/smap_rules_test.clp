@@ -194,6 +194,7 @@
 
 
 (defrule MANIFEST::compute-VIIRS-spatial-resolution
+    "calculates the horizontal spatial resolution of a manifested instrument called VIIRS for an earth observing space mission design using the equations: $ \lambda = \frac{3 \times 10^8}{f} $, $ x = \frac{1.22 \times 1000h\lambda}{a} $, where $f$, $h$, and $a$ are frequency, orbit altitude, and aperture respectively"
     ?VIIRS <- (CAPABILITIES::Manifested-instrument
                 (Name VIIRS)
                 (frequency# ?f&~nil)
@@ -235,6 +236,7 @@
 
 
 (defrule MANIFEST::compute-CMIS-spatial-resolution
+    "calculates the horizontal spatial resolution and swath of the CMIS instrument using its frequency, orbit altitude, dimension, off-axis and scanning angles. Equations: $d\theta = \frac{\lambda}{Df}$, $\theta_1 = \theta - \frac{d\theta}{2}$, $\theta_2 = \theta + \frac{d\theta}{2}$, $x_1 = 1000h\tan{\theta_1}$, $x_2 = 1000h\tan{\theta_2}$, $along = x_2 - x_1$, $cross = 2\cdot\frac{h}{\cos{\theta}}\tan{\frac{d\theta}{2}}$, $sw = 2\cdot\frac{h}{\cos{\theta}}\tan{\frac{\alpha}{2}}$ (where $d\theta$ is the angular resolution, $\theta$ is the off-axis angle, $x_1$ and $x_2$ are the cross-track distances, $along$ is the along-track distance, $cross$ is the cross-track spatial resolution, $sw$ is the swath, $h$ is the orbit altitude, $D$ is the dimension, $f$ is the frequency, and $\alpha$ is the scanning angle)"
     ?MWR <- (CAPABILITIES::Manifested-instrument
                 (Name CMIS)
                 (frequency# ?f&~nil)
@@ -266,6 +268,7 @@
 
 
 (defrule MANIFEST::compute-SMAP-MWR-spatial-resolution
+    "calculates the horizontal spatial resolution, angular resolution, swath width, and field of view for the SMAP_MWR instrument, based on its frequency, orbit altitude, and off-axis scanning angle, using the equation for conical swath width. Equations: $\theta_1=\theta-\frac{\lambda}{D}$, $\theta_2=\theta+\frac{\lambda}{D}$, $\Delta\text{Along-Track}=\text{ }(\text{1000}\cdot h)\cdot\tan(\theta_2)-(\text{1000}\cdot h)\cdot\tan(\theta_1)$, $\Delta\text{Cross-Track}=2\cdot\frac{h}{\cos(\theta)}\cdot\tan\bigg(\frac{\lambda}{2}\bigg)$, and $\text{Swath}=2\cdot\frac{h}{\cos(\theta)}\cdot\tan\bigg(\frac{\alpha}{2}\bigg)$, where $\theta$ is the off-axis scanning angle, $\lambda$ is the wavelength of the signal, $D$ is the diameter of the antenna, $h$ is the orbit altitude, $\alpha$ is the scanning angle, and $\text{Swath}$ is the swath width"
     ?MWR <- (CAPABILITIES::Manifested-instrument
                 (Name SMAP_MWR)
                 (frequency# ?f&~nil)
@@ -304,6 +307,7 @@
 
 
 (defrule MANIFEST::compute-SMAP-RAD-spatial-resolution
+    "calculates the angular resolution and horizontal spatial resolution of the SMAP-RAD instrument, given its bandwidth, off-axis angle, number of looks, scanning angle, frequency, orbit altitude, and the dimension of the SMAP-ANT instrument it flies with. Equations used include $\lambda/D$ to calculate $\Delta \theta$, $2h \tan((\alpha + \theta)/2)$ to calculate swath width, $c/(2B\sin(\theta))$ to calculate range resolution, $n_l \times (c/(2B\sin(\theta)))$ to calculate the horizontal spatial resolution, $c/(2B)$ to calculate the horizontal spatial resolution cross-track, and $(c/(2B\sin(\theta)))$ to calculate the horizontal spatial resolution along-track"
     ?RAD <- (CAPABILITIES::Manifested-instrument
                 (Name SMAP_RAD)
                 (bandwidth# ?B&~nil)
@@ -339,6 +343,7 @@
 
 
 (defrule MANIFEST::compute-BIOMASS-spatial-resolution
+    "calculates the angular resolution in elevation, horizontal spatial resolution, swath, and field of view for the BIOMASS instrument using the equations: $\theta_{d} = \frac{\lambda}{Df}$, $R_{range} = \frac{3e8}{2Bsin(\theta)}$, $R_{along-track} = \frac{R_{range}}{sin(\theta)}$, and $swath = 2\frac{h}{cos(\theta)}tan(\frac{\alpha}{2})$. Here, $\lambda$ is the wavelength of the electromagnetic signal, $D$ is the aperture diameter of the instrument, $f$ is the frequency of the signal, $B$ is the bandwidth of the instrument, $\theta$ is the off-axis angle, $h$ is the orbit altitude of the instrument, $\alpha$ is the scanning angle, and $n_{l}$ is the number of looks"
     ?RAD <- (CAPABILITIES::Manifested-instrument
                 (Name BIOMASS)
                 (dimension-x# ?D&~nil)
@@ -578,7 +583,7 @@
 ;; ***************************
 
 (defrule MANIFEST::put-ADCS-values-by-default
-"Use values  by default for satellite parameters"
+"sets default values for certain satellite parameters, such as the ADCS requirement, type, propellant, and slew angle"
 ?miss <- (MANIFEST::Mission  (ADCS-requirement nil))
 =>
 (modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)

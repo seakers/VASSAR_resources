@@ -4,7 +4,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrule MANIFEST::calculate-orbit-semimajor-axis-sat
-	"This rule calculates the semimajor axis of a constellation from the altitude"
+	"calculates the semimajor axis of a satellite's orbit based on its altitude using the equation: $a = r_{earth} + h$, where $r_{earth}$ is the radius of the Earth and $h$ is the altitude of the satellite"
     (declare (salience 20))
     ?f <- (MANIFEST::Mission (orbit-altitude# ?orb-alt&~nil)
         						   (orbit-semimajor-axis nil) (factHistory ?fh))
@@ -14,7 +14,7 @@
 )
 
 (defrule MANIFEST::calculate-orbit-period
-	"This rule calculates the semimajor axis of a constellation from the altitude"
+	"calculates the orbital period of a constellation based on its semimajor axis using the equation: $T=2\pi\sqrt{\frac{a^3}{\mu}}$, where $T$ is the orbital period, $a$ is the semimajor axis, and $\mu$ is the gravitational parameter of the Earth"
     (declare (salience 20))
     ?f <- (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil)
         						   (orbit-period# nil) (factHistory ?fh))
@@ -31,6 +31,7 @@
     )
 
 (defrule MANIFEST::estimate-fraction-of-sunlight
+    "calculates the estimated fraction of sunlight for an Earth observing space mission in a circular orbit using the Earth-subtend-angle function and equation $\phi = 2\cdot\arccos\left(\frac{\cos(\rho)}{\cos(B_s)}\right)$, where $\rho$ is the angle subtended by the Earth and $B_s$ is the spacecraft's solar beta angle"
     (declare (salience 20))
     ?sat <- (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil) (fraction-sunlight nil) (factHistory ?fh))
     =>

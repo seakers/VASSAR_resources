@@ -31,7 +31,7 @@
     )
 
 (defrule MANIFEST::calculate-satellite-payload-dimensions
-    "This rule calculates the total payload dimensions of a satellite"
+    "calculates the total payload dimensions of a satellite by summing the dimensions of each instrument on board"
     ?f <- (MANIFEST::Mission (instruments $?payls) (payload-dimensions $?pdims) (factHistory ?fh))
     (test (eq (length$ ?pdims) 0))
     =>

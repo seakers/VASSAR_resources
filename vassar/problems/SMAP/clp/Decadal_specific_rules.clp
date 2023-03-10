@@ -4,7 +4,7 @@
 ;; *******************
 
 (defrule MANIFEST::put-ADCS-values-by-default
-"Use values  by default for satellite parameters"
+"sets default values for various satellite parameters related to Attitude Determination and Control System (ADCS) of a space mission, including the ADCS requirement, ADCS type, propellant type and injection method, and slew angle."
 ?miss <- (MANIFEST::Mission  (ADCS-requirement nil))
 =>
 (modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)
@@ -78,10 +78,9 @@
    
 
 (defrule MANIFEST::SMAP-add-common-dish-to-MWR
-    "If we manifest the SMAP radar, radiometer, or both, then we need to manifest the share dish"
+    "adds the share dish instrument (SMAP_ANT) to the list of instruments if the SMAP radiometer (SMAP_MWR) is manifested"
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
     (test (eq (subsetp (create$ SMAP_ANT) ?list-of-instruments) FALSE))
-    ;(test (eq (subsetp (create$ SMAP_RAD) ?list-of-instruments) TRUE))
     (test (eq (subsetp (create$ SMAP_MWR) ?list-of-instruments) TRUE))
        =>
     (bind ?new-list (insert$ ?list-of-instruments (+ 1 (length$ ?list-of-instruments)) SMAP_ANT))
@@ -91,11 +90,10 @@
     ) 
 
 (defrule MANIFEST::SMAP-add-common-dish-to-RAD
-    "If we manifest the SMAP radar, radiometer, or both, then we need to manifest the share dish"
+    "adds the share dish instrument (SMAP_ANT) to the list of instruments if the SMAP radar (SMAP_RAD) is manifested"
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
     (test (eq (subsetp (create$ SMAP_ANT) ?list-of-instruments) FALSE))
     (test (eq (subsetp (create$ SMAP_RAD) ?list-of-instruments) TRUE))
-    ;(test (eq (subsetp (create$ SMAP_MWR) ?list-of-instruments) TRUE))
        =>
     (bind ?new-list (insert$ ?list-of-instruments (+ 1 (length$ ?list-of-instruments)) SMAP_ANT))
     ;(printout t "contains SMAP_ANT = " (eq (subsetp (create$ SMAP_ANT) ?list-of-instruments) FALSE) " new list = " ?new-list crlf)
@@ -104,6 +102,15 @@
     ) 
 
 (defrule MANIFEST::compute-MWR-spatial-resolution
+    "calculates the horizontal spatial resolution, swath, field-of-view and along/cross track resolution for an earth observing space mission's SMAP_MWR instrument based on the frequency, orbit altitude, off-axis angle and scanning angle, using the equations:
+$$\frac{\lambda}{D} = \frac{c}{Df}$$
+$$\theta_1 = \theta - \frac{\lambda}{2D}$$
+$$\theta_2 = \theta + \frac{\lambda}{2D}$$
+$$x_1 = 1000h \tan(\theta_1)$$
+$$x_2 = 1000h \tan(\theta_2)$$
+$$along = x_2 - x_1$$
+$$cross = 2\left(\frac{h}{\cos(\theta)}\tan\left(\frac{\lambda}{2D}\right)\right)$$
+$$sw = 2\left(\frac{h}{\cos(\theta)}\tan\left(\frac{\alpha}{2}\right)\right)$$"
     ?MWR <- (CAPABILITIES::Manifested-instrument  (Name SMAP_MWR) (Intent "Imaging multi-spectral radiometers -passive MW-")
          (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?theta) (scanning-angle-plus-minus# ?alfa) (flies-in ?sat))
     (CAPABILITIES::Manifested-instrument  (Name SMAP_ANT) (dimension-x# ?D) (flies-in ?sat))
@@ -121,6 +128,7 @@
     )
 
 (defrule MANIFEST::compute-RAD-spatial-resolution
+    "calculates the horizontal spatial resolution of a radar instrument using the bandwidth, off-axis angle, number of looks, frequency, and orbit altitude, as well as the dimensions of the SMAP_ANT instrument. Equations: Range resolution: $range\text{-}res = \frac{3\times10^8}{2B\sin(\theta)}$, Swath width: $sw = 2\cdot\frac{h}{\cos(\theta)}\tan\left(\frac{\alpha}{2}\right)$, Along-track spatial resolution: $h_spatial_res_alongtrack = \frac{range\text{-}res}{\sin(\theta)}$, Cross-track spatial resolution: $h_spatial_res_crosstrack = range\text{-}res$, Field of view: $fov = \alpha$"
     ?RAD <- (CAPABILITIES::Manifested-instrument  (Name SMAP_RAD) (bandwidth# ?B) (off-axis-angle-plus-minus# ?theta) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa)
          (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?theta) (flies-in ?sat))
     (CAPABILITIES::Manifested-instrument  (Name SMAP_ANT) (dimension-x# ?D) (flies-in ?sat))
@@ -139,6 +147,7 @@
 ;; **********************
 
 (defrule MANIFEST::compute-SAR-spatial-resolution
+    "calculates the horizontal spatial resolution and swath of a radar instrument based on its bandwidth, off-axis angle, number of looks, scanning angle, frequency, orbit altitude, and other parameters. Equations: $$range\text{-}res = \frac{3 \times 10^8}{2 \times B \times sin(\theta)}$$ $$swath = 2 \times \frac{h}{cos(\theta)} \times tan(\frac{\alpha}{2})$$"
     ?RAD <- (CAPABILITIES::Manifested-instrument  (Name DESD_SAR) (bandwidth# ?B) (dimension-x# ?D)  (off-axis-angle-plus-minus# ?theta) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa)
          (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?theta) (flies-in ?sat))
     =>
@@ -154,8 +163,7 @@
 ;; HYSPIRI
 ;; **********************
 (defrule MANIFEST::compute-HYSP-TIR-spatial-resolution 
-    "Compute field of view in degrees from angular resolution (IFOV)
-    and number of pixels for a square image"
+    "calculates the field of view in degrees and the spatial resolution in meters per pixel of a square image for the HYSP_TIR instrument on an Earth observing spacecraft, using the instrument's angular resolutions, orbit altitude, number of pixels along and across the track, and scanning angle. Equations used: $fov = alfa$, $hsra = 1000htorad(ifova)$, $hsrc = 1000htorad(ifovc)$, $hsr = hsrc$, and $sw = (hsr*npixc)/1000$"
     (declare (salience 5))
     ?instr <- (CAPABILITIES::Manifested-instrument (Name HYSP_TIR) (Field-of-view# nil) 
         (Angular-resolution-azimuth# ?ifovc&~nil) (Angular-resolution-elevation# ?ifova&~nil) (orbit-altitude# ?h&~nil) 
@@ -173,8 +181,7 @@
     )
 
 (defrule MANIFEST::compute-HYSP-VIS-spatial-resolution 
-    "Compute field of view in degrees from angular resolution (IFOV)
-    and number of pixels for a square image"
+    "calculates the field of view and spatial resolution for the HYSP_VIS instrument based on its angular resolution, number of pixels, scanning angle, and orbit altitude. Equations: $fov = 5$, $hsra = 1000 * h * \tan(ifova)$, $hsrc = 1000 * h * \tan(ifovc)$, $hsr = hsrc$, and $sw = (hsr * npixc) / 1000$"
     (declare (salience 5))
     ?instr <- (CAPABILITIES::Manifested-instrument (Name HYSP_VIS) (Field-of-view# nil) 
         (Angular-resolution-azimuth# ?ifovc&~nil) (Angular-resolution-elevation# ?ifova&~nil) (orbit-altitude# ?h&~nil) 

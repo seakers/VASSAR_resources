@@ -141,7 +141,7 @@
 
 
 (defrule MANIFEST::compute-spatial-resolution-and-swath-nadir-looking-no-scanning-imagers
-    "calculates the spatial resolution and swath for a nadir looking instrument without scanning using angular resolution, orbit altitude, and field of view. The equations used are: $$HorizontalSpatialResolution = 2 \times 1000 \times h \times \tan(\frac{d\theta}{2})$$ and $$Swatch = 2 \times 1000 \times h \times \tan(\frac{fov}{2})$$"
+    "calculates the spatial resolution and swath for a nadir looking instrument without scanning, using angular resolution, orbit altitude, and field of view. Equations: $dx = 2\times 1000 \times h \times \tan (\frac{d\theta}{2})$ and $sw = 2 \times 1000 \times h \times \tan (\frac{fov}{2})$, where $d\theta$ is the angular resolution, $h$ is the orbit altitude, and $fov$ is the field of view"
     ?MWR <- (CAPABILITIES::Manifested-instrument  (Geometry nadir) (scanning no-scanning) (Intent "Imaging multi-spectral radiometers -passive MW-"|"Imaging multi-spectral radiometers -passive optical-"|"High resolution optical imagers")
          (Angular-resolution# ?dtheta&~nil) (orbit-altitude# ?h&~nil) (Field-of-view# ?fov&~nil) (Horizontal-Spatial-Resolution# nil) (flies-in ?sat)(factHistory ?fh))
     =>
@@ -462,7 +462,7 @@
 ;; ***************************
 
 (defrule MANIFEST::put-ADCS-values-by-default
-"Use values  by default for satellite parameters"
+"sets default values for various satellite parameters related to Attitude Determination and Control System (ADCS) of a space mission, including the ADCS requirement, ADCS type, propellant type and injection method, and slew angle."
 ?miss <- (MANIFEST::Mission  (ADCS-requirement nil) (factHistory ?fh))
 =>
 (modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)

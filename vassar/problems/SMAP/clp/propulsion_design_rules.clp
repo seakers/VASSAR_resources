@@ -4,7 +4,7 @@
 ; ***************************************
 
 (defrule MANIFEST::get-Isp-injection
-    "This rule estimates the Isp injection from the type of propellant"
+    "calculates the specific impulse (Isp) injection for a satellite based on the type of propellant used, using the equation: $$ Isp = \begin{cases} 210 & \text{if propellant is solid} \\ 290 & \text{if propellant is hydrazine} \\ 450 & \text{if propellant is LH2} \end{cases} $$"
     ?miss <- (MANIFEST::Mission (propellant-injection ?prop&~nil) (Isp-injection nil) (factHistory ?fh))
     =>
     
@@ -12,7 +12,7 @@
     )
 
 (defrule MANIFEST::get-Isp-ADCS
-    "This rule estimates the Isp ADCS from the type of propellant"
+    "calculates the specific impulse (Isp) injection for Attitude Determination and Control System (ADCS) based on the type of propellant used, using the equation: $$ Isp = \begin{cases} 210 & \text{if propellant is solid} \\ 290 & \text{if propellant is hydrazine} \\ 450 & \text{if propellant is LH2} \end{cases} $$"
     ?miss <- (MANIFEST::Mission (propellant-ADCS ?prop&~nil) (Isp-ADCS nil) (factHistory ?fh))
     =>
     

@@ -231,7 +231,7 @@
     )
 
 (defrule MANIFEST::compute-hsr-cross-track-from-instrument-and-orbit
-    "computes horizontal spatial resolution from instrument angular resolution and orbit altitude"
+    "calculates the horizontal spatial resolution (HSR) of a manifested instrument fact by multiplying the instrument's angular resolution in azimuth with the orbit altitude and a conversion factor. Equations: $HSR_{cross-track} = 1000 * h * \theta_{azimuth} * \frac{\pi}{180}$ where $h$ is the orbit altitude and $\theta_{azimuth}$ is the instrument's angular resolution in azimuth"
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) (Angular-resolution-azimuth# ?ara&~nil)
         (Horizontal-Spatial-Resolution-Cross-track# nil) (factHistory ?fh))
     =>
@@ -239,21 +239,21 @@
     )
 
 (defrule MANIFEST::compute-hsr-along-track-from-instrument-and-orbit
-    "computes horizontal spatial resolution from instrument angular resolution and orbit altitude"
+    "calculates the horizontal spatial resolution (along-track) of a manifested instrument based on the instrument's angular resolution and orbit altitude using the equation: $Horizontal\ Spatial\ Resolution\ Along-track = 1000 \times Orbit\ Altitude \times Angular\ Resolution\ Elevation \times \frac{\pi}{180}$."
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) (Angular-resolution-elevation# ?are&:(neq ?are nil)) (Horizontal-Spatial-Resolution-Along-track# nil) (factHistory ?fh))
     =>
     (modify ?instr (Horizontal-Spatial-Resolution-Along-track# (* 1000 ?h (* ?are (/ (pi) 180)) )) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-hsr-along-track-from-instrument-and-orbit) " " ?fh "}")) )
     )
 
 (defrule MANIFEST::compute-hsr-from-instrument-and-orbit
-    "compute horizontal spatial resolution hsr and hsr2 from instrument angular resolution and orbit altitude"
+    "calculates the horizontal spatial resolution (hsr) and hsr2 of a manifested instrument, given the instrument's angular resolution and orbit altitude, using the equation $hsr = 1000 * altitude * angular_resolution * \frac{\pi}{180}$"
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) (Angular-resolution# ?are&:(neq ?are nil)) (Horizontal-Spatial-Resolution# nil) (factHistory ?fh))
     =>
     (modify ?instr (Horizontal-Spatial-Resolution# (* 1000 ?h (* ?are (/ (pi) 180)) )) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-hsr-from-instrument-and-orbit) " " ?fh "}")))
     )
 
 (defrule MANIFEST::fill-in-hsr-from-directional-hsrs
-    "sets horizontal spatial resolution to cross track spatial resolution if along-track and cross-track spatial resolutions are known and identical "
+    "sets the horizontal spatial resolution to the cross-track spatial resolution if the along-track and cross-track spatial resolutions are known and identical"
     (declare (salience -2))
     ?instr <- (CAPABILITIES::Manifested-instrument (Horizontal-Spatial-Resolution-Cross-track# ?cr&~nil)
         (Horizontal-Spatial-Resolution-Along-track# ?al&~nil&?cr) (Horizontal-Spatial-Resolution# nil) (factHistory ?fh))
@@ -274,7 +274,7 @@
 ;    )
 
 (defrule MANIFEST::compute-fov-from-angular-res-and-npixels-square
-    "computes field of view in degrees from angular resolution (IFOV) and number of pixels for a square image"
+    "calculates the field of view in degrees for a square image from the angular resolution (IFOV) and the number of pixels using the equation: $FOV = IFOV \times N_{pix}$"
     (declare (salience 4))
     ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view# nil)
         (Angular-resolution-azimuth# nil) (Angular-resolution-elevation# nil)
@@ -285,7 +285,7 @@
     )
 
 (defrule MANIFEST::compute-fov-from-angular-res-and-npixels-elevation
-    "computes field of view in degrees from angular resolution (IFOV) and number of pixels for the elevation direction in a rectangular image"
+    "calculates the field of view in degrees from the angular resolution (IFOV) and number of pixels for the elevation direction in a rectangular image. Equations: $FOV = \alpha * n$, where $FOV$ is the field of view, $\alpha$ is the angular resolution, and $n$ is the number of pixels along the track"
     (declare (salience 4))
     ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view-elevation# nil)
        (Angular-resolution-elevation# ?ara&~nil) (num-pixels-along-track# ?npix&~nil) (factHistory ?fh) )
@@ -295,7 +295,7 @@
     )
 
 (defrule MANIFEST::compute-fov-from-angular-res-and-npixels-azimuth
-    "computes field of view in degrees from angular resolution (IFOV) and number of pixels for the azimuth direction in a rectangular image"
+    "calculates the field of view in degrees for the azimuth direction of a rectangular image, using the instrument's angular resolution and number of pixels in the azimuth direction. The equation used is: $FOV = \text{angular resolution} \times \text{number of pixels}$"
     (declare (salience 4))
     ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view-azimuth# nil)
        (Angular-resolution-azimuth# ?ara&~nil) (num-pixels-cross-track# ?npix&~nil) (factHistory ?fh))
@@ -305,7 +305,7 @@
     )
 
 (defrule MANIFEST::compute-for-from-fov-square
-    "compute field of regard in degrees from field of view and off-axis scanning capability"
+    "calculates the field of regard (FOR) in degrees for a manifested instrument, based on the field of view (FOV) and off-axis scanning capability, using the equation $\text{FOR} = \text{FOV} + 2 \times \text{off-axis}$ if off-axis scanning capability is present, or $\text{FOR} = \text{FOV}$ if not"
     (declare (salience 2))
     ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-regard# nil)
         (Field-of-view# ?fov&~nil) (off-axis-angle-plus-minus# ?off-axis) (factHistory ?fh)) ; only square images
@@ -342,7 +342,7 @@
     )
 
 (defrule MANIFEST::adjust-power-with-orbit
-    "adjusts average and peak power from characteristic orbit an power based on square law"
+    "calculates the average and peak power for a manifested instrument based on the square law relationship between characteristic orbit and power. Equations: $\text{average-power#} = \text{peak-power#} = \text{characteristic-power#} \cdot \left(\frac{\text{orbit-altitude#}}{\text{characteristic-orbit}}\right)^2$"
 	(declare (salience 15))
     ?instr <- (CAPABILITIES::Manifested-instrument (average-power# nil) (orbit-altitude# ?h&~nil) (characteristic-power# ?p&~nil) (characteristic-orbit ?href&~nil) (factHistory ?fh))
     =>
@@ -357,10 +357,7 @@
 ;; **********************************
 
 (defrule MANIFEST::compute-cloud-radar-properties-vertical-spatial-resolution
-    "calculates the vertical spatial resolution of the radar using the following equation:
-    \begin{equation*}
-    \texttt{Vertical-Spatial-Resolution} = \frac{c}{2 \times \texttt{bandwidth} \times \sin(\texttt{off-axis-angle})}
-    \end{equation*}"
+    "calculates the vertical spatial resolution of a cloud profile and rain radar instrument using the equation $\texttt{Vertical-Spatial-Resolution} = \frac{c}{2 \times \texttt{bandwidth} \times \sin(\texttt{off-axis-angle})}$"
     ?instr <- (CAPABILITIES::Manifested-instrument (Intent "Cloud profile and rain radars")
         (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (Vertical-Spatial-Resolution# nil) (factHistory ?fh))
     =>
@@ -369,7 +366,7 @@
     )
 
 (defrule MANIFEST::compute-cloud-radar-properties-horizontal-spatial-resolution
-    "calculates the horizontal spatial resolution of a cloud radar using instrument frequency, aperture, and satellite orbit altitude: $$hsr = \frac{\lambda}{D} \times h$$"
+    "calculates the horizontal spatial resolution of a cloud radar using instrument frequency, aperture, and satellite orbit altitude. The equation used is $hsr = \frac{\lambda}{D} \times h$, where $hsr$ is the horizontal spatial resolution, $\lambda$ is the wavelength, $D$ is the aperture size, and $h$ is the satellite orbit altitude"
     ?instr <- (CAPABILITIES::Manifested-instrument  (Intent "Cloud profile and rain radars")
          (frequency# ?f&~nil) (Aperture# ?D) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (factHistory ?fh))
     =>
@@ -378,7 +375,7 @@
     )
 
 (defrule MANIFEST::compute-cloud-radar-properties-swath
-    "calculates the swatch of a conical cloud radar using off axis angle and satellite orbit altitude: $$\text{Swath} = 2h \tan \theta$$"
+    "calculates the swath of a conical cloud radar, based on the off-axis angle and satellite orbit altitude, using the equation: $Swath = 2h \tan \theta$"
     ?instr <- (CAPABILITIES::Manifested-instrument (Intent "Cloud profile and rain radars")
         (off-axis-angle-plus-minus# ?theta&~nil) (scanning conical) (orbit-altitude# ?h&~nil) (Swath# nil) (factHistory ?fh))
     =>
@@ -392,7 +389,7 @@
 ;; **********************************
 
 (defrule MANIFEST::compute-altimeter-horizontal-spatial-resolution
-    "this rule calculates the horizontal spatial resolution for a radar altimeter using instrument frequency, aperture, and orbit altitude: $$\text{Horizontal Spatial Resolution} = \frac{\lambda}{D} \times h$$"
+    "calculates the horizontal spatial resolution of a radar altimeter using its instrument frequency, aperture, and orbit altitude, with the equation $\text{Horizontal Spatial Resolution} = \frac{\lambda}{D} \times h$, where $\lambda$ is the wavelength of the radar signal, $D$ is the aperture, and $h$ is the orbit altitude"
     ?instr <- (CAPABILITIES::Manifested-instrument  (Intent "Radar altimeter")
          (frequency# ?f&~nil) (Aperture# ?D) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (factHistory ?fh))
     =>
