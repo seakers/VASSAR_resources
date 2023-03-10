@@ -7,7 +7,7 @@
 
 
 (defrule CAPABILITIES::passive-optical-instruments-cannot-measure-in-dark
-    "Passive optical instruments cannot take their measurements in DD RAANs"
+    "checks if a passive optical instrument can take measurements in a specific type of orbit (can't take for dawn-dusk orbits)"
     (declare (salience 10))
     ?c <- (CAPABILITIES::can-measure (instrument ?ins) (orbit-RAAN DD) (can-take-measurements yes) (factHistory ?fh1))
     ?sub <- (DATABASE::Instrument (Name ?ins) (Illumination Passive) (Spectral-region ?sr) )
@@ -18,7 +18,7 @@
     )
 
 (defrule CAPABILITIES::chemistry-instruments-prefer-PM-orbits-effect-on-science-tropo
-    "Decrease sensitivity of chemistry instruments flying in AM orbits"
+    "decreases the sensitivity of chemistry instruments flying in raan AM orbits if their concept includes the keywords 'chemistry' or 'pollution'"
     (declare (salience 10))
     ?i <- (CAPABILITIES::Manifested-instrument (Name ?ins) (Concept ?c) (orbit-RAAN AM) (sensitivity-in-low-troposphere-PBL High) (factHistory ?fh))
     (or 
@@ -31,7 +31,7 @@
     )
 
 (defrule CAPABILITIES::chemistry-instruments-prefer-PM-orbits-effect-on-science-strato
-    "Decrease sensitivity of chemistry instruments flying in AM orbits"
+    "decreases the sensitivity of chemistry instruments flying in AM orbits if the concept of the instrument includes "chemistry" or "pollut" in its name"
     (declare (salience 10))
     ?i <- (CAPABILITIES::Manifested-instrument (Name ?ins) (Concept ?c) (orbit-RAAN AM) (sensitivity-in-upper-troposphere-and-stratosphere High) (factHistory ?fh))
     (or 
@@ -44,7 +44,7 @@
     )
 
 (defrule CAPABILITIES::hires-passive-optical-imagers-prefer-AM-orbits-effect-on-science
-    "Passive optical all purpose hi res imagers such as Landsat or ASTER must fly in AM orbits to decrease cloudiness"
+    "states that passive optical high-resolution imagers such as Landsat or ASTER must fly in morning orbits (ascending-descending orbits) to reduce cloudiness, and it modifies the capability (yes/no) of an instrument to take measurements accordingly"
     (declare (salience 10))
     ?c <- (CAPABILITIES::can-measure (instrument ?ins) (orbit-RAAN PM) (can-take-measurements yes) (factHistory ?fh1))
     ?sub <- (DATABASE::Instrument (Name ?ins) (Illumination Passive) (Spectral-region ?sr) (Intent "High resolution optical imagers") )
@@ -55,7 +55,7 @@
     )
 
 (defrule CAPABILITIES::image-distortion-at-low-altitudes-in-side-looking-instruments
-    "Passive optical instruments cannot take their measurements in DD RAANs"
+    "modifies an instrument capability by setting its "can-take-measurements" to "no" and providing a reason that "side-looking instruments suffer from image distortion at low altitudes". The modification is based on the conditions that the instrument is capable of taking measurements, the orbit altitude is less than or equal to 400, and the instrument geometry is slant"
     (declare (salience 10))
     ?c <- (CAPABILITIES::can-measure (instrument ?ins) (orbit-altitude# ?h&~nil&:(<= ?h 400)) (can-take-measurements yes) (factHistory ?fh1))
     ?sub <- (DATABASE::Instrument (Name ?ins) (Geometry slant) (Spectral-region ?sr))
@@ -65,7 +65,7 @@
     )
 
 (defrule CAPABILITIES::two-lidars-at-same-frequency-cannot-work
-    "Two lidars at same frequency can interfere with each other"
+    "states that two lidars operating at the same frequency can interfere with each other, and therefore cannot work simultaneously"
     (declare (salience 10))
     ?l1 <- (CAPABILITIES::can-measure (instrument ?ins1) (can-take-measurements yes) (factHistory ?fh1))
     ?l2 <- (CAPABILITIES::can-measure (instrument ?ins2&~?ins1) (can-take-measurements yes) (factHistory ?fh2))
@@ -79,6 +79,7 @@
     )
 
 (defrule CAPABILITIES::resource-limitations-datarate
+    "calculates the maximum data rate duty cycle for an instrument's measurement given the satellite's data rate per orbit limitation. Equations: $\texttt{?dc} = \min(1.0, \frac{1 \times 7 \times 60 \times 500 \times \frac{1}{8192}}{\texttt{?rbo}})$"
     (declare (salience 10))
     ?l1 <- (CAPABILITIES::can-measure (instrument ?ins1) (in-mission ?miss) (can-take-measurements yes) (data-rate-duty-cycle# nil) (factHistory ?fh1))
     ?i1 <- (CAPABILITIES::Manifested-instrument (Name ?ins1&~nil) (flies-in ?miss&~nil) (factHistory ?fh2))
@@ -92,6 +93,7 @@
     )
 
 (defrule CAPABILITIES::resource-limitations-power
+    "limits the power duty cycle of an instrument on a satellite mission based on the satellite's power budget, with the power duty cycle being calculated as the minimum of 1.0 and the quotient of 10,000 and the satellite's BOL power. Equations: $\text{power-duty-cycle} = \min(1.0, \frac{10,000}{\text{satellite-BOL-power}})$"
     (declare (salience 10))
     ?l1 <- (CAPABILITIES::can-measure (instrument ?ins1) (in-mission ?miss) (can-take-measurements yes) (power-duty-cycle# nil) (factHistory ?fh1))
 	?i1 <- (CAPABILITIES::Manifested-instrument (Name ?ins1&~nil) (flies-in ?miss&~nil) (factHistory ?fh2))
@@ -137,8 +139,7 @@
 )
 
 (defrule CAPABILITIES::cryospheric-instruments-want-polar-orbits
-    "If a cryospheric instrument is flown on a non polar orbit then 
-    it loses coverage of the polar regions"
+    "ensures if a cryospheric instrument is flown on a non polar orbit then it loses coverage of the polar regions"
     
     (declare (salience 10))
     ?c <- (CAPABILITIES::can-measure (instrument ?ins) (orbit-inclination ?inc&~polar) (can-take-measurements yes) (factHistory ?fh1))

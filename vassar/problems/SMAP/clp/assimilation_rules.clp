@@ -70,6 +70,7 @@
     )
 
 (defrule CAPABILITIES::global-or-regional-coverage
+    "calculates the coverage area for a measurement based on its orbit type. If the orbit type is GEO, the coverage is set to US, otherwise it is set to Global."
 	?meas <- (REQUIREMENTS::Measurement (Coverage nil) (orbit-type ?orb &~nil) (factHistory ?fh))
 	=>
 	(if (eq ?orb GEO) then (bind ?coverage US) else (bind ?coverage Global))

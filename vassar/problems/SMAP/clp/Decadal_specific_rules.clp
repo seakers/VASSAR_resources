@@ -199,8 +199,9 @@ $$sw = 2\left(\frac{h}{\cos(\theta)}\tan\left(\frac{\alpha}{2}\right)\right)$$"
     )
 ;; *********************
 ;; LIDARS
-;; **********************    
+;; **********************
 (defrule CAPABILITIES::ice-lidar-sensitivity-through-optically-thin-clouds
+        "modifies the sensitivity-in-cirrus parameter of an instrument to 'High' if the spectral bands include opt-NIR-1064nm or opt-nir-532nm, and the field of view is less than 400 urad"
         ?i <- (CAPABILITIES::Manifested-instrument (sensitivity-in-cirrus nil) (spectral-bands $?sb) (Field-of-view# ?fov&~nil))
         (or 
             (and (test (subsetp (create$ opt-NIR-1064nm) $?sb)) (test (< ?fov 400)))

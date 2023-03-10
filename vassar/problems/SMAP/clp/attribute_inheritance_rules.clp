@@ -537,6 +537,7 @@
 ;; temporal resolution, or vertical spatial resolution. All these missions will be declared, and
 ;; rules can be added so that only one of each can be selected
 (defrule CAPABILITIES-UPDATE::basic-diurnal-cycle
+    "calculates the diurnal cycle of a satellite orbit based on its orbit inclination and right ascension of the ascending node. If the orbit inclination is polar, the diurnal cycle is calculated as a variable; otherwise, it is calculated as the concatenation of the orbit RAAN with the string '-only'"
 ?meas<- (REQUIREMENTS::Measurement (diurnal-cycle nil) (orbit-inclination ?inc&~nil) (orbit-RAAN ?raan&~nil) (factHistory ?fh))
 =>
 (if (eq ?inc polar) then (bind ?dc variable) else (bind ?dc (eval (str-cat ?raan "-only"))))

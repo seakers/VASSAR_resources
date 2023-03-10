@@ -218,7 +218,7 @@
 
 
 (defrule CAPABILITIES::compute-image-distortion-in-nadir-looking-instruments
-    "Computes image distortion for nadir-looking instruments"
+    "modifies the image distortion parameter of a manifested instrument with a nadir geometry to 0"
     ?instr <- (CAPABILITIES::Manifested-instrument
                     (orbit-altitude# ?h&~nil)
                     (Geometry nadir)
@@ -395,7 +395,7 @@
     )
 
 (defrule CAPABILITIES::compute-image-distortion-in-side-looking-instruments
-    "Computes image distortion for side-looking instruments"
+    "calculates the image distortion for side-looking instruments using the equation: $\text{image-distortion#} = \frac{\text{orbit-altitude#}}{\text{characteristic-orbit}}$"
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil)
         (Geometry slant) (characteristic-orbit ?href&~nil) (image-distortion# nil))
     =>
@@ -426,6 +426,7 @@
     )
 
 (defrule CAPABILITIES::compute-soil-penetration
+    "calculates the soil penetration capability of an instrument based on its operating frequency using a predefined function that maps frequency to penetration depth. Equations: $\lambda = \frac{3e10}{f}$ where $\lambda$ is the wavelength in centimeters and $f$ is the operating frequency in Hertz, and a set of conditional statements mapping $\lambda$ to soil penetration depth"
     ?instr <- (CAPABILITIES::Manifested-instrument (frequency# ?f&~nil)
         (soil-penetration# nil))
     =>
@@ -603,6 +604,7 @@
 ;)
 
 (defrule CAPABILITIES-CROSS-REGISTER::cross-register-measurements-from-cross-registered-instruments
+	"accumulates measurements from cross-registered instruments, explodes them into individual measurements, and asserts a cross-registered fact with the degree of cross-registration being 'spacecraft'"
 	(SYNERGIES::cross-registered-instruments (instruments $?ins))
 	?c <- (accumulate (bind ?str "")                        ;; initializer
                 (bind ?str (str-cat ?str " " $?m1))         ;; action

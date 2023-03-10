@@ -242,7 +242,7 @@
     (if (> ?lambda 50) then (return 1.0))
     )
 (defrule CAPABILITIES::compute-soil-penetration
-    "calculates the soil penetration capability of a manifested instrument for earth observing space missions based on its operating frequency using a predefined function that maps frequency to penetration depth. Equations: $\lambda = \frac{3e10}{f}$ where $\lambda$ is the wavelength in centimeters and $f$ is the operating frequency in Hertz, and a set of conditional statements mapping $\lambda$ to soil penetration depth"
+    "calculates the soil penetration capability of an instrument based on its operating frequency using a predefined function that maps frequency to penetration depth. Equations: $\lambda = \frac{3e10}{f}$ where $\lambda$ is the wavelength in centimeters and $f$ is the operating frequency in Hertz, and a set of conditional statements mapping $\lambda$ to soil penetration depth"
     ?instr <- (CAPABILITIES::Manifested-instrument (frequency# ?f&~nil) 
         (soil-penetration# nil) (factHistory ?fh))
     =>
@@ -481,6 +481,7 @@
 ;)
 
 (defrule CAPABILITIES-CROSS-REGISTER::cross-register-measurements-from-cross-registered-instruments
+    "accumulates measurements from cross-registered instruments, explodes them into individual measurements, and asserts a cross-registered fact with the degree of cross-registration being 'spacecraft'"
 	(SYNERGIES::cross-registered-instruments (instruments $?ins) (platform ?sat) (factHistory ?fh))
 	?c <- (accumulate (bind ?str "")                        ;; initializer
                 (bind ?str (str-cat ?str " " $?m1))                    ;; action
