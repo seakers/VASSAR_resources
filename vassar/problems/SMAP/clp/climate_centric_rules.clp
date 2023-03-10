@@ -141,6 +141,7 @@
 
 
 (defrule MANIFEST::compute-spatial-resolution-and-swath-nadir-looking-no-scanning-imagers
+    "calculates the spatial resolution and swath for a nadir looking instrument without scanning using angular resolution, orbit altitude, and field of view. The equations used are: $$HorizontalSpatialResolution = 2 \times 1000 \times h \times \tan(\frac{d\theta}{2})$$ and $$Swatch = 2 \times 1000 \times h \times \tan(\frac{fov}{2})$$"
     ?MWR <- (CAPABILITIES::Manifested-instrument  (Geometry nadir) (scanning no-scanning) (Intent "Imaging multi-spectral radiometers -passive MW-"|"Imaging multi-spectral radiometers -passive optical-"|"High resolution optical imagers")
          (Angular-resolution# ?dtheta&~nil) (orbit-altitude# ?h&~nil) (Field-of-view# ?fov&~nil) (Horizontal-Spatial-Resolution# nil) (flies-in ?sat)(factHistory ?fh))
     =>
