@@ -13,7 +13,8 @@
     (modify ?m (synergy-level# 0))
     )
 
-(defrule SYNERGIES::spatial-disaggregation "A frequent coarse spatial resolution measurement can be combined with a sparse high spatial resolution measurement to produce a frequent high spatial resolution measurement with average accuracy"
+(defrule SYNERGIES::spatial-disaggregation
+    "identifies a synergy where a frequently sampled measurement with low spatial resolution and a sparsely sampled measurement with high spatial resolution can be combined to produce a frequent measurement with high spatial resolution and average accuracy"
     ?m1 <- (REQUIREMENTS::Measurement (Parameter ?p&~nil) (Temporal-resolution ?tr1&~nil) (Horizontal-Spatial-Resolution ?hsr1&~nil) (Accuracy ?a1&~nil) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 1)) (factHistory ?fh1))
     ?m2 <- (REQUIREMENTS::Measurement (Parameter ?p&~nil) (Temporal-resolution ?tr2&~nil) (Horizontal-Spatial-Resolution ?hsr2&~nil) (Accuracy ?a2&~nil) (Id ?id2) (taken-by ?ins2) (synergy-level# ?s2&:(< ?s2 1)) (factHistory ?fh2))
     (SYNERGIES::cross-registered (measurements $?m))
@@ -41,6 +42,7 @@
 )
 
 (defrule SYNERGIES::spatial-disaggregation-hyperspectral "A hyperspectral coarse spatial resolution measurement can be combined with a multispectral high spatial resolution measurement to produce a high spatial resolution hyperspectral measurement with lower accuracy"
+    "identifies a synergy between a hyperspectral coarse spatial resolution measurement and a multispectral high spatial resolution measurement, which can be combined to produce a high spatial resolution hyperspectral measurement with lower accuracy, and uses fuzzy logic equations to adjust temporal and spatial resolutions, and calculate the average accuracy of the resulting measurement"
     ?m1 <- (REQUIREMENTS::Measurement (Parameter ?p&~nil) (Temporal-resolution ?tr1&~nil) (Spectral-sampling Multispectral-10-100-channels) (Horizontal-Spatial-Resolution ?hsr1&~nil) (Accuracy ?a1&~nil) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 1)) (factHistory ?fh1))
     ?m2 <- (REQUIREMENTS::Measurement (Parameter ?p&~nil) (Temporal-resolution ?tr2&~nil) (Spectral-sampling Hyperspectral-100-channels-or-more) (Horizontal-Spatial-Resolution ?hsr2&~nil) (Accuracy ?a2&~nil) (Id ?id2) (taken-by ?ins2) (synergy-level# ?s2&:(< ?s2 1)) (factHistory ?fh2))
     (SYNERGIES::cross-registered (measurements $?m))
@@ -61,7 +63,8 @@
             (taken-by (str-cat ?ins1 "-" ?ins2 "-hyp-disaggregated")) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::spatial-disaggregation-hyperspectral) " D" (call ?m1 getFactId) " S" (call ?m2 getFactId) "}")))
 )
 
-(defrule SYNERGIES::spatial-averaging "any image can be averaged out in space to provide a new, better accuracy, coarser resolution image"
+(defrule SYNERGIES::spatial-averaging
+    "identifies a synergy where any image can be spatially averaged to provide a new, coarser resolution image with better accuracy, given that the same or better horizontal-spatial-resolution (HSR) is maintained at a low range (1km-10km) and high accuracy is maintained"
     ?m <- (REQUIREMENTS::Measurement (Parameter ?p&~nil)  (Horizontal-Spatial-Resolution ?hsr1&~nil) (Accuracy ?a2&~nil) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 1)))
     (test (>= (SameOrBetter Horizontal-Spatial-Resolution ?hsr1 Low-1km-10km) 0))
     (test (>= (SameOrBetter Accuracy High ?a2) 1))
@@ -71,7 +74,8 @@
     (duplicate ?m (Id (str-cat ?id1 "-space-averaged")) (Horizontal-Spatial-Resolution (eval (Worsen Horizontal-Spatial-Resolution ?hsr1))) (Accuracy (eval (Improve Accuracy ?a2))) (taken-by (str-cat ?ins1 "-space-averaged")) (synergy-level# (+ ?s1 1)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::spatial-averaging) " D" (call ?m getFactId) "}")))
 )
 
-(defrule SYNERGIES::time-averaging "any image can be averaged out in time to provide a new, better accuracy, sparser temporal resolution image"
+(defrule SYNERGIES::time-averaging
+    "identifies that any image can be averaged out in time to provide a new, better accuracy, sparser temporal resolution image"
     ?m <- (REQUIREMENTS::Measurement (Parameter ?p&~nil)  (Temporal-resolution# ?tr1&~nil) 
         (rms-variable-measurement# ?rms&:(> ?rms )) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 1)))
     (test (>= (SameOrBetter Temporal-resolution ?tr1 Low-3days-1-week) 0))
@@ -89,7 +93,7 @@
 ;; **********************
 
 (defrule SYNERGIES::seafloor-topography 
-    "Seafloor topography measurements can be inferred from sea level height and ocean mass distribution measurements"
+    "identifies that seafloor topography measurements can be estimated by combining sea level height and ocean mass distribution measurements"
     ?slh <- (REQUIREMENTS::Measurement (Parameter "3.2.1 Sea level height") (Id ?id1))
     ?grv <- (REQUIREMENTS::Measurement (Parameter "3.2.6 Ocean mass distribution") (Id ?id2))
     (SYNERGIES::cross-registered (measurements $?m))
@@ -100,7 +104,8 @@
     (duplicate ?slh (Id (str-cat ?id1 "-syn-" ?id2)) (Parameter "3.2.2 seafloor topography") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::seafloor-topography) " D" (call ?slh getFactId) " S" (call ?grv getFactId) "}"))  ))
 
 ;; river plumes and sediment fluxes from ocean color
-(defrule SYNERGIES::river-plumes-from-ocean-color "River plumes and sediment fluxes can be measured with an ocean color measurement of sufficient horizontal spatial resolution"
+(defrule SYNERGIES::river-plumes-from-ocean-color
+    "identifies a synergy between ocean color measurements of sufficient horizontal spatial resolution and extended ocean color measurements for the measurement of river plumes and sediment fluxes"
         ?oc <- (REQUIREMENTS::Measurement (Parameter "3.1.1 Ocean color - 410-680nm (Chlorophyll absorption and fluorescence, pigments, phytoplankton, CDOM)") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id1) (Temporal-resolution ?tr))
     (test (SameOrBetter Horizontal-Spatial-Resolution ?hsr High-10-100m))
     (test (SameOrBetter Temporal-resolution ?tr High-12h-24h))
@@ -112,7 +117,8 @@
     (duplicate ?oc (Id (str-cat ?id1 "-syn")) (Parameter "3.2.5 river plumes/sediment fluxes")  (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::river-plumes-from-ocean-color) " D" (call ?oc getFactId) " S" (call ?sub getFactId) "}")) ))
 
 ;; hydrocarbon monitoring from surface deformation and surface composition (SAR)
-(defrule SYNERGIES::hydrocarbon-reservoir-monitoring-from-surface-deformation "Hydrocarbon reservoirs can be monitored by measuring surface deformation and surface composition"
+(defrule SYNERGIES::hydrocarbon-reservoir-monitoring-from-surface-deformation
+    "identifies a synergy between monitoring hydrocarbon reservoirs by measuring surface deformation and surface composition, with the surface deformation parameter having a horizontal spatial resolution that is the same or better than High-10-100m, and the surface composition parameter being cross-registered with the same measurements as the surface deformation parameter"
         ?sd <- (REQUIREMENTS::Measurement (Parameter "2.2.1 surface deformation") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id1))
     (test (SameOrBetter Horizontal-Spatial-Resolution ?hsr High-10-100m))
     ?sub <-(REQUIREMENTS::Measurement (Parameter "2.6.5 surface composition") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id2))
@@ -123,20 +129,23 @@
     (duplicate ?sd (Id (str-cat ?id1 "-syn-" ?id2)) (Parameter "2.6.4 hydrocarbon reservoir monitoring") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::hydrocarbon-reservoir-monitoring-from-surface-deformation) " D" (call ?sd getFactId) " S" (call ?sub getFactId) "}"))  ))
 
 ;; flood monitoring from hi res topography (lidar)
-(defrule SYNERGIES::flood-monitoring-from-hires-topography "Hi res topography with 5m horizontal spatial resolution and 10cm accuracy allows flood monitoring"
+(defrule SYNERGIES::flood-monitoring-from-hires-topography
+    "states that high-resolution topography with 5m horizontal spatial resolution and 10cm accuracy can be used for flood monitoring"
         ?topo <-  (REQUIREMENTS::Measurement (Parameter "2.2.2 Hi-res topography") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id1) )
     (test (SameOrBetter Horizontal-Spatial-Resolution ?hsr Very-high-1-10m))
     =>
     (duplicate ?topo (Id (str-cat ?id1 "-syn")) (Parameter "2.6.4 hydrocarbon reservoir monitoring") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::flood-monitoring-from-hires-topography) " D" (call ?topo getFactId) "}"))))
 
 ;; groundwater storage from gravity measurement
-(defrule SYNERGIES::groundwater-storage-from-gravity "Groundwater storage can be inferred from precise gravity measurements"
+(defrule SYNERGIES::groundwater-storage-from-gravity
+    "infers the groundwater storage from precise gravity measurements and creates a corresponding new measurement fact"
         ?grav <- (REQUIREMENTS::Measurement (Parameter "5.1.1 Geoid and gravity field variations") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id1))
     =>
     (duplicate ?grav (Id (str-cat ?id1 "-syn")) (Parameter "2.7.3 groundwater storage") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::groundwater-storage-from-gravity) " D" (call ?grav getFactId) "}")) ))
 
 ;; glacier mass balance from gravity measurement
-(defrule SYNERGIES::glacier-mass-balance-from-gravity "Glacier mass balance measurements can be inferred from precise gravity measurements using ice topography measurements"
+(defrule SYNERGIES::glacier-mass-balance-from-gravity
+    "states that mass balance measurements can be inferred from precise gravity measurements using ice topography measurements"
         ?grav <- (REQUIREMENTS::Measurement (Parameter "5.1.1 Geoid and gravity field variations") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (taken-by ?ins1) (Id ?id1))
     	?topo <- (REQUIREMENTS::Measurement (Parameter "4.1.5 Ice Sheet topography") (Id ?id2) (taken-by ?ins2))
     	(SYNERGIES::cross-registered (measurements $?m))
@@ -146,13 +155,15 @@
     (duplicate ?topo (Id (str-cat ?id1 "-syn" ?id2)) (taken-by (str-cat ?ins1 "-syn" ?ins2)) (Parameter "4.1.3 glacier mass balance")(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::glacier-mass-balance-from-gravity) " D" (call ?topo getFactId) " S" (call ?grav getFactId) "}"))))
 
 ;; ocean mass distribution from gravity measurement
-(defrule SYNERGIES::ocean-mass-distribution-from-gravity "Ocean mass distribution can be inferred from precise gravity measurements"
+(defrule SYNERGIES::ocean-mass-distribution-from-gravity
+    "states that precise gravity measurements can be used to infer the distribution of ocean mass, and creates a new measurement fact for 'ocean mass distribution'"
         ?grav <- (REQUIREMENTS::Measurement (Parameter "5.1.1 Geoid and gravity field variations") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Id ?id1))
     =>
     (duplicate ?grav (Id (str-cat ?id1 "-syn")) (Parameter "3.2.6 Ocean mass distribution") (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::ocean-mass-distribution-from-gravity) " D" (call ?grav getFactId) ))))
 
 ; 1.8.16 Visible atmospheric plumes from aerosol measurement?
-(defrule SYNERGIES::visible-atmospheric-plume-from-aerosols "Visible atmospheric plumes can be measured from high temporal and spatial resolution multispectral aerosol measurements"
+(defrule SYNERGIES::visible-atmospheric-plume-from-aerosols
+    "identifies the synergy between high temporal and spatial resolution multispectral aerosol measurements and visible atmospheric plumes measurements, and duplicates the aerosol measurement with a new measurement parameter for visible atmospheric plumes"
         ?ae <- (REQUIREMENTS::Measurement (Parameter "1.1.1 aerosol height/optical depth") (Horizontal-Spatial-Resolution ?hsr & :(neq ?hsr nil)) (Temporal-resolution ?tr) (Id ?id1))
     (test (SameOrBetter Horizontal-Spatial-Resolution ?hsr High-10-100m))
     (test (SameOrBetter Temporal-resolution ?tr High-12h-24h))
@@ -160,13 +171,14 @@
     (duplicate ?ae (Id (str-cat ?id1 "-syn")) (Parameter "1.8.16 Visible atmospheric plumes")(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::visible-atmospheric-plume-from-aerosols) " D" (call ?ae getFactId) "}"))))
 
 ; 1.8.13 Black carbon and other polluting aerosols from other aerosol measurements?
-(defrule SYNERGIES::black-carbon-from-aerosols "Black carbon can be measured from polarimetric aerosol measurements"
+(defrule SYNERGIES::black-carbon-from-aerosols
+    "identifies a synergy between polarimetric aerosol measurements and black carbon measurements, where black carbon can be measured using polarimetric aerosol measurements, and duplicates the measurement with a new ID for black carbon"
         ?ae <- (REQUIREMENTS::Measurement (Parameter "1.1.2 aerosol shape, composition, physical and chemical properties") (Polarimetry yes) (Id ?id1))
     =>
     (duplicate ?ae (Id (str-cat ?id1 "-syn")) (Parameter "1.8.13 Black carbon and other polluting aerosols")(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::black-carbon-from-aerosols) " D" (call ?ae getFactId) "}"))))
 
 (defrule SYNERGIES::surface-composition-in-all-spectrum
-    "Surface composition measurements in different regions of the spectrum can be combined"
+    "identifies synergies between surface composition measurements taken in different spectral regions, and combines them using fuzzy logic to create a new measurement that includes both spectral regions. Equations: Temporal-resolution (fuzzy-min Temporal-resolution ?tr1 ?tr2), Spectral-sampling (fuzzy-max Spectral-sampling ?ss1 ?ss2)"
     ?VNIR <- (REQUIREMENTS::Measurement (Parameter ?p) (Spectral-region opt-VNIR+SWIR) (Temporal-resolution ?tr1&~nil) (Spectral-sampling ?ss1&~nil) (Id ?id1) (taken-by ?ins1))
     ?TIR <- (REQUIREMENTS::Measurement (Parameter ?p) (Spectral-region opt-TIR) (Temporal-resolution ?tr2&~nil) (Spectral-sampling ?ss2&~nil)  (Id ?id2) (taken-by ?ins2))
     (SYNERGIES::cross-registered (measurements $?m))
@@ -178,6 +190,7 @@
     )
 
 (defrule SYNERGIES::pointing-capability
+    "identifies a synergy between measurements with high pointing capability taken from an orbit altitude greater than 450 km with temporal resolutions of Low-3days-1-week or Very-low-1-3-weeks, which produces a new measurement with medium temporal resolution and a synergy level of 1"
     ?m<- (REQUIREMENTS::Measurement (Parameter ?p) (Temporal-resolution ?tr1) (Pointing-capability High) (orbit-altitude# ?h&:(> ?h 450)) (Id ?id1) (taken-by ?ins1) (synergy-level# 0))
     (or (test (eq ?tr1 Low-3days-1-week)) (test (eq ?tr1 Very-low-1-3-weeks)))
     =>
@@ -186,7 +199,7 @@
     )
 
 (defrule SYNERGIES::fire-monitoring-bands
-    ; (Parameter "A2.Fire Monitoring")
+    "identifies synergies between two measurements for fire monitoring by combining their temporal resolution and spectral sampling to produce a new measurement with higher accuracy and a wider spectral region. Equations: Fuzzy-min and fuzzy-max functions are used to combine the temporal resolution and spectral sampling values"
     ?TIR <- (REQUIREMENTS::Measurement (Id ?id1) (taken-by ?ins1) (Parameter "A2.Fire Monitoring") (Temporal-resolution ?tr1&~nil) (Spectral-sampling ?ss1&~nil)  (Accuracy ?acc&~Low) (Spectral-region opt-TIR))
     ?SWIR <- (REQUIREMENTS::Measurement (Id ?id2) (taken-by ?ins2) (Parameter "A2.Fire Monitoring") (Temporal-resolution ?tr2&~nil) (Spectral-sampling ?ss2&~nil) (Accuracy ?acc2&~Low) (Spectral-region opt-VNIR+SWIR))
     (test (neq ?ins1 ?ins2))
@@ -201,8 +214,7 @@
 
 ;; MW sounder increases sensitivity in the troposphere of IR sounding
 (defrule SYNERGIES::MW-and-IR-sounders-tropo-sensitivity
-    "A MW sounder increases the sensitivity in the troposphere of the IR sounder by providing all weather capability. 
-    This rule comes from AIRS-AMSU in EOS"
+    "states that a microwave (MW) sounder increases the sensitivity in the troposphere of an infrared (IR) sounder by providing all-weather capability, and the new measurement's sensitivity is set to 'High'"
     ?IR <- (REQUIREMENTS::Measurement (Parameter "1.2.1 Atmospheric temperature fields") 
         (Spectral-region ?sr1) (sensitivity-in-low-troposphere-PBL ?sensIR) 
         (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 1)))
@@ -226,9 +238,7 @@
 
 ;; all weather mw measurements complement ir measurements of the same parameter
 (defrule SYNERGIES::add-all-weather-capability
-    "If two measurements are of the same parameter and one has all weather capability 
-    and the other does not, we assume that we can assimilate them and have an all
-     weather capability measurement"
+    "identifies synergies between measurements of the same parameter, where one has all-weather capability and the other does not, allowing for assimilation of both to obtain an all-weather capability measurement"
     (declare (no-loop TRUE) (salience -50))
     ?no <- (REQUIREMENTS::Measurement (Parameter ?p) (All-weather no) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 3)))
     ?sub <- (REQUIREMENTS::Measurement (Parameter ?p) (All-weather yes) (Id ?id2) (taken-by ?ins2) (synergy-level# ?s2&:(< ?s2 1)))
@@ -246,8 +256,7 @@
     )
 
 (defrule SYNERGIES::add-cloud-mask
-    "If an imager is cross-registered with another instrument that does not provide cloud mask info,
-    the imager can be used to obtain cloud-cleared images of the second instrument"
+    "identifies a synergy between an imager and another instrument that does not provide cloud mask information, where the imager can be used to obtain cloud-cleared images of the second instrument, and it updates the fact history and synergy level of the measurement while inserting a new measurement with the added cloud mask information"
     (declare (no-loop TRUE) (salience 10))
     ?no <- (REQUIREMENTS::Measurement (Parameter ?p) (cloud-cleared no) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 2)) (factHistory ?fh))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "1.5.4 cloud mask") (Id ?id2) (taken-by ?ins2) (synergy-level# ?s2&:(< ?s2 1)))
@@ -262,9 +271,7 @@
 
 ;; mmw trace gases measurements complement ir measurements of the same parameter with enhanced sensitivity in cirrus
 (defrule SYNERGIES::add-sensitivity-in-cirrus-from-mmw-measurement
-    "If two measurements are of the same parameter and one has all weather capability 
-    and the other does not, we assume that we can assimilate them and have an all
-     weather capability measurement"
+    "identifies synergies between mmw trace gases measurements and ir measurements of the same parameter to enhance sensitivity in cirrus, by assimilating them and creating an all-weather capability measurement"
     (declare (no-loop TRUE) (salience -50))
     ?no <- (REQUIREMENTS::Measurement (Parameter ?p) (sensitivity-in-cirrus ?s&~High) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 2)))
     ?sub <- (REQUIREMENTS::Measurement (Parameter ?p) (sensitivity-in-cirrus High) (Id ?id2) (taken-by ?ins2) (synergy-level# ?s2&:(< ?s2 1)))
@@ -283,9 +290,7 @@
 
 ;; mmw trace gases measurements complement ir measurements of the same parameter with enhanced sensitivity in cirrus
 (defrule SYNERGIES::add-sensitivity-in-convective-clouds
-    "If two measurements are of the same parameter and one has high sensitivity over convective clodus
-    and the other does not, we assume that we can assimilate them and have a better measurement with 
-    sensitivity in convective clouds"
+    "identifies synergies between two measurements of the same parameter, where one has high sensitivity over convective clouds and the other does not, and assimilates them to produce a better measurement with sensitivity in convective clouds"
     (declare (no-loop TRUE) (salience -50))
     ?no <- (REQUIREMENTS::Measurement (Parameter ?p) (sensitivity-in-convective-clouds ?s&~High) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 2)))
     ?sub <- (REQUIREMENTS::Measurement (Parameter ?p) (sensitivity-in-convective-clouds High) (Id ?id2) (taken-by ?ins2) (synergy-level# ?s2&:(< ?s2 1)))
@@ -303,8 +308,7 @@
 
 ; limb sounders improve nadir sounders and vice versa because synergy between column and profile measurements independent
 (defrule SYNERGIES::column-vs-profile-chemistry-measurements
-    "If we have a profile measurement in addition to a column measurement, both are improved as a result 
-    because of two independents measurements of the total column."
+    "identifies a synergy between column and profile measurements in space mission design, where the addition of a profile measurement to a column measurement improves both measurements independently due to the two independent measurements of the total column"
     ?col <- (REQUIREMENTS::Measurement (Parameter ?p) (Vertical-Spatial-Resolution nil)
      (Id ?id1) (taken-by ?ins1) (Accuracy ?acc1&~nil) (synergy-level# ?s1&:(< ?s1 2)))
     ?sub <- (REQUIREMENTS::Measurement (Parameter ?p) (Vertical-Spatial-Resolution ?vsr&~nil)
@@ -324,9 +328,7 @@
 
 ; tropospheric vs stratospheric chemistry measurements
 (defrule SYNERGIES::tropo-vs-strato-chemistry-measurements
-    "If we have a chemistry measurement with high sensitivity in the troposphere, 
-    and another one with high sensitivity in the stratosphere, we have the complete 
-    atmosphere."
+    "identifies synergies between chemistry measurements in the troposphere and stratosphere by checking for high sensitivity in both regions and creates new measurements with high sensitivity in both regions, with synergy levels increased by one"
     (declare (no-loop TRUE) (salience -50))
     ?tro <- (REQUIREMENTS::Measurement (Parameter ?p) (sensitivity-in-low-troposphere-PBL High) (synergy-level# ?s1&:(< ?s1 2))
     (sensitivity-in-upper-troposphere-and-stratosphere ?sr&~High) (Id ?id1) (taken-by ?ins1) (Accuracy ?acc1&~nil))
@@ -348,7 +350,7 @@
 
 ; rain rate
 (defrule SYNERGIES::mmw-sounders-rain-rates-hurricanes
-    "If there is a cloud liquid water and precipitation measurement and the instrument has 
+    "states if there is a cloud liquid water and precipitation measurement and the instrument has
     H2O bands in the MMW then it can measure rain rate, hurricanes, etc"
     ?cl<-  (REQUIREMENTS::Measurement (Parameter "1.7.1 Cloud liquid water and precipitation rate")
         (taken-by ?ins) )
@@ -362,7 +364,7 @@
 
 ; sensitivity over oceans
 (defrule SYNERGIES::sensitivity-over-oceans
-    "If we have two measurements and one has good sensitivity over oceans we can combine it with
+    "states if we have two measurements and one has good sensitivity over oceans we can combine it with
     another one with lower sensitivity to create a new data product"
     
     ?no <- (REQUIREMENTS::Measurement (Parameter ?p) (sensitivity-over-oceans no)
@@ -407,7 +409,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::num-soundings-per-day-add
-    "Computes number of soundings per day from number of satellites carrying 
+    "computes number of soundings per day from number of satellites carrying
     GPS receivers, based on paper Research on the Number and Distribution of GPS
 Occultation Events for Orbit Selection for Global/Regional Observation, RAST 2007"
     
@@ -453,7 +455,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
 ;; clouds and radiation budget
 
 (defrule SYNERGIES::clouds-and-radiation2
-    "For EOS, it is convenient to express requirements in terms of number of CERES flying"
+    "identifies synergies between measurements of spectrally resolved SW radiance and cloud amount/distribution to create a new measurement of 'Clouds and radiation'"
     ?sub1<- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (Name ?n1&~ACRIM) )
     ?sub2<- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (Name ?n2&~?n1&~ACRIM) )
     ?sub3<- (REQUIREMENTS::Measurement (Parameter "1.9.3 Spectrally resolved SW radiance -0.3-2um-") (Id ?id1) (taken-by ?ins1)) 
@@ -473,7 +475,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::clouds-and-radiation3
-    "For EOS, it is convenient to express requirements in terms of number of CERES flying"
+    "identifies synergies between three Earth radiation budget radiometers and cloud amount/distribution measurements to produce a new measurement for the Clouds and radiation parameter,"
     ?sub1<- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (Name ?n1&~ACRIM))
     ?sub2<- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (Name ?n2&~?n1&~ACRIM))
     ?sub3<- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (Name ?n3&~?n2&~?n1&~ACRIM))
@@ -493,9 +495,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::CERES-sampling-multiple-angles-SW 
-    "For CERES, it is required to have one instrument in a cross-track scanning configuration 
-    to get good spatial sampling and another one in azimuth scanning configuration in order to 
-    sample all possible angles"
+    "identifies the need to have one instrument in a cross-track scanning configuration and another in azimuth scanning configuration to obtain good spatial sampling and to sample all possible angles respectively, and modifies the required measurement to have an rms-variable-angular-sampling# of 1.2, averaged over 30 days and calculated using the equation in Wielicki et al 1995"
     (declare (no-loop TRUE))
     ?sub1 <- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (scanning cross-track) (Name ?n1))
     ?sub2 <- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (scanning biaxial) (Name ?n2&:(neq ?n1 ?n2)))
@@ -506,9 +506,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::CERES-sampling-multiple-angles-LW
-    "For CERES, it is required to have one instrument in a cross-track scanning configuration 
-    to get good spatial sampling and another one in azimuth scanning configuration in order to 
-    sample all possible angles"
+    "identifies a synergy between two instruments used for Earth radiation budget radiometry, where one instrument is cross-track scanning and the other is azimuth scanning. The rule modifies a measurement to improve the sampling by setting a variable angular sampling to 1.2"
     (declare (no-loop TRUE))
     ?sub1 <- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (scanning cross-track) (Name ?n1))
     ?sub2 <- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (scanning biaxial) (Name ?n2&:(neq ?n1 ?n2)))
@@ -520,9 +518,6 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
 
 
 (defrule SYNERGIES::CERES-sampling-single-angle-SW
-    "For CERES, it is required to have one instrument in a cross-track scanning configuration 
-    to get good spatial sampling and another one in azimuth scanning configuration in order to 
-    sample all possible angles"
     (declare (no-loop TRUE))
     ?sub <- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (scanning cross-track) (Name ?n1))
     (not (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (scanning biaxial) ))
@@ -534,9 +529,6 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::CERES-sampling-single-angle-LW
-    "For CERES, it is required to have one instrument in a cross-track scanning configuration 
-    to get good spatial sampling and another one in azimuth scanning configuration in order to 
-    sample all possible angles"
     (declare (no-loop TRUE))
     ?sub <- (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (scanning cross-track) (Name ?n1))
     (not (CAPABILITIES::Manifested-instrument (Intent "Earth radiation budget radiometers") (scanning biaxial) ))
@@ -547,9 +539,6 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::CERES-sampling-time-SW2
-    "For CERES, it is required to have one instrument in a cross-track scanning configuration 
-    to get good spatial sampling and another one in azimuth scanning configuration in order to 
-    sample all possible angles"
     (declare (no-loop TRUE) (salience -3))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "A4.Clouds and radiation") (num-of-indep-samples# ?n&2))
     ?m <- (REQUIREMENTS::Measurement (Parameter "1.9.3 Spectrally resolved SW radiance -0.3-2um-") (rms-variable-time-sampling# ?tim) (factHistory ?fh))
@@ -560,19 +549,18 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::CERES-sampling-time-LW2
-    "For CERES, error due to sampling time decreases with  the number of independent samples as 
-    described in Wielicki et al 1995"
+    "identifies a synergy between the CERES measurement error and the number of independent samples, reducing error as the number of samples increases, as described in Wielicki et al. 1995"
     (declare (no-loop TRUE) (salience -3))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "A4.Clouds and radiation") (num-of-indep-samples# ?n&2))
     ?m <- (REQUIREMENTS::Measurement (Parameter "1.9.2 Spectrally resolved IR radiance -200-2000cm-1-") (rms-variable-time-sampling# ?tim) (factHistory ?fh))
-    (test (eq (numberp ?tim) FALSE));; essentially nil
+    (test (eq (numberp ?tim) FALdSE));; essentially nil
     =>
     (if (eq ?n 1) then (bind ?x 10.45) elif (eq ?n 2) then (bind ?x 2.3) elif (eq ?n 3) then (bind ?x 0.47) else (bind ?x 15.0))
     (modify ?m (rms-variable-time-sampling# ?x)(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::CERES-sampling-time-LW2) " " ?fh " S" (call ?sub getFactId) "}"))) ;; 1sigma, in W/m2 averaged over 30 days, Wielicki et al 1995
     )
 
 (defrule SYNERGIES::CERES-sampling-time-SW3
-    "For CERES, it is required to have one instrument in a cross-track scanning configuration 
+    "states, for the CERES mission, it is required to have one instrument in a cross-track scanning configuration
     to get good spatial sampling and another one in azimuth scanning configuration in order to 
     sample all possible angles"
     (declare (no-loop TRUE) (salience -3))
@@ -585,8 +573,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::CERES-sampling-time-LW3
-    "For CERES, error due to sampling time decreases with  the number of independent samples as 
-    described in Wielicki et al 1995"
+    "states that for CERES, error due to sampling time decreases with the number of independent samples, and assigns a value to the root mean square (RMS) error of the variable time sampling, based on the number of independent samples as shown in the equation: $\begin{cases} \text{if } n=1, \text{then } x=10.45\ \text{if } n=2, \text{then } x=2.3\ \text{if } n=3, \text{then } x=0.47\ \text{otherwise, } x=15.0 \end{cases}$ where $n$ is the number of independent samples and $x$ is the assigned value to the RMS error of the variable time sampling in units of W/m2 averaged over 30 days"
     (declare (no-loop TRUE) (salience -3))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "A4.Clouds and radiation") (num-of-indep-samples# ?n&3))
     ?m <- (REQUIREMENTS::Measurement (Parameter "1.9.2 Spectrally resolved IR radiance -200-2000cm-1-") (rms-variable-time-sampling# ?tim) (factHistory ?fh))
@@ -597,8 +584,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::radiation-budget-err-total-SW
-    "Computes total rms error for a radiation bugdte mission. Has 3 components, instrument error, 
-    angular sampling error, and time sampling error. See Wielicki et al 95 about CERES for more info"
+    "computes the total root mean square error for a radiation budget mission by summing the instrument error, angular sampling error, and time sampling error using the equation \sqrt{(\text{angular sampling error})^2 + (\text{instrument error})^2 + (\text{time sampling error})^2}. Equations: \sqrt{(\text{angular sampling error})^2 + (\text{instrument error})^2 + (\text{time sampling error})^2}. See Wielicki et al 95 about CERES for more info"
     (declare (no-loop TRUE) (salience -5))
     ?meas <- (REQUIREMENTS::Measurement (Parameter "1.9.3 Spectrally resolved SW radiance -0.3-2um-") (rms-variable-angular-sampling# ?ang)
          (rms-variable-time-sampling# ?tim) (rms-system-instrument# ?ins) (rms-total# 100.0) (factHistory ?fh))
@@ -613,8 +599,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::radiation-budget-err-total-LW
-    "Computes total rms error for a radiation bugdte mission. Has 3 components, instrument error, 
-    angular sampling error, and time sampling error. See Wielicki et al 95 about CERES for more info"
+    "calculates the total root mean square error for a radiation budget mission, taking into account instrument error, angular sampling error, and time sampling error using the equation \sqrt{(\text{angular sampling error})^2+(\text{instrument error})^2+(\text{time sampling error})^2}.. See Wielicki et al 95 about CERES for more info"
     (declare (no-loop TRUE) (salience -5))
     ?meas <- (REQUIREMENTS::Measurement (Parameter "1.9.2 Spectrally resolved IR radiance -200-2000cm-1-") (rms-variable-angular-sampling# ?ang)
          (rms-variable-time-sampling# ?tim) (rms-system-instrument# ?ins) (rms-total# 100.0) (factHistory ?fh))
@@ -634,8 +619,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
 
 ; 
 (defrule SYNERGIES::sea-surface-winds-combining-SAR-and-scatterometer
-    "sea surface winds from sar and scatterometers can be combined to increase sensitivity
-    see Monaldo et al, TGRS 2004 Vol 42, Iss 2"
+    "combines sea surface wind measurements from SAR and scatterometers to increase sensitivity, with the resulting sensitivity determined by the equation RMS = 0.75 * min(ERR1, ERR2), as described in Monaldo et al, TGRS 2004 Vol 42, Iss 2."
     (declare (no-loop TRUE))
     ?m1 <- (REQUIREMENTS::Measurement (Parameter "3.4.1 Ocean surface wind speed") (taken-by ?sar) (rms-variable-measurement# ?err1&~nil))
     ?m2 <- (REQUIREMENTS::Measurement (Parameter "3.4.1 Ocean surface wind speed") (taken-by ?scat&:(neq ?scat ?sar)) (rms-variable-measurement# ?err2&~nil) (factHistory ?fh))
@@ -650,8 +634,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
 
  
 (defrule SYNERGIES::sea-surface-winds-with-high-winds
-    "C-band scatterometry offers better sensitivity than Ka/Ku at high winds.
-    See Decadal Survey report on XOVWM mission"
+    "identifies the sensitivity of C-band scatterometry over Ka/Ku at high winds, assigning a high sensitivity to C-band scatterometry if its spectral region is MW-C, and low otherwise, using the equation (if (eq ?sp MW-C) then (bind ?sens High) else (bind ?sens Low)). See Decadal Survey report on XOVWM mission"
     (declare (no-loop TRUE))
     ;; sensitivity-in-high-winds high if C-band scatterometer
     ?m <- (REQUIREMENTS::Measurement (Parameter "3.4.1 Ocean surface wind speed") (taken-by ?ins) (sensitivity-in-high-winds nil)(factHistory ?fh))
@@ -668,8 +651,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
 
             
 (defrule SYNERGIES::add-multi-angular-capability
-    "If a multi-angular radiometer is combined with another imager 
-    then the common measurement combines the characteristics of the two"
+    "identifies the synergies that exist when a multi-angular radiometer is combined with another imager, and creates a common measurement that combines the characteristics of the two"
     (declare (no-loop TRUE) (salience 5))
     
     ?no <- (REQUIREMENTS::Measurement (Parameter ?p) (taken-by ?ins1) (Id ?id1) (ThreeD ?td1 &~ Full-3D) (synergy-level# ?s1&:(< ?s1 1)))
@@ -685,7 +667,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::HSR-TR-ThreeD-combination-scheme
-    "Combination of a MODIS-like instrument with an ASTER like instrument with a MISR like instrument"
+    "identifies a synergy between a MODIS-like instrument, an ASTER-like instrument, and a MISR-like instrument, by combining measurements with specific parameters and accuracy levels, and cross-registering them to produce a new measurement with improved horizontal spatial resolution and full 3D information"
     (declare (no-loop TRUE) (salience 10))
     
     ?MODIS <- (REQUIREMENTS::Measurement (Parameter ?p) (Accuracy High) (Horizontal-Spatial-Resolution Medium-100m-1km) (Temporal-resolution Medium-1day-3days) (taken-by ?ins1) (Id ?id1) (ThreeD ?td1 &~ Full-3D))
@@ -702,7 +684,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::temperature-sounding-suite
-    "Tempreature sounding requires a hyperspectral IR sounder, a MW sounder with T channels, and a cloud mask"
+    "identifies the requirements for temperature sounding, which requires a hyperspectral IR sounder, a MW sounder with T channels, and a cloud mask, and involves measurements of atmospheric temperature fields with certain spectral-sampling, vertical-spatial-resolution, and temporal-resolution, as well as high sensitivity and accuracy over oceans, and produces a new measurement with a higher synergy-level"
     (declare (no-loop TRUE) (salience 5))
     
     ?AIRS-MODIS <- (REQUIREMENTS::Measurement (Parameter "1.2.1 Atmospheric temperature fields") (cloud-cleared yes) (Vertical-Spatial-Resolution ?vsr1&~nil&~None) 
@@ -718,7 +700,6 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::GRAVITY-measurements2 
-   "(Iridium only) Define measurement capabilities of pair accelerometer - GPS receiver." 
     (declare (no-loop TRUE))
    ?this <- (REQUIREMENTS::Measurement (Parameter "5.1.1 Geoid and gravity field variations") (Id ?id1)
          (taken-by GRAVITY) (orbit-altitude# ?h) (orbit-anomaly# ?ano) (orbit-RAAN ?raan) (flies-in ?miss) (factHistory ?fh)) 
@@ -729,23 +710,17 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     
    => 
    (modify ?this (Accuracy High) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::GRAVITY-measurements2) " " ?fh " S" (call ?sub getFactId) "}"))) 
-   ;(assert (REQUIREMENTS::Measurement (Accuracy nil) (Accuracy# nil) (Accuracy2 nil) (All-weather nil) (avg-revisit-time-cold-regions# nil) (avg-revisit-time-global# nil) (avg-revisit-time-northern-hemisphere# nil) (avg-revisit-time-southern-hemisphere# nil) (avg-revisit-time-tropics# nil) (avg-revisit-time-US# nil) (band nil) (bias-calibration# nil) (cloud-cleared nil) (Continuity-over-time nil) (Coverage-of-region-of-interest Global) (Day-Night nil) (Field-of-view# nil) (flies-in ?miss) (Geometry nil) (High-lat-sensitivity nil) (Horizontal-Spatial-Resolution nil) (Horizontal-Spatial-Resolution# nil) (Horizontal-Spatial-Resolution2 nil) (Horizontal-Spatial-Resolution-Along-track nil) (Horizontal-Spatial-Resolution-Along-track# nil) (Horizontal-Spatial-Resolution-Cross-track nil) (Horizontal-Spatial-Resolution-Cross-track# nil) (Id GRAVITY6) (Instrument GRAVITY) (launch-date nil) (lifetime nil) (mission-architecture nil) (num-of-indep-samples# nil) (num-of-planes# nil) (num-of-sats-per-plane# nil) (On-board-calibration nil) (orbit-altitude# ?h) (orbit-anomaly# ?ano) (orbit-inclination nil) (orbit-RAAN ?raan) (orbit-type nil) (Parameter "5.1.1 Geoid and gravity field variations") (Penetration nil) (Pointing-capability High) (Polarimetry nil) (Radiometric-accuracy nil) (Radiometric-accuracy# nil) (Region-of-interest Global) (rms-system-instrument# nil) (rms-system-POD# nil) (rms-system-tropoH2O# nil) (rms-system-tropo-dry# nil) (rms-system-ionosphere# nil) (rms-system-model# nil) (rms-variable-angular-sampling# nil) (rms-variable-measurement# nil) (rms-system-tides# nil) (rms-variable-time-sampling# nil) (rms-total# nil) (sensitivity-in-cirrus nil) (sensitivity-in-convective-clouds nil) (sensitivity-in-high-winds nil) (sensitivity-in-low-troposphere-PBL nil) (sensitivity-in-upper-stratosphere nil) (sensitivity-in-upper-troposphere-and-stratosphere nil) (sensitivity-NEDT# nil) (sensitivity-over-lands nil) (sensitivity-over-oceans nil) (signal-to-noise-ratio# nil) (Spectral-region nil) (Spectral-resolution nil) (Spectral-resolution# nil) (Spectral-sampling nil) (Swath nil) (Swath# nil) (Swath2 nil) (synergy-level# nil) (taken-by GRAVITY) (Temporal-resolution Highest-1h-orless) (Temporal-resolution# nil) (ThreeD Some-3D-multi-angle) (Vertical-Spatial-Resolution nil) (Vertical-Spatial-Resolution# nil) (spectral-bands ))) 
-   (assert (REQUIREMENTS::Measurement (Accuracy nil) (Accuracy# nil) (Accuracy2 nil) (All-weather nil) (avg-revisit-time-cold-regions# nil) (avg-revisit-time-global# nil) (avg-revisit-time-northern-hemisphere# nil) (avg-revisit-time-southern-hemisphere# nil) (avg-revisit-time-tropics# nil) (avg-revisit-time-US# nil) (band nil) (bias-calibration# nil) (cloud-cleared nil) (Continuity-over-time nil) (Coverage-of-region-of-interest Global) (Day-Night nil) (Field-of-view# nil) (flies-in ?miss) (Geometry nil) (High-lat-sensitivity nil) (Horizontal-Spatial-Resolution nil) (Horizontal-Spatial-Resolution# nil) (Horizontal-Spatial-Resolution2 nil) (Horizontal-Spatial-Resolution-Along-track nil) (Horizontal-Spatial-Resolution-Along-track# nil) (Horizontal-Spatial-Resolution-Cross-track nil) (Horizontal-Spatial-Resolution-Cross-track# nil) (Id GRAVITY2) (Instrument GRAVITY) (launch-date nil) (lifetime nil) (mission-architecture nil) (num-of-indep-samples# nil) (num-of-planes# nil) (num-of-sats-per-plane# nil) (On-board-calibration nil) (orbit-altitude# ?h) (orbit-anomaly# ?ano) (orbit-inclination nil) (orbit-RAAN ?raan) (orbit-type nil) (Parameter "3.2.6 Ocean mass distribution") (Penetration nil) (Pointing-capability High) (Polarimetry nil) (Radiometric-accuracy nil) (Radiometric-accuracy# nil) (Region-of-interest Global) (rms-system-instrument# nil) (rms-system-POD# nil) (rms-system-tropoH2O# nil) (rms-system-tropo-dry# nil) (rms-system-ionosphere# nil) (rms-system-model# nil) (rms-variable-angular-sampling# nil) (rms-variable-measurement# nil) (rms-system-tides# nil) (rms-variable-time-sampling# nil) (rms-total# nil) (sensitivity-in-cirrus nil) (sensitivity-in-convective-clouds nil) (sensitivity-in-high-winds nil) (sensitivity-in-low-troposphere-PBL nil) (sensitivity-in-upper-stratosphere nil) (sensitivity-in-upper-troposphere-and-stratosphere nil) (sensitivity-NEDT# nil) (sensitivity-over-lands nil) (sensitivity-over-oceans nil) (signal-to-noise-ratio# nil) (Spectral-region nil) (Spectral-resolution nil) (Spectral-resolution# nil) (Spectral-sampling nil) (Swath nil) (Swath# nil) (Swath2 nil) (synergy-level# nil) (taken-by GRAVITY) (Temporal-resolution Highest-1h-orless) (Temporal-resolution# nil) (ThreeD Some-3D-multi-angle) (Vertical-Spatial-Resolution nil) (Vertical-Spatial-Resolution# nil) (spectral-bands )(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::GRAVITY-measurements2) " A" (call ?this getFactId) " A" (call ?sub getFactId) "}")))) 
+   (assert (REQUIREMENTS::Measurement (Accuracy nil) (Accuracy# nil) (Accuracy2 nil) (All-weather nil) (avg-revisit-time-cold-regions# nil) (avg-revisit-time-global# nil) (avg-revisit-time-northern-hemisphere# nil) (avg-revisit-time-southern-hemisphere# nil) (avg-revisit-time-tropics# nil) (avg-revisit-time-US# nil) (band nil) (bias-calibration# nil) (cloud-cleared nil) (Continuity-over-time nil) (Coverage-of-region-of-interest Global) (Day-Night nil) (Field-of-view# nil) (flies-in ?miss) (Geometry nil) (High-lat-sensitivity nil) (Horizontal-Spatial-Resolution nil) (Horizontal-Spatial-Resolution# nil) (Horizontal-Spatial-Resolution2 nil) (Horizontal-Spatial-Resolution-Along-track nil) (Horizontal-Spatial-Resolution-Along-track# nil) (Horizontal-Spatial-Resolution-Cross-track nil) (Horizontal-Spatial-Resolution-Cross-track# nil) (Id GRAVITY2) (Instrument GRAVITY) (launch-date nil) (lifetime nil) (mission-architecture nil) (num-of-indep-samples# nil) (num-of-planes# nil) (num-of-sats-per-plane# nil) (On-board-calibration nil) (orbit-altitude# ?h) (orbit-anomaly# ?ano) (orbit-inclination nil) (orbit-RAAN ?raan) (orbit-type nil) (Parameter "3.2.6 Ocean mass distribution") (Penetration nil) (Pointing-capability High) (Polarimetry nil) (Radiometric-accuracy nil) (Radiometric-accuracy# nil) (Region-of-interest Global) (rms-system-instrument# nil) (rms-system-POD# nil) (rms-system-tropoH2O# nil) (rms-system-tropo-dry# nil) (rms-system-ionosphere# nil) (rms-system-model# nil) (rms-variable-angular-sampling# nil) (rms-variable-measurement# nil) (rms-system-tides# nil) (rms-variable-time-sampling# nil) (rms-total# nil) (sensitivity-in-cirrus nil) (sensitivity-in-convective-clouds nil) (sensitivity-in-high-winds nil) (sensitivity-in-low-troposphere-PBL nil) (sensitivity-in-upper-stratosphere nil) (sensitivity-in-upper-troposphere-and-stratosphere nil) (sensitivity-NEDT# nil) (sensitivity-over-lands nil) (sensitivity-over-oceans nil) (signal-to-noise-ratio# nil) (Spectral-region nil) (Spectral-resolution nil) (Spectral-resolution# nil) (Spectral-sampling nil) (Swath nil) (Swath# nil) (Swath2 nil) (synergy-level# nil) (taken-by GRAVITY) (Temporal-resolution Highest-1h-orless) (Temporal-resolution# nil) (ThreeD Some-3D-multi-angle) (Vertical-Spatial-Resolution nil) (Vertical-Spatial-Resolution# nil) (spectral-bands )(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::GRAVITY-measurements2) " A" (call ?this getFactId) " A" (call ?sub getFactId) "}"))))
    (assert (REQUIREMENTS::Measurement (Accuracy nil) (Accuracy# nil) (Accuracy2 nil) (All-weather nil) (avg-revisit-time-cold-regions# nil) (avg-revisit-time-global# nil) (avg-revisit-time-northern-hemisphere# nil) (avg-revisit-time-southern-hemisphere# nil) (avg-revisit-time-tropics# nil) (avg-revisit-time-US# nil) (band nil) (bias-calibration# nil) (cloud-cleared nil) (Continuity-over-time nil) (Coverage-of-region-of-interest Global) (Day-Night nil) (Field-of-view# nil) (flies-in ?miss) (Geometry nil) (High-lat-sensitivity nil) (Horizontal-Spatial-Resolution nil) (Horizontal-Spatial-Resolution# nil) (Horizontal-Spatial-Resolution2 nil) (Horizontal-Spatial-Resolution-Along-track nil) (Horizontal-Spatial-Resolution-Along-track# nil) (Horizontal-Spatial-Resolution-Cross-track nil) (Horizontal-Spatial-Resolution-Cross-track# nil) (Id GRAVITY3) (Instrument GRAVITY) (launch-date nil) (lifetime nil) (mission-architecture nil) (num-of-indep-samples# nil) (num-of-planes# nil) (num-of-sats-per-plane# nil) (On-board-calibration nil) (orbit-altitude# ?h) (orbit-anomaly# ?ano) (orbit-inclination nil) (orbit-RAAN ?raan) (orbit-type nil) (Parameter "4.1.3 glacier mass balance") (Penetration nil) (Pointing-capability High) (Polarimetry nil) (Radiometric-accuracy nil) (Radiometric-accuracy# nil) (Region-of-interest Cold-regions) (rms-system-instrument# nil) (rms-system-POD# nil) (rms-system-tropoH2O# nil) (rms-system-tropo-dry# nil) (rms-system-ionosphere# nil) (rms-system-model# nil) (rms-variable-angular-sampling# nil) (rms-variable-measurement# nil) (rms-system-tides# nil) (rms-variable-time-sampling# nil) (rms-total# nil) (sensitivity-in-cirrus nil) (sensitivity-in-convective-clouds nil) (sensitivity-in-high-winds nil) (sensitivity-in-low-troposphere-PBL nil) (sensitivity-in-upper-stratosphere nil) (sensitivity-in-upper-troposphere-and-stratosphere nil) (sensitivity-NEDT# nil) (sensitivity-over-lands nil) (sensitivity-over-oceans nil) (signal-to-noise-ratio# nil) (Spectral-region nil) (Spectral-resolution nil) (Spectral-resolution# nil) (Spectral-sampling nil) (Swath nil) (Swath# nil) (Swath2 nil) (synergy-level# nil) (taken-by GRAVITY) (Temporal-resolution Highest-1h-orless) (Temporal-resolution# nil) (ThreeD Some-3D-multi-angle) (Vertical-Spatial-Resolution nil) (Vertical-Spatial-Resolution# nil) (spectral-bands )(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::GRAVITY-measurements2) " A" (call ?this getFactId) " A" (call ?sub getFactId) "}")))) 
    (assert (REQUIREMENTS::Measurement (Accuracy nil) (Accuracy# nil) (Accuracy2 nil) (All-weather nil) (avg-revisit-time-cold-regions# nil) (avg-revisit-time-global# nil) (avg-revisit-time-northern-hemisphere# nil) (avg-revisit-time-southern-hemisphere# nil) (avg-revisit-time-tropics# nil) (avg-revisit-time-US# nil) (band nil) (bias-calibration# nil) (cloud-cleared nil) (Continuity-over-time nil) (Coverage-of-region-of-interest Global) (Day-Night nil) (Field-of-view# nil) (flies-in ?miss) (Geometry nil) (High-lat-sensitivity nil) (Horizontal-Spatial-Resolution nil) (Horizontal-Spatial-Resolution# nil) (Horizontal-Spatial-Resolution2 nil) (Horizontal-Spatial-Resolution-Along-track nil) (Horizontal-Spatial-Resolution-Along-track# nil) (Horizontal-Spatial-Resolution-Cross-track nil) (Horizontal-Spatial-Resolution-Cross-track# nil) (Id GRAVITY4) (Instrument GRAVITY) (launch-date nil) (lifetime nil) (mission-architecture nil) (num-of-indep-samples# nil) (num-of-planes# nil) (num-of-sats-per-plane# nil) (On-board-calibration nil) (orbit-altitude# ?h) (orbit-anomaly# ?ano) (orbit-inclination nil) (orbit-RAAN ?raan) (orbit-type nil) (Parameter "2.7.3 groundwater storage") (Penetration nil) (Pointing-capability High) (Polarimetry nil) (Radiometric-accuracy nil) (Radiometric-accuracy# nil) (Region-of-interest Global) (rms-system-instrument# nil) (rms-system-POD# nil) (rms-system-tropoH2O# nil) (rms-system-tropo-dry# nil) (rms-system-ionosphere# nil) (rms-system-model# nil) (rms-variable-angular-sampling# nil) (rms-variable-measurement# nil) (rms-system-tides# nil) (rms-variable-time-sampling# nil) (rms-total# nil) (sensitivity-in-cirrus nil) (sensitivity-in-convective-clouds nil) (sensitivity-in-high-winds nil) (sensitivity-in-low-troposphere-PBL nil) (sensitivity-in-upper-stratosphere nil) (sensitivity-in-upper-troposphere-and-stratosphere nil) (sensitivity-NEDT# nil) (sensitivity-over-lands nil) (sensitivity-over-oceans nil) (signal-to-noise-ratio# nil) (Spectral-region nil) (Spectral-resolution nil) (Spectral-resolution# nil) (Spectral-sampling nil) (Swath nil) (Swath# nil) (Swath2 nil) (synergy-level# nil) (taken-by GRAVITY) (Temporal-resolution Highest-1h-orless) (Temporal-resolution# nil) (ThreeD Some-3D-multi-angle) (Vertical-Spatial-Resolution nil) (Vertical-Spatial-Resolution# nil) (spectral-bands )(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::GRAVITY-measurements2) " A" (call ?this getFactId) " A" (call ?sub getFactId) "}")))) 
    (assert (REQUIREMENTS::Measurement (Accuracy nil) (Accuracy# nil) (Accuracy2 nil) (All-weather nil) (avg-revisit-time-cold-regions# nil) (avg-revisit-time-global# nil) (avg-revisit-time-northern-hemisphere# nil) (avg-revisit-time-southern-hemisphere# nil) (avg-revisit-time-tropics# nil) (avg-revisit-time-US# nil) (band nil) (bias-calibration# nil) (cloud-cleared nil) (Continuity-over-time nil) (Coverage-of-region-of-interest Global) (Day-Night nil) (Field-of-view# nil) (flies-in ?miss) (Geometry nil) (High-lat-sensitivity nil) (Horizontal-Spatial-Resolution nil) (Horizontal-Spatial-Resolution# nil) (Horizontal-Spatial-Resolution2 nil) (Horizontal-Spatial-Resolution-Along-track nil) (Horizontal-Spatial-Resolution-Along-track# nil) (Horizontal-Spatial-Resolution-Cross-track nil) (Horizontal-Spatial-Resolution-Cross-track# nil) (Id GRAVITY5) (Instrument GRAVITY) (launch-date nil) (lifetime nil) (mission-architecture nil) (num-of-indep-samples# nil) (num-of-planes# nil) (num-of-sats-per-plane# nil) (On-board-calibration nil) (orbit-altitude# ?h) (orbit-anomaly# ?ano) (orbit-inclination nil) (orbit-RAAN ?raan) (orbit-type nil) (Parameter "3.2.2 seafloor topography") (Penetration nil) (Pointing-capability High) (Polarimetry nil) (Radiometric-accuracy nil) (Radiometric-accuracy# nil) (Region-of-interest Global) (rms-system-instrument# nil) (rms-system-POD# nil) (rms-system-tropoH2O# nil) (rms-system-tropo-dry# nil) (rms-system-ionosphere# nil) (rms-system-model# nil) (rms-variable-angular-sampling# nil) (rms-variable-measurement# nil) (rms-system-tides# nil) (rms-variable-time-sampling# nil) (rms-total# nil) (sensitivity-in-cirrus nil) (sensitivity-in-convective-clouds nil) (sensitivity-in-high-winds nil) (sensitivity-in-low-troposphere-PBL nil) (sensitivity-in-upper-stratosphere nil) (sensitivity-in-upper-troposphere-and-stratosphere nil) (sensitivity-NEDT# nil) (sensitivity-over-lands nil) (sensitivity-over-oceans nil) (signal-to-noise-ratio# nil) (Spectral-region nil) (Spectral-resolution nil) (Spectral-resolution# nil) (Spectral-sampling nil) (Swath nil) (Swath# nil) (Swath2 nil) (synergy-level# nil) (taken-by GRAVITY) (Temporal-resolution Highest-1h-orless) (Temporal-resolution# nil) (ThreeD Some-3D-multi-angle) (Vertical-Spatial-Resolution nil) (Vertical-Spatial-Resolution# nil) (spectral-bands )(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::GRAVITY-measurements2) " A" (call ?this getFactId) " A" (call ?sub getFactId) "}")))) 
-   ;(assert (SYNERGIES::cross-registered (measurements GRAVITY1 GRAVITY2 GRAVITY3 GRAVITY4 GRAVITY5) (degree-of-cross-registration instrument) (platform GRAVITY))) 
    )
 
 (defrule SYNERGIES::fire-monitoring
-    "If there is a multispectral disaster monitoring measurement, then we can do fire monitoring"
+    "identifies synergies between multispectral disaster monitoring and CO2 measurements to enable fire monitoring, and creates a new measurement with parameters Fire Monitoring and medium accuracy"
     ?this <- (REQUIREMENTS::Measurement (Id ?id1) (taken-by ?ins1) (Parameter "2.6.3 disaster monitoring") (Spectral-sampling ?ss &~Multispectral-10-100-channels &~Hyperspectral-100-channels-or-more))
     ?sub <- (REQUIREMENTS::Measurement (Id ?id2) (taken-by ?ins2) (Parameter "1.8.3 CO2") (Spectral-sampling Multispectral-10-100-channels))
-    ;(SYNERGIES::cross-registered (measurements $?m))
-    ;(test (member$ ?id1 $?m))
-    ;(test (member$ ?id2 $?m))
     =>
-    ;(printout t fire crlf)
     (duplicate ?this (Parameter "A2.Fire Monitoring") (Id (str-cat ?id1 "-syn-" ?id2 )) (Accuracy Medium)
          (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (Spectral-sampling Multispectral-10-100-channels)(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::fire-monitoring) " D" (call ?this getFactId) " S" (call ?sub getFactId) "}")))
     )
@@ -753,34 +728,23 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
 
 
 (defrule SYNERGIES::CO2-temperature-error
-    "If a laser CO2 measurement error is accompanied by a passive temperature measurement 
-    then the accuracy of the CO2 retrieval improves"
+    "identifies a synergy between a laser CO2 measurement error and a passive temperature measurement, where if the two measurements are taken together, the accuracy of the CO2 retrieval improves"
     ?CO2 <- (REQUIREMENTS::Measurement (Id ?id1) (taken-by ?ins1) (Parameter "1.8.3 CO2") (rms-system-tropoH2O# High)(factHistory ?fh))
     ?T <- (REQUIREMENTS::Measurement (Id ?id2) (taken-by ?ins2) (Parameter "1.2.1 Atmospheric temperature fields") (Spectral-region opt-SWIR))
-    ;(SYNERGIES::cross-registered (measurements $?m))
-    ;(test (member$ ?id1 $?m))
-    ;(test (member$ ?id2 $?m))
     =>
-    ;(printout t temp crlf)
     (modify ?CO2 (rms-system-tropoH2O# Low) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (Id (str-cat ?id1 "-syn-" ?id2 )) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::CO2-temperature-error) " " ?fh " S" (call ?T getFactId) "}")))
     )
 
 (defrule SYNERGIES::CO2-pressure-error
-    "If a laser CO2 measurement error is accompanied by a passive O2 measurement 
-    then the accuracy of the CO2 retrieval improves"
+    "identifies a synergy between laser CO2 measurements and passive O2 measurements, where if a CO2 measurement error is accompanied by a passive O2 measurement, the accuracy of the CO2 retrieval improves"
     ?CO2 <- (REQUIREMENTS::Measurement (Id ?id1) (taken-by ?ins1) (Parameter "1.8.3 CO2") (rms-system-tropo-dry# High)(factHistory ?fh))
     ?T <- (REQUIREMENTS::Measurement (Id ?id2) (taken-by ?ins2) (Parameter "1.8.6 O2") (Spectral-region opt-SWIR))
-    ;(SYNERGIES::cross-registered (measurements $?m))
-    ;(test (member$ ?id1 $?m))
-    ;(test (member$ ?id2 $?m))
     =>
-    ;(printout t pressure crlf)
     (modify ?CO2 (rms-system-tropo-dry# Low) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (Id (str-cat ?id1 "-syn-" ?id2 )) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::CO2-pressure-error) " " ?fh " S" (call ?T getFactId) "}")))
     )
 
 (defrule SYNERGIES::ocean-wind-vector-sensitivity-high-winds
-    "If a Ku-band measurement of ocean winds is combined with a C-band measurement 
-    then the sensitivity at high speed improves"
+    "identifies that combining a Ku-band measurement of ocean winds with a C-band measurement can improve sensitivity at high speed"
     (declare (salience 10) (no-loop TRUE))
     ?C <- (REQUIREMENTS::Measurement (Id ?id1) (taken-by ?ins1) (Parameter ?p) (Horizontal-Spatial-Resolution Very-low-10-100km) (sensitivity-in-high-winds High)) 
     ?Ku <- (REQUIREMENTS::Measurement (Id ?id2) (taken-by ?ins2) (Parameter ?p) (Horizontal-Spatial-Resolution Low-1km-10km) (sensitivity-in-high-winds Low)) 
@@ -788,16 +752,12 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (SYNERGIES::cross-registered (measurements $?m)) 
     (test (member$ ?id1 $?m)) 
     (test (member$ ?id2 $?m)) 
-    ;(not (REQUIREMENTS::Measurement (Parameter ?p) (Horizontal-Spatial-Resolution Low-1km-10km) (sensitivity-in-high-winds High)))
     =>
-    ;(assert (SYNERGIES::cross-registered (measurements (insert$ $?m (+ 1 (length$ $?m)) (str-cat ?id1 "-syn-" ?id2 )))))
-    ;(printout t winds crlf)
     (duplicate ?Ku (sensitivity-in-high-winds High) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (Id (str-cat ?id1 "-syn-" ?id2 ))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::ocean-wind-vector-sensitivity-high-winds) " D" (call ?Ku getFactId) " S" (call ?C getFactId) "}")))
     )
 
 (defrule SYNERGIES::ocean-wind-vector-complete
-    "If a Ku-band measurement of ocean winds is combined with a C-band measurement 
-    and a passive measurement then this is the optimal wind measurement"
+    "identifies the optimal wind measurement by combining a Ku-band measurement of ocean winds with a C-band measurement and a passive measurement, given specific criteria for spatial resolution and sensitivity, and creates a new measurement with the same attributes as the Ku-band measurement"
     (declare (salience 10) (no-loop TRUE))
     ?C <- (REQUIREMENTS::Measurement (Id ?id1) (taken-by ?ins1) (Parameter ?p) (Horizontal-Spatial-Resolution Very-low-10-100km) (sensitivity-in-high-winds High)) 
     ?Ku <- (REQUIREMENTS::Measurement (Id ?id2) (taken-by ?ins2) (Parameter ?p) (Horizontal-Spatial-Resolution Low-1km-10km) (sensitivity-in-high-winds Low)) 
@@ -807,14 +767,11 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (test (member$ ?id1 $?m)) (test (member$ ?id2 $?m)) (test (member$ ?id3 $?m)) 
     (not (REQUIREMENTS::Measurement (Parameter ?p) (Horizontal-Spatial-Resolution Low-1km-10km) (sensitivity-in-high-winds High) (sensitivity-in-rain High) (rms-system-tropoH2O# Low)))
     =>
-    ;(assert (SYNERGIES::cross-registered (measurements (insert$ $?m (+ 1 (length$ $?m)) (str-cat ?id1 "-syn-" ?id2 )))))
-    ;(printout t complete crlf)
     (duplicate ?Ku (sensitivity-in-high-winds High) (sensitivity-in-rain High) (rms-system-tropoH2O# Low) (taken-by (str-cat ?ins1 "-syn-" ?ins2 "-syn-" ?ins3)) (Id (str-cat ?id1 "-syn-" ?id2 "-syn-" ?id3))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::ocean-wind-vector-complete) " D" (call ?Ku getFactId) " S" (call ?C getFactId) " S" (call ?X getFactId) "}")))
     )
 
 (defrule SYNERGIES::ocean-wind-vector-sensitivity-in-rain
-    "If a Ku-band measurement of ocean winds is combined with a C-band measurement 
-    then the sensitivity at high speed improves"
+    "identifies that combining a Ku-band measurement of ocean winds with a C-band measurement improves sensitivity at high speed in the presence of rain"
     (declare (salience 10) (no-loop TRUE))
     ?X <- (REQUIREMENTS::Measurement (Id ?id1) (taken-by ?ins1) (Parameter ?p)  (Horizontal-Spatial-Resolution Very-low-10-100km) (sensitivity-in-rain High)) 
     ?Ku <- (REQUIREMENTS::Measurement (Id ?id2) (taken-by ?ins2) (Parameter ?p) (Horizontal-Spatial-Resolution Low-1km-10km) (sensitivity-in-rain Low)) 
@@ -822,16 +779,12 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (SYNERGIES::cross-registered (measurements $?m)) 
     (test (member$ ?id1 $?m)) 
     (test (member$ ?id2 $?m)) 
-    ;(not (REQUIREMENTS::Measurement (Parameter ?p) (Horizontal-Spatial-Resolution Low-1km-10km) (sensitivity-in-rain High))) 
     =>
-    ;(assert (SYNERGIES::cross-registered (measurements (insert$ $?m (+ 1 (length$ $?m)) (str-cat ?id1 "-syn-" ?id2 )))))
-    ;(printout t rain crlf)
     (duplicate ?Ku (sensitivity-in-rain High) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (Id (str-cat ?id1 "-syn-" ?id2 ))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::ocean-wind-vector-sensitivity-in-rain) " D" (call ?Ku getFactId) " S" (call ?X getFactId) "}")))
     )
 
 (defrule SYNERGIES::ocean-wind-vector-atmospheric-correction
-    "If a Ku-band measurement of ocean winds is combined with a X-band passive measurement 
-    then the accuracy of the retrieval improves"
+    "identifies a synergy between a Ku-band measurement of ocean winds and an X-band passive measurement, where the accuracy of the retrieval improves when they are combined, and the rule uses the conditions of the measurements' parameters, horizontal-spatial-resolution, and rms-system-tropoH2O#, as well as a test for a specific measurement group, to trigger the duplication of the Ku-band measurement with improved accuracy."
     (declare (salience 10) (no-loop TRUE))
     ?X <- (REQUIREMENTS::Measurement (Id ?id1) (taken-by ?ins1) (Parameter ?p)  (Horizontal-Spatial-Resolution Very-low-10-100km) (rms-system-tropoH2O# Low)) 
     ?Ku <- (REQUIREMENTS::Measurement (Id ?id2) (taken-by ?ins2) (Parameter ?p) (Horizontal-Spatial-Resolution Low-1km-10km) (rms-system-tropoH2O# High)) 
@@ -839,15 +792,12 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (SYNERGIES::cross-registered (measurements $?m)) 
     (test (member$ ?id1 $?m)) 
     (test (member$ ?id2 $?m)) 
-    ;(not (REQUIREMENTS::Measurement (Parameter ?p) (Horizontal-Spatial-Resolution Low-1km-10km) (rms-system-tropoH2O# Low))) 
     =>
-    ;(assert (SYNERGIES::cross-registered (measurements (insert$ $?m (+ 1 (length$ $?m)) (str-cat ?id1 "-syn-" ?id2 )))))
-    ;(printout t atmo crlf)
     (duplicate ?Ku (rms-system-tropoH2O# Low) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (Id (str-cat ?id1 "-syn-" ?id2 ))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::ocean-wind-vector-atmospheric-correction) " D" (call ?Ku getFactId) " S" (call ?X getFactId) "}")))
     )
 
 (defrule SYNERGIES::cross-instrument-calibration-heritage-SCLP
-    "If the SCLP radiometer is flown together with the SAR, then the calibration of the SAR is better"
+    "identifies a synergy between the SCLP radiometer and SAR instruments, where if flown together, the calibration of the SAR is improved, and modifies the SAR measurement by setting the onboard calibration to High"
     ?SAR <- (REQUIREMENTS::Measurement (Parameter "4.2.1 snow-water equivalence") (Illumination Active) (On-board-calibration ?obc&~High) (taken-by ?ins1) (Id ?id1) (factHistory ?fh))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "4.2.1 snow-water equivalence") (Illumination Passive) (taken-by ?ins2) (Id ?id2))
     (SYNERGIES::cross-registered (measurements $?m))
@@ -866,7 +816,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::several-lidars-for-aerosols
-    "If there are several lidars flying on the program then the temporal resolution is increased"
+    "identifies a synergy where having multiple lidars for aerosol extinction profiles/vertical concentration measurements with very low temporal resolutions can increase coverage, and generates a new measurement with medium temporal resolution that combines the measurements from the multiple lidars"
     ?m1 <- (REQUIREMENTS::Measurement (Parameter "1.1.4 aerosol extinction profiles/vertical concentration") (orbit-altitude# ?h1&~nil) (orbit-type ?typ1) 
         (orbit-RAAN ?raan1) (orbit-inclination ?inc1) (Temporal-resolution ?tr1)  (taken-by ?ins1) (Id ?id1))
     ?sub1 <- (REQUIREMENTS::Measurement (Parameter "1.1.4 aerosol extinction profiles/vertical concentration") (orbit-altitude# ?h2&~nil) (orbit-type ?typ2) 
@@ -876,10 +826,6 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (test (eq (str-index syn ?ins1) FALSE))
     (test (eq (str-index syn ?ins2) FALSE))
     (test (eq (str-index syn ?ins3) FALSE))
-    ;(SYNERGIES::cross-registered (measurements $?m))
-    ;(test (member$ ?id1 $?m))
-    ;(test (member$ ?id2 $?m))
-    ;(test (member$ ?id3 $?m))
     (test (SameOrBetter Temporal-resolution ?tr1 Very-low-1-3-weeks))
     (test (SameOrBetter Temporal-resolution ?tr2 Very-low-1-3-weeks))
     (test (SameOrBetter Temporal-resolution ?tr3 Very-low-1-3-weeks))
@@ -891,7 +837,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::AOD-lidar-passive-combination
-    "A lidar + a passive sensor can measure AOD with required VSR and TR"
+    "identifies that a combination of a lidar and a passive sensor can measure aerosol optical depth (AOD) with required vertical-spatial-resolution (VSR) and temporal-resolution (TR), using the cross-registered measurements, and creates a duplicate lidar measurement with the passive sensor's temporal-resolution and original lidar's vertical-spatial-resolution"
     ?lidar <- (REQUIREMENTS::Measurement (Parameter "1.1.1 aerosol height/optical depth") (Illumination Active) (Temporal-resolution ?tr1) (Vertical-Spatial-Resolution ?vsr1) (taken-by ?ins1) (Id ?id1))
     ?pass <- (REQUIREMENTS::Measurement (Parameter "1.1.1 aerosol height/optical depth") (Illumination Passive) (Temporal-resolution ?tr2) (Vertical-Spatial-Resolution ?vsr2) (taken-by ?ins2) (Id ?id2))
     (SYNERGIES::cross-registered (measurements $?m))
@@ -903,8 +849,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::NOx-strategy
-    
-    "A GEO + a LEO sensor can measure NOx with required VSR, TR, and sensitivity in the troposphere"
+    "identifies that a combination of a GEO and a LEO sensor can measure NOx in the troposphere with required VSR, TR, and sensitivity, and produces a new measurement with the same temporal resolution as the GEO sensor but with the higher sensitivity of the LEO sensor, as well as cloud-cleared, by cross-registering the two measurements and using a cloud mask measurement"
     ?GEO <- (REQUIREMENTS::Measurement (Parameter "1.8.7 NOx-NO, NO2-, N2O5, HNO3")  (Temporal-resolution ?tr1&Highest-1h-orless) (Vertical-Spatial-Resolution ?vsr1&~Medium-200m-2km&~Low-2km-or-greater) (sensitivity-in-low-troposphere-PBL Low) (taken-by ?ins1) (Id ?id1))
     ?LEO <- (REQUIREMENTS::Measurement (Parameter "1.8.7 NOx-NO, NO2-, N2O5, HNO3") (Temporal-resolution ?tr2&Medium-1day-3days) (Vertical-Spatial-Resolution ?vsr2&~nil) (sensitivity-in-low-troposphere-PBL ?tro&High) (taken-by ?ins2) (Id ?id2))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "1.5.4 cloud mask") (Id ?id3) (taken-by ?ins3) (synergy-level# ?s3&:(< ?s3 1)))
@@ -914,14 +859,12 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (test (member$ ?id2 $?m))
     (test (member$ ?id3 $?m))
     =>
-    ;(printout t Nox "tr = " ?tr1 "vsr = " ?vsr2 "tropo = " ?tro crlf)
     (duplicate ?LEO (Region-of-interest Global) (Temporal-resolution ?tr1) (Vertical-Spatial-Resolution ?vsr2) (sensitivity-in-low-troposphere-PBL ?tro) (cloud-cleared yes) (taken-by (str-cat ?ins1 "-syn-" ?ins2))
          (Id (str-cat ?id1 "-syn-" ?id2 ))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::NOx-strategy) " D" (call ?LEO getFactId) " S" (call ?GEO getFactId) " S" (call ?sub getFactId) "}")))
     )
 
 (defrule SYNERGIES::formaldehyde-strategy
-    
-    "A GEO + a LEO sensor can measure CH2OH with required VSR, TR, and sensitivity in the troposphere"
+    "identifies that a combination of a GEO and a LEO sensor can measure CH2OH with required Vertical-Spatial-Resolution, Temporal-resolution, and sensitivity in the troposphere, given that they have the same or better Vertical-Spatial-Resolution as the LEO sensor and are cross-registered with a cloud mask measurement, which can produce a new measurement of CH2OH, and the output is a duplicate of the LEO measurement with updated information"
     ?GEO <- (REQUIREMENTS::Measurement (Parameter "1.8.8 CH2O and non-CH4 VOC")  (Temporal-resolution ?tr1&Highest-1h-orless) (Vertical-Spatial-Resolution ?vsr1&~Medium-200m-2km&~Low-2km-or-greater) (sensitivity-in-low-troposphere-PBL Low) (taken-by ?ins1) (Id ?id1))
     ?LEO <- (REQUIREMENTS::Measurement (Parameter "1.8.8 CH2O and non-CH4 VOC") (Temporal-resolution ?tr2&Medium-1day-3days) (Vertical-Spatial-Resolution ?vsr2&~nil) (sensitivity-in-low-troposphere-PBL ?tro&High) (taken-by ?ins2) (Id ?id2))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "1.5.4 cloud mask") (Id ?id3) (taken-by ?ins3) (synergy-level# ?s3&:(< ?s3 1)))
@@ -931,14 +874,12 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (test (member$ ?id2 $?m))
     (test (member$ ?id3 $?m))
     =>
-    ;(printout t Nox "tr = " ?tr1 "vsr = " ?vsr2 "tropo = " ?tro crlf)
     (duplicate ?LEO (Region-of-interest Global) (Temporal-resolution ?tr1) (Vertical-Spatial-Resolution ?vsr2) (sensitivity-in-low-troposphere-PBL ?tro) (cloud-cleared yes) (taken-by (str-cat ?ins1 "-syn-" ?ins2))
          (Id (str-cat ?id1 "-syn-" ?id2 ))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::formaldehyde-strategy) " D" (call ?LEO getFactId) " S" (call ?GEO getFactId) " S" (call ?sub getFactId) "}")))
     )
 
 (defrule SYNERGIES::SO2-strategy
-    
-    "A GEO + a LEO sensor can measure SO2 with required VSR, TR, and sensitivity in the troposphere"
+    "identifies that a combination of a GEO and a LEO sensor can measure SO2 with required vertical and temporal resolution and sensitivity in the troposphere, and produces a duplicate measurement with the same sensitivity but better vertical spatial resolution, by cross-registering both measurements and clearing clouds"
     ?GEO <- (REQUIREMENTS::Measurement (Parameter "1.8.11 SO2")  (Temporal-resolution ?tr1&Highest-1h-orless) (Vertical-Spatial-Resolution ?vsr1&~Medium-200m-2km&~Low-2km-or-greater) (sensitivity-in-low-troposphere-PBL Low) (taken-by ?ins1) (Id ?id1))
     ?LEO <- (REQUIREMENTS::Measurement (Parameter "1.8.11 SO2") (Temporal-resolution ?tr2&Medium-1day-3days) (Vertical-Spatial-Resolution ?vsr2&~nil) (sensitivity-in-low-troposphere-PBL ?tro&High) (taken-by ?ins2) (Id ?id2))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "1.5.4 cloud mask") (Id ?id3) (taken-by ?ins3) (synergy-level# ?s3&:(< ?s3 1)))
@@ -948,14 +889,12 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (test (member$ ?id2 $?m))
     (test (member$ ?id3 $?m))
     =>
-    ;(printout t Nox "tr = " ?tr1 "vsr = " ?vsr2 "tropo = " ?tro crlf)
     (duplicate ?LEO (Region-of-interest Global) (Temporal-resolution ?tr1) (Vertical-Spatial-Resolution ?vsr2) (sensitivity-in-low-troposphere-PBL ?tro) (cloud-cleared yes) (taken-by (str-cat ?ins1 "-syn-" ?ins2))
          (Id (str-cat ?id1 "-syn-" ?id2 ))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::SO2-strategy) " D" (call ?LEO getFactId) " S" (call ?GEO getFactId) " S" (call ?sub getFactId) "}")))
     )
 
 (defrule SYNERGIES::black-carbon-strategy
-    
-    "A GEO + a LEO sensor can measure SO2 with required VSR, TR, and sensitivity in the troposphere"
+    "identifies that a GEO and a LEO sensor can measure SO2 in the troposphere with required Vertical Spatial Resolution (VSR), Temporal Resolution (TR), and sensitivity, and produces a new measurement by cross-registering the two sensors with a cloud mask parameter"
     ?GEO <- (REQUIREMENTS::Measurement (Parameter "1.8.13 Black carbon and other polluting aerosols")  (Temporal-resolution ?tr1&Highest-1h-orless) (Vertical-Spatial-Resolution ?vsr1&~Medium-200m-2km&~Low-2km-or-greater) (sensitivity-in-low-troposphere-PBL Low) (taken-by ?ins1) (Id ?id1))
     ?LEO <- (REQUIREMENTS::Measurement (Parameter "1.8.13 Black carbon and other polluting aerosols") (Temporal-resolution ?tr2&Medium-1day-3days) (Vertical-Spatial-Resolution ?vsr2&~nil) (sensitivity-in-low-troposphere-PBL ?tro&High) (taken-by ?ins2) (Id ?id2))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "1.5.4 cloud mask") (Id ?id3) (taken-by ?ins3) (synergy-level# ?s3&:(< ?s3 1)))
@@ -965,52 +904,45 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     (test (member$ ?id2 $?m))
     (test (member$ ?id3 $?m))
     =>
-    ;(printout t Nox "tr = " ?tr1 "vsr = " ?vsr2 "tropo = " ?tro crlf)
     (duplicate ?LEO (Region-of-interest Global) (Temporal-resolution ?tr1) (Vertical-Spatial-Resolution ?vsr2) (sensitivity-in-low-troposphere-PBL ?tro) (cloud-cleared yes) (taken-by (str-cat ?ins1 "-syn-" ?ins2))
          (Id (str-cat ?id1 "-syn-" ?id2 ))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::black-carbon-strategy) " D" (call ?LEO getFactId) " S" (call ?GEO getFactId) " S" (call ?sub getFactId) "}")))
     )
 
 (defrule SYNERGIES::atmospheric-humidity-sounding-strategy
-    
-    "A GEO + a LEO sensor can measure atmospheric humidity profiles with required VSR, TR, and sensitivity in the troposphere"
+    "identifies a synergistic measurement strategy where a GEO and a LEO sensor can measure atmospheric humidity profiles in the troposphere with required VSR, TR, and sensitivity, and generates a new measurement with fuzzy-maxed VSR"
     ?PATH <- (REQUIREMENTS::Measurement (Parameter "1.3.1 Atmospheric humidity -indirect-")  (Temporal-resolution ?tr1&Highest-1h-orless) (cloud-cleared yes) (Vertical-Spatial-Resolution ?vsr1&~nil) (sensitivity-in-low-troposphere-PBL ?tro1) (taken-by ?ins1) (Id ?id1))
     ?GPSRO <- (REQUIREMENTS::Measurement (Parameter "1.3.1 Atmospheric humidity -indirect-") (Temporal-resolution ?tr2&Medium-1day-3days) (cloud-cleared ?cc&~yes) (Vertical-Spatial-Resolution ?vsr2&~nil) (sensitivity-in-low-troposphere-PBL ?tro2) (taken-by ?ins2) (Id ?id2))
-    ;(test (>= (SameOrBetter Vertical-Spatial-Resolution (fuzzy-max Vertical-Spatial-Resolution ?vsr1 ?vsr2) Medium-200m-2km) 0))
     (SYNERGIES::cross-registered (measurements $?m))
     (test (member$ ?id1 $?m))
     (test (member$ ?id2 $?m))
     =>
-    ;(printout t h2o crlf)
     (duplicate ?PATH (Region-of-interest Global) (Vertical-Spatial-Resolution (fuzzy-max Vertical-Spatial-Resolution ?vsr1 ?vsr2)) (taken-by (str-cat ?ins1 "-syn-" ?ins2))
          (Id (str-cat ?id1 "-syn-" ?id2 ))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::atmospheric-humidity-sounding-strategy) " D" (call ?PATH getFactId) " S" (call ?GPSRO getFactId) "}")))
     )
 
 (defrule SYNERGIES::water-vapor-transport-strategy
-    
-    "A GEO + a LEO sensor can measure water vapor transport with required VSR, TR, and sensitivity in the troposphere"
+    "identifies a synergy between a GEO and a LEO sensor to measure water vapor transport in the troposphere, where the required Vertical Spatial Resolution (VSR), Temporal Resolution (TR), and sensitivity in the low troposphere Planetary Boundary Layer (PBL) are met, and duplicates the path with higher Horizontal Spatial Resolution and sensitivity, as well as a higher synergy level"
     ?PATH <- (REQUIREMENTS::Measurement (Parameter "1.3.2 Water vapor transport - Winds")  (Region-of-interest US) (Horizontal-Spatial-Resolution ?hsr1&Low-1km-10km) (Temporal-resolution ?tr1&Highest-1h-orless) (cloud-cleared yes) (Vertical-Spatial-Resolution ?vsr1&High-200m-orless) (sensitivity-in-low-troposphere-PBL High) (taken-by ?ins1) (Id ?id1) (synergy-level# 0))
     ?GPSRO <- (REQUIREMENTS::Measurement (Parameter "1.3.2 Water vapor transport - Winds") (Region-of-interest Global) (Horizontal-Spatial-Resolution ?hsr2&Low-1km-10km) (Temporal-resolution ?tr2&Highest-1h-orless) (cloud-cleared ?cc&~yes) (Vertical-Spatial-Resolution ?vsr2&Medium-200m-2km) (sensitivity-in-low-troposphere-PBL ?tro2&~High) (taken-by ?ins2) (Id ?id2) (synergy-level# 0))
     ?GACM <- (REQUIREMENTS::Measurement (Parameter "1.3.2 Water vapor transport - Winds") (Region-of-interest Global) (Horizontal-Spatial-Resolution ?hsr3&Medium-100m-1km) (Temporal-resolution ?tr3&Medium-1day-3days) (cloud-cleared ?cc3&~yes) (Vertical-Spatial-Resolution ?vsr3&nil) (sensitivity-in-low-troposphere-PBL ?tro3&High) (taken-by ?ins3) (Id ?id3) (synergy-level# 0))
-    ;(test (>= (SameOrBetter Vertical-Spatial-Resolution (fuzzy-max Vertical-Spatial-Resolution ?vsr1 ?vsr2) Medium-200m-2km) 0))
     (SYNERGIES::cross-registered (measurements $?m))
     (test (member$ ?id1 $?m))
     (test (member$ ?id2 $?m))
     (test (member$ ?id3 $?m))
     =>
-    ;(printout t h2o crlf)
-    (duplicate ?PATH (Region-of-interest Global) (Vertical-Spatial-Resolution High-200m-orless) (Horizontal-Spatial-Resolution Medium-100m-1km) 
+    (duplicate ?PATH (Region-of-interest Global) (Vertical-Spatial-Resolution High-200m-orless) (Horizontal-Spatial-Resolution Medium-100m-1km)
         (cloud-cleared yes) (sensitivity-in-low-troposphere-PBL High)  (Temporal-resolution Highest-1h-orless) (taken-by (str-cat ?ins1 "-syn-" ?ins2 "-syn-" ?ins3))
          (Id (str-cat ?id1 "-syn-" ?id2 "-syn" ?id3)) (synergy-level# 2)(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::water-vapor-transport-strategy) " D" (call ?PATH getFactId) " S" (call ?GPSRO getFactId) " S" (call ?GACM getFactId) "}")))
     )
 
 
 (defrule SYNERGIES::column-and-profile-ozone-measurements
+    "identifies synergies between column and profile ozone measurements by duplicating the column measurement with higher accuracy and combining it with the profile measurement to produce a new measurement with a synergy level of 1"
     ?col <- (REQUIREMENTS::Measurement (Parameter "1.8.2 O3") (Id ?id1) (taken-by ?ins1) (Vertical-Spatial-Resolution nil) (Accuracy# 0.05) (synergy-level# 0))
     ?prof <- (REQUIREMENTS::Measurement (Parameter "1.8.2 O3") (Id ?id2) (taken-by ?ins2) (Vertical-Spatial-Resolution ?vsr&~nil) (synergy-level# 0))
     =>
     (duplicate ?col (Accuracy# 0.03) (taken-by (str-cat ?ins1 "-syn-" ?ins2))
          (Id (str-cat ?id1 "-syn-" ?id2 )) (synergy-level# 1) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::column-and-profile-ozone-measurements) " D" (call ?col getFactId) " S" (call ?prof getFactId) "}")))
-    ;(printout t column-profile crlf)
     )
 
 ; create composite measurements like aerosol properties, cloud properties, tropo chemistry, ozone precursors

@@ -436,11 +436,9 @@
 ;; SMAP EXAMPLE EMERGENCE RULES
 ;; ***************************
 
-(defrule SYNERGIES::SMAP-spatial-disaggregation
-    "A frequent coarse spatial resolution measurement can be combined
-     with a sparse high spatial resolution measurement to produce
-    a frequent high spatial resolution measurement with average accuracy"
 
+(defrule SYNERGIES::SMAP-spatial-disaggregation
+    "identifies that a frequent coarse spatial resolution measurement combined with a sparse high spatial resolution measurement can produce a frequent high spatial resolution measurement with average accuracy"
     ?m1 <- (REQUIREMENTS::Measurement (Parameter "2.3.2 soil moisture") (Illumination Active)
         (Horizontal-Spatial-Resolution# ?hs1&~nil) (Accuracy# ?a1&~nil)  (Id ?id1) (taken-by ?ins1))
     ?m2 <- (REQUIREMENTS::Measurement (Parameter "2.3.2 soil moisture") (Illumination Passive)
@@ -458,9 +456,7 @@
 )
 
 (defrule SYNERGIES::carbon-net-ecosystem-exchange
-    "Carbon net ecosystem exchange data products are produced from the combination of soil moisture, land surface temperature,
-    landcover classificatin, and vegetation gross primary productivity [Entekhabi et al, 2010]"
-
+    "states measurements of soil moisture, surface temperature, land cover, and vegetation state can be combined to produce a new measurement of carbon net ecosystem exchange (NEE)"
     ?SM <- (REQUIREMENTS::Measurement (Parameter "2.3.2 soil moisture")  (Id ?id1) (taken-by ?ins1))
     (REQUIREMENTS::Measurement (Parameter "2.5.1 Surface temperature -land-") (Id ?id2) (taken-by ?ins2))
     (REQUIREMENTS::Measurement (Parameter "2.6.2 landcover status")  (Id ?id3) (taken-by ?ins3))
@@ -475,9 +471,7 @@
 )
 
 (defrule SYNERGIES::snow-cover-3freqs
-    "Full accuracy of snow cover product is obtained when IR, X, and L-band measurements
-    are combined "
-
+    "identifies that combining measurements from Infrared (IR), X-band, and L-band frequencies results in a high accuracy snow cover product"
     ?IR <- (REQUIREMENTS::Measurement (Parameter "4.2.4 snow cover") (Spectral-region opt-VNIR+TIR)
          (Accuracy Low) (Id ?id1) (taken-by ?ins1))
 
@@ -495,8 +489,7 @@
     )
 
 (defrule SYNERGIES::snow-cover-2freqs
-    "Medium accuracy of snow cover product is obtained when IR and MW measurements
-    are combined "
+    "states that medium accuracy of snow cover product is obtained when infrared (IR) and microwave (MW) measurements are combined"
 
     ?IR <- (REQUIREMENTS::Measurement (Parameter "4.2.4 snow cover") (Spectral-region opt-VNIR+TIR)
          (Accuracy Low) (Id ?id1) (taken-by ?ins1))
@@ -514,8 +507,7 @@
     )
 
 (defrule SYNERGIES::ice-cover-3freqs
-    "Full accuracy of ice cover product is obtained when IR, X, and L-band measurements
-    are combined "
+    "states that high accuracy of ice cover product is obtained when IR, X, and L-band measurements are combined"
 
     ?IR <- (REQUIREMENTS::Measurement (Parameter "4.3.2 Sea ice cover") (Spectral-region opt-VNIR+TIR)
          (Accuracy Low) (Id ?id1) (taken-by ?ins1))
@@ -534,8 +526,7 @@
     )
 
 (defrule SYNERGIES::ice-cover-2freqs
-    "Medium accuracy of ice cover product is obtained when IR and MW measurements
-    are combined "
+    "states that medium accuracy is obtained for ice cover measurements when IR and MW measurements are combined"
 
     ?IR <- (REQUIREMENTS::Measurement (Parameter "4.3.2 Sea ice cover") (Spectral-region opt-VNIR+TIR)
         (Accuracy Low) (Id ?id1) (taken-by ?ins1))
@@ -553,8 +544,7 @@
     )
 
 (defrule SYNERGIES::ocean-salinity-space-average
-    "L-band passive radiometer can yield 0.2psu data if we average in space
-    (from SMAP applications report)"
+    "states that L-band passive radiometer can yield 0.2psu data if we average in space (from SMAP applications report)"
 
     ?L <- (REQUIREMENTS::Measurement (Parameter "3.3.1 Ocean salinity") (Accuracy# ?a1&~nil)
         (Horizontal-Spatial-Resolution# ?hsr1&~nil) (Id ?id1) (taken-by ?ins1&SMAP_MWR))
@@ -567,8 +557,7 @@
     )
 
 (defrule SYNERGIES::ocean-wind-space-average
-    "L-band passive radiometer can yield 1 m/s wind data if we average in space
-    (from SMAP applications report)"
+    "states that L-band passive radiometer can yield 1 m/s wind data if we average in space (from SMAP applications report)"
 
     ?L <- (REQUIREMENTS::Measurement (Parameter "3.4.1 Ocean surface wind speed") (Accuracy# ?a1&~nil)
         (Horizontal-Spatial-Resolution# ?hsr1&~nil) (Id ?id1) (taken-by ?ins1&SMAP_MWR))

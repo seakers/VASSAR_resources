@@ -280,7 +280,7 @@
 ;)
 
 (defrule SYNERGIES-ACROSS-ORBITS::AM-PM-diurnal-cycle
-"identifies synergies between two of the same measurement on durinal-cycle. If one measurement has AM-only and the other PM-only, the measurements get updated to AM-PM"
+"identifies synergies between two of the same measurements on durinal-cycle. If one measurement has AM-only and the other PM-only, both measurements get updated to AM-PM"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter ?p) (diurnal-cycle AM-only) (Id ?id1) (taken-by ?ins1))
 (REQUIREMENTS::Measurement (Parameter ?p) (diurnal-cycle PM-only) (Id ?id2) (taken-by ?ins2) (factHistory ?fh))
 
@@ -288,7 +288,7 @@
 (modify ?m1 (diurnal-cycle AM-PM) (Id (str-cat ?id1 "-syn-" ?id2)) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES-ACROSS-ORBITS::AM-PM-diurnal-cycle) " " ?fh "}"))) 
 )
 (defrule SYNERGIES::ozone
-"improves the accuracy of cross registered ozone measurements"
+"identifies synergies between cross-registered ozone measurements and updates their accuracy to 2.5 if their initial accuracy is 5.0"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter "1.8.2 O3"|"1.8.26 O3 - lower troposphere"|"1.8.27 O3 - upper troposphere"|"1.8.28 O3 - lower stratosphere"|"1.8.29 O3 - upper stratosphere") (Accuracy# 5.0) (Id ?id1) (taken-by ?ins1) (factHistory ?fh1))
 ?m2 <- (REQUIREMENTS::Measurement (Parameter "1.8.2 O3"|"1.8.26 O3 - lower troposphere"|"1.8.27 O3 - upper troposphere"|"1.8.28 O3 - lower stratosphere"|"1.8.29 O3 - upper stratosphere") (Accuracy# 5.0) (Id ?id2&~?id1) (taken-by ?ins2&~?ins1) (factHistory ?fh2))
 (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
@@ -297,6 +297,7 @@
 (modify ?m2 (Accuracy# 2.5)(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::ozone) " " ?fh2 " S" (call ?m1 getFactId) "}")))
 )
 (defrule SYNERGIES::dry-atmosphere-correction-for-ocean-color
+"identifies synergies between ocean color measurements and aerosol height/optical depth measurements, allowing for a dry atmosphere correction to be applied to the former, according to the equation: $RMS_{system-tropo-dry} \rightarrow RMS_{system-tropo-dry}^{Low}$"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter "3.1.5 Ocean color - Dissolved Organic Matter"|"3.1.4 Ocean color - chlorophyl"|"3.1.6 Ocean color - Suspended Sediments") (rms-system-tropo-dry# High) (Id ?id1) (taken-by ?ins1) (factHistory ?fh))
 ?sub1 <- (REQUIREMENTS::Measurement (Parameter "1.1.1 aerosol height/optical depth") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
@@ -304,6 +305,7 @@
 (modify ?m1 (rms-system-tropo-dry# Low)(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::dry-atmosphere-correction-for-ocean-color) " " ?fh " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
 )
 (defrule SYNERGIES::dry-atmosphere-correction-for-ocean-altimetry
+"identifies a synergy between a sea level height measurement with a high RMS tropospheric dry correction and an aerosol height/optical depth measurement, and creates a new measurement with a low RMS tropospheric dry correction that combines both inputs"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter "3.2.1 Sea level height") (rms-system-tropo-dry# High) (Id ?id1) (taken-by ?ins1) (factHistory ?fh))
 ?sub1 <-(REQUIREMENTS::Measurement (Parameter "1.1.1 aerosol height/optical depth") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <-(SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
@@ -312,6 +314,7 @@
 )
 ;; A4.Clouds and aerosols
 (defrule SYNERGIES::clouds-and-aerosols
+"identifies a synergy between measurements of cloud amount/distribution and aerosol absorption optical depth, resulting in a new measurement"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter "1.5.3 Cloud amount/distribution -horizontal and vertical-")  (Id ?id1) (taken-by ?ins1))
 ?sub1 <- (REQUIREMENTS::Measurement (Parameter "1.1.6 aerosol absorption optical depth") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
@@ -320,6 +323,7 @@
 )
 ;; A4.Clouds and radiation
 (defrule SYNERGIES::clouds-and-radiation
+"identifies synergies between measurements of cloud distribution and spectrally resolved shortwave radiance to produce new measurements, using the logic of cross-registration of measurements"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter "1.5.3 Cloud amount/distribution -horizontal and vertical-")(Id ?id1) (taken-by ?ins1))
 ?sub1 <- (REQUIREMENTS::Measurement (Parameter "1.9.3 Spectrally resolved SW radiance -0.3-2um-") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
@@ -328,6 +332,7 @@
 )
 ;; A11. Tropospheric chemistry, pollution and aerosols
 (defrule SYNERGIES::tropospheric-pollution-GHG-and-aerosols
+"identifies synergies between tropospheric pollution, greenhouse gases, and aerosols by selecting two measurements of CO and O3 in the lower troposphere, and aerosol absorption optical depth, respectively, and uses the cross-registered measurements to produce a new measurement for tropospheric chemistry, pollution, and aerosols"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter "1.8.5 CO"|"1.8.26 O3 - lower troposphere")  (Id ?id1) (taken-by ?ins1))
 ?sub1 <- (REQUIREMENTS::Measurement (Parameter "1.1.6 aerosol absorption optical depth") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
@@ -336,15 +341,12 @@
 )
 
 (defrule SYNERGIES::carbon-net-ecosystem-exchange 
-    "Carbon net ecosystem exchange data products are produced from the combination of soil moisture, land surface temperature, 
-    landcover classificatin, and vegetation gross primary productivity [Entekhabi et al, 2010]"
-    
+    "identifies synergies between soil moisture, land surface temperature, landcover classification, and vegetation gross primary productivity to produce carbon net ecosystem exchange data products"
     ?SM <- (REQUIREMENTS::Measurement (Parameter "2.3.2 soil moisture")  (Id ?id1) (taken-by ?ins1))
     ?sub1 <- (REQUIREMENTS::Measurement (Parameter "2.5.1 Surface temperature -land-") (Id ?id2) (taken-by ?ins2))
     ?sub2 <- (REQUIREMENTS::Measurement (Parameter "2.6.2 landcover status")  (Id ?id3) (taken-by ?ins3))
     ?sub3 <- (REQUIREMENTS::Measurement (Parameter "2.4.2 vegetation state") (Id ?id4) (taken-by ?ins4))
     ?sub4 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2 ?id3 ?id4) $?m))
-    ;(not (REQUIREMENTS::Measurement (Parameter "2.3.3 Carbon net ecosystem exchange NEE")))
 	=>
 
     (duplicate ?SM (Parameter "2.4.6 Soil carbon")  
@@ -353,8 +355,7 @@
 )
 
 (defrule SYNERGIES::snow-cover-3freqs
-    "Full accuracy of snow cover product is obtained when IR, X, and L-band measurements
-    are combined "
+    "identifies that combining measurements from Infrared (IR), X-band, and L-band frequencies results in a high accuracy snow cover product"
     
     ?IR <- (REQUIREMENTS::Measurement (Parameter "4.2.4 snow cover") (Spectral-region opt-VNIR+TIR)
          (Accuracy Low) (Id ?id1) (taken-by ?ins1))
@@ -373,8 +374,8 @@
     )
 
 (defrule SYNERGIES::snow-cover-2freqs
-    "Medium accuracy of snow cover product is obtained when IR and MW measurements
-    are combined "
+    "states that medium accuracy of snow cover product is obtained when infrared (IR) and microwave (MW) measurements are combined"
+
     
     ?IR <- (REQUIREMENTS::Measurement (Parameter "4.2.4 snow cover") (Spectral-region opt-VNIR+TIR)
          (Accuracy Low) (Id ?id1) (taken-by ?ins1))
@@ -392,8 +393,8 @@
     )
 
 (defrule SYNERGIES::ice-cover-3freqs
-    "Full accuracy of ice cover product is obtained when IR, X, and L-band measurements
-    are combined "
+    "states that high accuracy of ice cover product is obtained when IR, X, and L-band measurements are combined"
+
     
     ?IR <- (REQUIREMENTS::Measurement (Parameter "4.3.2 Sea ice cover") (Spectral-region opt-VNIR+TIR)
          (Accuracy Low) (Id ?id1) (taken-by ?ins1))
@@ -412,8 +413,8 @@
     )
 
 (defrule SYNERGIES::ice-cover-2freqs
-    "Medium accuracy of ice cover product is obtained when IR and MW measurements
-    are combined "
+    "states that medium accuracy is obtained for ice cover measurements when IR and MW measurements are combined"
+
     
     ?IR <- (REQUIREMENTS::Measurement (Parameter "4.3.2 Sea ice cover") (Spectral-region opt-VNIR+TIR)
         (Accuracy Low) (Id ?id1) (taken-by ?ins1))
@@ -431,8 +432,8 @@
     )
 
 (defrule SYNERGIES::ocean-salinity-space-average
-    "L-band passive radiometer can yield 0.2psu data if we average in space
-    (from SMAP applications report)"
+    "states that L-band passive radiometer can yield 0.2psu data if we average in space (from SMAP applications report)"
+
 
     ?L <- (REQUIREMENTS::Measurement (Parameter "3.3.1 Ocean salinity") (Accuracy# ?a1&~nil) 
         (Horizontal-Spatial-Resolution# ?hsr1&~nil) (Id ?id1) (taken-by ?ins1&SMAP_MWR))    
@@ -445,8 +446,7 @@
     )
 
 (defrule SYNERGIES::ocean-wind-space-average
-    "L-band passive radiometer can yield 1 m/s wind data if we average in space
-    (from SMAP applications report)"
+    "states that L-band passive radiometer can yield 1 m/s wind data if we average in space (from SMAP applications report)"
 
     ?L <- (REQUIREMENTS::Measurement (Parameter "3.4.1 Ocean surface wind speed") (Accuracy# ?a1&~nil) 
         (Horizontal-Spatial-Resolution# ?hsr1&~nil) (Id ?id1) (taken-by ?ins1&SMAP_MWR))    

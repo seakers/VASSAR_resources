@@ -33,10 +33,7 @@
 ;)
 
 (defrule SYNERGIES::SMAP-spatial-disaggregation 
-    "A frequent coarse spatial resolution measurement can be combined
-     with a sparse high spatial resolution measurement to produce 
-    a frequent high spatial resolution measurement with average accuracy"
-    
+    "identifies that a frequent coarse spatial resolution measurement combined with a sparse high spatial resolution measurement can produce a frequent high spatial resolution measurement with average accuracy"
     ?m1 <- (REQUIREMENTS::Measurement (Parameter "2.3.2 soil moisture") (Illumination Active) 
         (Horizontal-Spatial-Resolution# ?hs1) (Accuracy# ?a1)  (Id ?id1) (taken-by ?ins1))
     ?m2 <- (REQUIREMENTS::Measurement (Parameter "2.3.2 soil moisture") (Illumination Passive) 
@@ -44,11 +41,6 @@
     (SYNERGIES::cross-registered (measurements $?m))
     (test (member$ ?id1 $?m))
     (test (member$ ?id2 $?m))
-    ;(not (REASONING::stop-improving (Measurement ?p)))
-    ;(test (eq (str-index disaggregated ?ins1) FALSE))
-    ;(test (eq (str-index disaggregated ?ins2) FALSE))
-    ;(test (neq ?id1 ?id2))
-
 	=>
 	;(printout t hola crlf)
     (duplicate ?m1 (Horizontal-Spatial-Resolution# (sqrt (* ?hs1 ?hs2))) (Accuracy# ?a2)
@@ -59,9 +51,7 @@
 
 
 (defrule SYNERGIES::carbon-net-ecosystem-exchange 
-    "Carbon net ecosystem exchange data products are produced from the combination of soil moisture, land surface temperature, 
-    landcover classificatin, and vegetation gross primary productivity [Entekhabi et al, 2010]"
-    
+    "states measurements of soil moisture, surface temperature, land cover, and vegetation state can be combined to produce a new measurement of carbon net ecosystem exchange (NEE)"
     ?SM <- (REQUIREMENTS::Measurement (Parameter "2.3.2 soil moisture") (Horizontal-Spatial-Resolution ?hsr1&~nil) (Accuracy ?a1&~nil) (Id ?id1) (taken-by ?ins1))
     ?LST <- (REQUIREMENTS::Measurement (Parameter "2.5.1 Surface temperature -land-") (Horizontal-Spatial-Resolution ?hsr2&~nil) (Accuracy ?a2&~nil) (Id ?id2) (taken-by ?ins2))
     ?LC <- (REQUIREMENTS::Measurement (Parameter "2.6.2 landcover status") (Horizontal-Spatial-Resolution ?hsr3&~nil) (Accuracy ?a3&~nil) (Id ?id3) (taken-by ?ins3))
