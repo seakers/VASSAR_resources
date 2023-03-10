@@ -50,6 +50,7 @@
 	(return (+ ?tr 0.01))
 	)
 (defrule ASSIMILATION2::modify-temporal-resolution
+    "modifies the temporal resolution of a measurement requirement based on the updated revisit time, with different values for global and US regions, and adapts the US revisit time for GEO orbits"
 	?sub <-(ASSIMILATION2::UPDATE-REV-TIME (parameter ?p) (avg-revisit-time-global# ?new-time)
 	(avg-revisit-time-US# ?new-time-us))
 	?meas <- (REQUIREMENTS::Measurement (Parameter ?p) (Temporal-resolution# nil) (Temporal-resolution nil) (Coverage ?region)(factHistory ?fh))
@@ -60,6 +61,7 @@
 
 ;;; COMPUTING TEMPORAL RESOLUTION FOR DECADAL 2007
 (defrule ASSIMILATION::compute-temporal-resolution#-from-revisit-times
+    "computes the temporal resolution required for a measurement based on the global, tropical, northern hemisphere, southern hemisphere, cold regions, and US revisit times"
     ?meas <- (REQUIREMENTS::Measurement (Coverage-of-region-of-interest ?region) (Temporal-resolution nil) (Temporal-resolution# nil)
          (avg-revisit-time-global# ?revtime-global&~nil) (avg-revisit-time-tropics# ?revtime-tropics) (avg-revisit-time-northern-hemisphere# ?revtime-NH)
          (avg-revisit-time-southern-hemisphere# ?revtime-SH) (avg-revisit-time-cold-regions# ?revtime-cold) (avg-revisit-time-US# ?revtime-US))
