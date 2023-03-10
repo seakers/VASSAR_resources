@@ -4,7 +4,7 @@
 ;(set-reset-globals FALSE)
 ;(ENUMERATION::SMAP-ARCHITECTURE (payload SMAP_RAD SMAP_MWR CMIS VIIRS BIOMASS) (num-sats 1) (orbit-altitude 800) (orbit-raan DD) (orbit-type SSO) (orbit-inc SSO) (num-planes 1) (doesnt-fly ) (num-sats-per-plane 1) (num-instruments 5) (sat-assignments 1 1 1 1 1))
 
-(deftemplate MANIFEST::ARCHITECTURE (slot bitString) (multislot payload) (slot num-sats) (slot source) (slot orbit)
+(deftemplate MANIFEST::ARCHITECTURE "models a satellite with instruments _payload with orbit _orbit" (slot bitString) (multislot payload) (slot num-sats) (slot source) (slot orbit)
     (slot orbit-altitude) (slot orbit-raan) (slot orbit-type) (slot orbit-inc) (slot num-planes)
     (multislot doesnt-fly) (slot num-sats-per-plane) (slot lifecycle-cost) (slot benefit)  
 	(slot space-segment-cost) (slot ground-segment-cost) (slot pareto-ranking) (slot utility)
@@ -150,6 +150,7 @@
     (modify ?MWR (Horizontal-Spatial-Resolution# ?dx)  (Swath# ?sw) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::compute-spatial-resolution-and-swath-nadir-looking-no-scanning-imagers) " " ?fh "}")))
     )
 (defrule MANIFEST::compute-spatial-resolution-nadir-and-swath-looking-cross-track-scanning-imagers
+    "calculates the spatial resolution and swath for a cross track scanning imager facing nadir using orbit altitude, angular resolution, and scanning angle. The equations used are: $ \theta_1 = \theta - \frac{\Delta\theta}{2} $, $ \theta_2 = \theta + \frac{\Delta\theta}{2} $, $ x_1 = 1000h \tan(\theta_1) $,  $ x_2 = 1000h \tan(\theta_2) $,  along = x_2 - x_1 $, $ cross = 2 \left(\frac{h}{\cos(\theta)} \tan\left(\frac{\Delta\theta}{2}\right)\right) $, $ swath = 2 \cdot 1000h \tan(\theta) $, where $h$ is the orbit altitude, $\theta$ is the scanning angle, and $\Delta\theta$ is the angular resolution."
     ?MWR <- (CAPABILITIES::Manifested-instrument  (Geometry nadir) (scanning cross-track) (Intent "Imaging multi-spectral radiometers -passive MW-"|"Imaging multi-spectral radiometers -passive optical-"|"High resolution optical imagers")
          (Angular-resolution# ?dtheta&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (scanning-angle-plus-minus# ?theta&~nil) (flies-in ?sat) (factHistory ?fh))
     =>
@@ -166,6 +167,7 @@
     )
 	
 (defrule MANIFEST::compute-spatial-resolution-and-swath-side-looking-conical-scanning-imagers
+    "calculates the spatial resolution and swath of side-looking conical scanning imagers using the satellite's altitude, aperture size, and scanning angle. Equations: $\theta_1 = \theta - \frac{\lambda}{D}$, $\theta_2 = \theta + \frac{\lambda}{D}$, $along = x_2 - x_1$, $cross = 2\times \frac{h}{cos(\theta)}\times tan(\frac{\lambda}{2D})$, where $\lambda$ is the wavelength of the sensor, $D$ is the aperture size, $\theta$ is the scanning angle, $h$ is the satellite altitude, $x_1$ and $x_2$ are the edges of the swath, and $along$ and $cross$ are the spatial resolutions along-track and cross-track, respectively"
     ?MWR <- (CAPABILITIES::Manifested-instrument  (Geometry side-looking) (scanning conical) (Intent "Imaging multi-spectral radiometers -passive MW-"|"Imaging multi-spectral radiometers -passive optical-"|"High resolution optical imagers")
          (frequency# ?f&~nil) (Aperture# ?D&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?alfa&~nil) (scanning-angle-plus-minus# ?theta&~nil) (flies-in ?sat) (factHistory ?fh))
     =>
@@ -183,6 +185,7 @@
     )
 
 (defrule MANIFEST::compute-SAR-spatial-resolution
+    "calculates the horizontal spatial resolution and swath for an imaging MW radar-SAR given the instrument's bandwidth, off-axis angle, number of looks, scanning angle, frequency, orbit altitude, and aperture. Equations: $\theta_{D} = \frac{1}{\lambda/D}$, $\text{Range resolution} = \frac{c}{2B\sin\theta}$, $\text{Swath width} = 2h\tan\left(\frac{\alpha + \theta}{2}\right)$, where $\lambda/D$ is the angular resolution in elevation, $B$ is the bandwidth, $\theta$ is the off-axis angle, $c$ is the speed of light, $h$ is the orbit altitude, $\alpha$ is the scanning angle, and $D$ is the aperture"
     ?RAD <- (CAPABILITIES::Manifested-instrument  (bandwidth# ?B&~nil) (off-axis-angle-plus-minus# ?theta&~nil) (number-of-looks# ?nl&~nil)  (scanning-angle-plus-minus# ?alfa&~nil)
          (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Aperture# ?D&~nil) (Horizontal-Spatial-Resolution# nil) (Intent "Imaging MW radars -SAR-") (off-axis-angle-plus-minus# ?theta&~nil) (flies-in ?sat) (factHistory ?fh))
     =>
@@ -203,9 +206,7 @@
 
 
 (defrule compute-sensitivity-to-soil-moisture-in-vegetation
-    "This rule computes the sensitivity to soil moisture in the presence
-    of vegetation as a function of frequency, based on [Jackson et al, 91]:
-    sensitivity = 10*lambda - 0.4 in BT/SM%"
+    "calculates the sensitivity of an instrument to soil moisture in the presence of vegetation as a function of frequency, using the equation: sensitivity = 10$\lambda$ - 0.4 in BT/SM%"
     
     ?instr <- (CAPABILITIES::Manifested-instrument (frequency# ?f&~nil)
           (sensitivity# nil) (factHistory ?fh))
@@ -214,7 +215,7 @@
     )
 
 (defrule CAPABILITIES::compute-image-distortion-in-side-looking-instruments
-    "Computes image distortion for side-looking instruments"
+    "calculates the image distortion for side-looking instruments using the equation: $\text{image-distortion#} = \frac{\text{orbit-altitude#}}{\text{characteristic-orbit}}$"
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) 
         (Geometry slant)  (characteristic-orbit ?href&~nil) (image-distortion# nil) (factHistory ?fh))
     =>
@@ -230,10 +231,6 @@
         (and 
             (>= ?x ?mn) (<= ?x ?mx)))
     )
-
-
-
-
 (deffunction get-soil-penetration (?f)
     (bind ?lambda (/ 3e10 ?f)); lambda in cm
     (if (< ?lambda 1) then (return 0.001))
@@ -244,8 +241,8 @@
     (if (between ?lambda 25 50) then (return 0.8))
     (if (> ?lambda 50) then (return 1.0))
     )
-
 (defrule CAPABILITIES::compute-soil-penetration
+    "calculates the soil penetration capability of a manifested instrument for earth observing space missions based on its operating frequency using a predefined function that maps frequency to penetration depth. Equations: $\lambda = \frac{3e10}{f}$ where $\lambda$ is the wavelength in centimeters and $f$ is the operating frequency in Hertz, and a set of conditional statements mapping $\lambda$ to soil penetration depth"
     ?instr <- (CAPABILITIES::Manifested-instrument (frequency# ?f&~nil) 
         (soil-penetration# nil) (factHistory ?fh))
     =>
@@ -256,9 +253,7 @@
 ;; ***************************
 
 (defrule SYNERGIES::SMAP-spatial-disaggregation 
-    "A frequent coarse spatial resolution measurement can be combined
-     with a sparse high spatial resolution measurement to produce 
-    a frequent high spatial resolution measurement with average accuracy"
+    "identifies how combining frequent coarse spatial resolution measurements with sparse high spatial resolution measurements can produce a frequent high spatial resolution measurement with average accuracy, using the equation Horizontal-Spatial-Resolution# (sqrt (* ?hs1 ?hs2)) to calculate the new horizontal spatial resolution and the fuzzy-max function to determine the joint product's accuracy"
     
     ?m1 <- (REQUIREMENTS::Measurement (Parameter "2.3.2 soil moisture") (Illumination Active) 
         (Horizontal-Spatial-Resolution# ?hs1&~nil) (Accuracy# ?a1&~nil)  (Id ?id1) (taken-by ?ins1))
@@ -285,6 +280,7 @@
 ;)
 
 (defrule SYNERGIES-ACROSS-ORBITS::AM-PM-diurnal-cycle
+"identifies synergies between two of the same measurement on durinal-cycle. If one measurement has AM-only and the other PM-only, the measurements get updated to AM-PM"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter ?p) (diurnal-cycle AM-only) (Id ?id1) (taken-by ?ins1))
 (REQUIREMENTS::Measurement (Parameter ?p) (diurnal-cycle PM-only) (Id ?id2) (taken-by ?ins2) (factHistory ?fh))
 
@@ -292,6 +288,7 @@
 (modify ?m1 (diurnal-cycle AM-PM) (Id (str-cat ?id1 "-syn-" ?id2)) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES-ACROSS-ORBITS::AM-PM-diurnal-cycle) " " ?fh "}"))) 
 )
 (defrule SYNERGIES::ozone
+"improves the accuracy of cross registered ozone measurements"
 ?m1 <- (REQUIREMENTS::Measurement (Parameter "1.8.2 O3"|"1.8.26 O3 - lower troposphere"|"1.8.27 O3 - upper troposphere"|"1.8.28 O3 - lower stratosphere"|"1.8.29 O3 - upper stratosphere") (Accuracy# 5.0) (Id ?id1) (taken-by ?ins1) (factHistory ?fh1))
 ?m2 <- (REQUIREMENTS::Measurement (Parameter "1.8.2 O3"|"1.8.26 O3 - lower troposphere"|"1.8.27 O3 - upper troposphere"|"1.8.28 O3 - lower stratosphere"|"1.8.29 O3 - upper stratosphere") (Accuracy# 5.0) (Id ?id2&~?id1) (taken-by ?ins2&~?ins1) (factHistory ?fh2))
 (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
