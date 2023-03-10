@@ -167,6 +167,7 @@
 ;; **********************************
 
 (defrule MANIFEST0::assert-manifested-instruments
+    "asserts instrument capability definitions"
     (declare (salience 20))
 
     ?miss <- (MANIFEST::Mission (Name ?name) (mission-architecture ?arch) (num-of-planes# ?nplanes) (num-of-sats-per-plane# ?nsats) (orbit-altitude# ?h) (orbit-inclination ?inc) (instruments $?list-of-instruments))

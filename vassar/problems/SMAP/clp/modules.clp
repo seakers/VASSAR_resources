@@ -1,7 +1,7 @@
 ;; modules.clp (USED!)
 (defmodule DATABASE)
 (defmodule MANIFEST)
-(defmodule MANIFEST0)
+(defmodule MANIFEST0 "initializes mission instrument capability facts")
 (defmodule FUZZY)
 (defmodule ASSIMILATION)
 (defmodule ASSIMILATION2)

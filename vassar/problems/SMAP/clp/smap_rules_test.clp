@@ -132,8 +132,7 @@
     )
 
 (defrule MANIFEST0::SMAP-add-common-dish-to-MWR
-    "If we manifest the SMAP radar, radiometer, or both, then we need to
-    manifest the share dish"
+    "manifests the SMAP share dish for the radiometer (SMAP_MWR)"
     (declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
     (test (eq (contains$ ?list-of-instruments SMAP_ANT) FALSE))
@@ -143,11 +142,10 @@
     ;(bind ?new-list (add-element$ ?list-of-instruments SMAP_ANT))
     ;printout t "contains SMAP_ANT = " (eq (subsetp (create$ SMAP_ANT) ?list-of-instruments) FALSE) " new list = " ?new-list crlf)
     (modify ?miss (instruments (add-element$ ?list-of-instruments SMAP_ANT)))
-
     )
 
 (defrule MANIFEST0::SMAP-add-common-dish-to-RAD
-    "If we manifest the SMAP radar, radiometer, or both, then we need to manifest the share dish"
+    "manifests the SMAP share dish for the SMAP radar (SMAP_RAD)"
 	(declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
 	(test (eq (contains$ ?list-of-instruments SMAP_ANT) FALSE))
