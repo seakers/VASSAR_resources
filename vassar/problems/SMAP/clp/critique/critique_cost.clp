@@ -21,7 +21,7 @@
     (call ?*q* addElement (new java.lang.String
         (str-cat "N:It is desirable to have satellites of similar size: satellite " ?bn " is bigger than " ?sn " by a ratio of " (format nil "%2.2f" ?r) "." ))))
     (call ?*q* addElement (new java.lang.String
-        (str-cat "E:It is desirable to have satellites of similar size to ensure buses can be reused and costs can be managed: satellite " ?bn " is bigger than " ?sn " by a ratio of " (format nil "%2.2f" ?r) "." )))))
+        (str-cat "E:It is desirable to have satellites of similar size to ensure buses can be reused and costs can be managed: satellite " ?bn " is bigger than " ?sn " by a ratio of " (format nil "%2.2f" ?r) "." ))))
 
 
 
