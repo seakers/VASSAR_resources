@@ -350,8 +350,7 @@
 
 ; rain rate
 (defrule SYNERGIES::mmw-sounders-rain-rates-hurricanes
-    "states if there is a cloud liquid water and precipitation measurement and the instrument has
-    H2O bands in the MMW then it can measure rain rate, hurricanes, etc"
+    "states if there is a cloud liquid water and precipitation measurement and the instrument has H2O bands in the MMW then it can measure rain rate, hurricanes, etc"
     ?cl<-  (REQUIREMENTS::Measurement (Parameter "1.7.1 Cloud liquid water and precipitation rate")
         (taken-by ?ins) )
     ?sub <-(CAPABILITIES::Manifested-instrument (Name ?ins) (Spectral-region MW-submm))
@@ -364,8 +363,7 @@
 
 ; sensitivity over oceans
 (defrule SYNERGIES::sensitivity-over-oceans
-    "states if we have two measurements and one has good sensitivity over oceans we can combine it with
-    another one with lower sensitivity to create a new data product"
+    "states if we have two measurements and one has good sensitivity over oceans we can combine it with another one with lower sensitivity to create a new data product"
     
     ?no <- (REQUIREMENTS::Measurement (Parameter ?p) (sensitivity-over-oceans no)
     (Id ?id1) (taken-by ?ins1) (Accuracy ?acc1&~nil) (synergy-level# ?s1&:(< ?s1 3)))
@@ -383,9 +381,7 @@
 
 ; num soundings per day
 (defrule count-num-soundings-per-day
-    "Computes number of soundings per day from number of satellites carrying
-    GPS receivers, based on paper Research on the Number and Distribution of GPS
-Occultation Events for Orbit Selection for Global/Regional Observation, RAST 2007"
+    "computes number of soundings per day from number of satellites carrying GPS receivers, based on paper Research on the Number and Distribution of GPS Occultation Events for Orbit Selection for Global/Regional Observation, RAST 2007"
 
     ?m <- (REQUIREMENTS::Measurement (Parameter "1.3.3 GPS radio occultation") (taken-by ?tk)
         (num-soundings-per-day# nil) (num-of-planes# ?np&~nil) (num-of-sats-per-plane# ?ns&~nil) )
@@ -396,8 +392,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule count-num-soundings-per-day-when-nil
-    "Computes number of soundings per day from number of satellites carrying
-    GPS receivers, based on paper Research on the Number and Distribution of GPS
+    "computes number of soundings per day from number of satellites carrying GPS receivers, based on paper Research on the Number and Distribution of GPS
 Occultation Events for Orbit Selection for Global/Regional Observation, RAST 2007"
 
    ?m <-  (REQUIREMENTS::Measurement (Parameter "1.3.3 GPS radio occultation") (taken-by ?tk)
@@ -409,9 +404,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::num-soundings-per-day-add
-    "computes number of soundings per day from number of satellites carrying
-    GPS receivers, based on paper Research on the Number and Distribution of GPS
-Occultation Events for Orbit Selection for Global/Regional Observation, RAST 2007"
+    "computes number of soundings per day from number of satellites carrying GPS receivers, based on paper Research on the Number and Distribution of GPS Occultation Events for Orbit Selection for Global/Regional Observation, RAST 2007"
     
     ?m1 <- (REQUIREMENTS::Measurement (Parameter "1.3.3 GPS radio occultation") (num-soundings-per-day# ?ns1&~nil) (taken-by ?tk1) (factHistory ?fh1))
     ?m2 <- (REQUIREMENTS::Measurement (Parameter "1.3.3 GPS radio occultation") (num-soundings-per-day# ?ns2&~nil) (taken-by ?tk2) (factHistory ?fh2))
