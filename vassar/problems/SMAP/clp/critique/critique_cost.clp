@@ -51,4 +51,4 @@
         call ?*q* addElement (new java.lang.String
             (str-cat "N:It is desirable to fill launch vehicles to their capacity. They are currently only used at X %" ?n " is " ?lf ": " ?m ".")))
         call ?*q* addElement (new java.lang.String
-            (str-cat "E:It is desirable to fill launch vehicles to their capacity to opptimize the launch investment. They are currently only used at X %" ?n " is " ?lf ": " ?m ".")))))
+            (str-cat "E:It is desirable to fill launch vehicles to their capacity to opptimize the launch investment. They are currently only used at X %" ?n " is " ?lf ": " ?m "."))))

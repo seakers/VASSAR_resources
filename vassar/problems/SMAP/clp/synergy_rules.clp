@@ -41,7 +41,7 @@
             (taken-by (str-cat ?ins2 "-" ?ins1 "-disaggregated"))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::spatial-disaggregation) " D" (call ?m2 getFactId) " S" (call ?m1 getFactId) "}")))
 )
 
-(defrule SYNERGIES::spatial-disaggregation-hyperspectral "A hyperspectral coarse spatial resolution measurement can be combined with a multispectral high spatial resolution measurement to produce a high spatial resolution hyperspectral measurement with lower accuracy"
+(defrule SYNERGIES::spatial-disaggregation-hyperspectral
     "identifies a synergy between a hyperspectral coarse spatial resolution measurement and a multispectral high spatial resolution measurement, which can be combined to produce a high spatial resolution hyperspectral measurement with lower accuracy, and uses fuzzy logic equations to adjust temporal and spatial resolutions, and calculate the average accuracy of the resulting measurement"
     ?m1 <- (REQUIREMENTS::Measurement (Parameter ?p&~nil) (Temporal-resolution ?tr1&~nil) (Spectral-sampling Multispectral-10-100-channels) (Horizontal-Spatial-Resolution ?hsr1&~nil) (Accuracy ?a1&~nil) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 1)) (factHistory ?fh1))
     ?m2 <- (REQUIREMENTS::Measurement (Parameter ?p&~nil) (Temporal-resolution ?tr2&~nil) (Spectral-sampling Hyperspectral-100-channels-or-more) (Horizontal-Spatial-Resolution ?hsr2&~nil) (Accuracy ?a2&~nil) (Id ?id2) (taken-by ?ins2) (synergy-level# ?s2&:(< ?s2 1)) (factHistory ?fh2))

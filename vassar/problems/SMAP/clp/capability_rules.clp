@@ -31,7 +31,7 @@
     )
 
 (defrule CAPABILITIES::chemistry-instruments-prefer-PM-orbits-effect-on-science-strato
-    "decreases the sensitivity of chemistry instruments flying in AM orbits if the concept of the instrument includes "chemistry" or "pollut" in its name"
+    "decreases the sensitivity of chemistry instruments flying in AM orbits if the concept of the instrument includes 'chemistry' or 'pollut' in its name"
     (declare (salience 10))
     ?i <- (CAPABILITIES::Manifested-instrument (Name ?ins) (Concept ?c) (orbit-RAAN AM) (sensitivity-in-upper-troposphere-and-stratosphere High) (factHistory ?fh))
     (or 
@@ -55,7 +55,7 @@
     )
 
 (defrule CAPABILITIES::image-distortion-at-low-altitudes-in-side-looking-instruments
-    "modifies an instrument capability by setting its "can-take-measurements" to "no" and providing a reason that "side-looking instruments suffer from image distortion at low altitudes". The modification is based on the conditions that the instrument is capable of taking measurements, the orbit altitude is less than or equal to 400, and the instrument geometry is slant"
+    "modifies an instrument capability by setting its 'can-take-measurements' to 'no' and providing a reason that 'side-looking instruments suffer from image distortion at low altitudes'. The modification is based on the conditions that the instrument is capable of taking measurements, the orbit altitude is less than or equal to 400, and the instrument geometry is slant"
     (declare (salience 10))
     ?c <- (CAPABILITIES::can-measure (instrument ?ins) (orbit-altitude# ?h&~nil&:(<= ?h 400)) (can-take-measurements yes) (factHistory ?fh1))
     ?sub <- (DATABASE::Instrument (Name ?ins) (Geometry slant) (Spectral-region ?sr))
