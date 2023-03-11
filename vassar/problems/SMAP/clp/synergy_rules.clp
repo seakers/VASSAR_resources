@@ -560,9 +560,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     )
 
 (defrule SYNERGIES::CERES-sampling-time-SW3
-    "states, for the CERES mission, it is required to have one instrument in a cross-track scanning configuration
-    to get good spatial sampling and another one in azimuth scanning configuration in order to 
-    sample all possible angles"
+    "states, for the CERES mission, it is required to have one instrument in a cross-track scanning configuration to get good spatial sampling and another one in azimuth scanning configuration in order to sample all possible angles"
     (declare (no-loop TRUE) (salience -3))
     ?sub <- (REQUIREMENTS::Measurement (Parameter "A4.Clouds and radiation") (num-of-indep-samples# ?n&3))
     ?m <- (REQUIREMENTS::Measurement (Parameter "1.9.3 Spectrally resolved SW radiance -0.3-2um-") (rms-variable-time-sampling# ?tim) (factHistory ?fh))
