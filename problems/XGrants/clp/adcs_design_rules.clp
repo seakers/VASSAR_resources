@@ -29,7 +29,7 @@
     ?sat <- (MANIFEST::Mission (ADCS-requirement ?req&~nil) (satellite-dry-mass ?dry-mass&~nil)
         (moments-of-inertia $?mom&:(> (length$ $?mom) 0)) (orbit-semimajor-axis ?a&~nil)
         (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil) (payload-mass# ?m&~nil&:(> ?m 15))
-        (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil) (slew-rate ?slew-rate)
+        (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil) (slew-torque ?slew-torque)
         (satellite-dimensions $?dim&:(> (length$ $?dim) 0))
         (ADCS-mass# nil) (factHistory ?fh))
     =>
@@ -38,20 +38,12 @@
     (bind ?As (* ?x ?y))
     (bind ?cpscg (* 0.2 ?x)) (bind ?cpacg (* 0.2 ?x))
     (bind ?q 0.6)
-    (if (neq ?slew-rate nil) then
-        (bind ?slew-momentum (calculate-slew-momentum ?Iy ?Iz ?slew-rate))
-        (bind ?slew-torque (slew-torque ?Iy ?Iz 90 30)) ; 90 degrees, 30 seconds
-     else
-        (bind ?slew-momentum 0)
-        (bind ?slew-torque 0)
-    )
-    ;(bind ?slew-momentum (calculate-slew-momentum ?Iy ?Iz ?slew-rate))
+    (if (eq ?slew-torque nil) then (bind ?slew-torque 0))
     ;(printout t "Iy: " ?Iy ", Iz: " ?Iz crlf)
-    ;(printout t "slew momentum: " ?slew-momentum crlf)
     (bind ?dist-torque (max-disturbance-torque
             ?a ?off-nadir ?Iy ?Iz ?Cd ?As ?cpacg ?cpscg ?sun-angle ?D ?q))
-    ;(printout t "disturbance momentum: " (compute-RW-momentum ?torque ?a) crlf)
-    (bind ?mom (max (compute-RW-momentum ?dist-torque ?a) ?slew-momentum))
+    ;(printout t "disturbance momentum: " (compute-RW-momentum ?dist-torque ?a) crlf)
+    (bind ?mom (max (compute-RW-momentum ?dist-torque ?a) (compute-RW-momentum ?slew-torque ?a)))
     (bind ?torque (max ?slew-torque ?dist-torque))
     (bind ?ctrl-mass (estimate-att-ctrl-mass ?mom))
     (bind ?det-mass (estimate-att-det-mass ?req ?dry-mass))
@@ -149,7 +141,7 @@
 
 (deffunction slew-torque (?Iy ?Iz ?time ?deg)
     (bind ?I (max ?Iy ?Iz))
-    (return (* 4 ?I ?deg 3.1415 (/ 1 180) (/ 1 (** 30 2))))
+    (return (* 4 ?I ?deg (/ 1 (** ?time 2))))
     )
 
 (deffunction compute-RW-momentum (?Td ?a)
