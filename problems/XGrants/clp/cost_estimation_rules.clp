@@ -25,7 +25,7 @@
     "This rule estimates payload cost using a very simplified version of the
     NASA Instrument Cost Model available on-line"
     (declare (salience 25) (no-loop TRUE))
-    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil&:(> ?m 10)) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
+    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
             (developed-by ?whom) (factHistory ?fh))
     =>
 
@@ -34,18 +34,18 @@
     (modify ?instr (cost# ?c0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}")))
     )
 
-(defrule COST-ESTIMATION::estimate-instrument-cost-small
-    "This rule estimates payload cost using a very simplified version of the
-    NASA Instrument Cost Model available on-line"
-    (declare (salience 25) (no-loop TRUE))
-    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil&:(<= ?m 10)) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
-            (developed-by ?whom) (factHistory ?fh))
-    =>
-
-    (bind ?c0 4000)
-    ;(printout t "Payload cost params: " ?m " " ?p " " ?rb " " ?name " " ?c0 crlf)
-    (modify ?instr (cost# ?c0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}")))
-    )
+;(defrule COST-ESTIMATION::estimate-instrument-cost-small
+;    "This rule estimates payload cost using a very simplified version of the
+;    NASA Instrument Cost Model available on-line"
+;    (declare (salience 25) (no-loop TRUE))
+;    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil&:(<= ?m 10)) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
+;            (developed-by ?whom) (factHistory ?fh))
+;    =>
+;
+;    (bind ?c0 4000)
+;    ;(printout t "Payload cost params: " ?m " " ?p " " ?rb " " ?name " " ?c0 crlf)
+;    (modify ?instr (cost# ?c0) (factHistory (str-cat "{R" (?*rulesMap* get COST-ESTIMATION::estimate-instrument-cost) " " ?fh "}")))
+;    )
 
 
 
@@ -223,6 +223,7 @@
         )
     =>
     (bind ?cost 1500)
+    (printout t "Cubesat!" crlf)
 
     (modify ?miss (bus-recurring-cost# ?cost) (bus-non-recurring-cost# 0.0))
     )
