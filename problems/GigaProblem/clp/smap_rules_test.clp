@@ -9,14 +9,16 @@
     (multislot doesnt-fly) (slot num-sats-per-plane) (slot lifecycle-cost) (slot benefit)  
 	(slot space-segment-cost) (slot ground-segment-cost) (slot pareto-ranking) (slot utility)
 	(slot mutate) (slot crossover)  (slot improve) (slot id) 
-    (slot num-instruments) (multislot sat-assignments) (multislot ground-stations) (multislot constellations) (slot factHistory))
+    (slot num-instruments) (multislot sat-assignments) (multislot ground-stations) (multislot constellations))
 
 ;(defglobal ?*smap-instruments* = 0)
 ;(bind ?*smap-instruments* (create$ SMAP_RAD SMAP_MWR CMIS VIIRS BIOMASS))
-;(deftemplate DATABASE::list-of-instruments (multislot list))
 
-;(deffacts DATABASE::list-of-instruments (DATABASE::list-of-instruments
-;        (list (create$ SMAP_RAD SMAP_MWR CMIS VIIRS BIOMASS))))
+(deftemplate DATABASE::list-of-instruments (multislot list) )
+
+
+(deffacts DATABASE::list-of-instruments (DATABASE::list-of-instruments 
+        (list (create$ SMAP_RAD SMAP_MWR CMIS VIIRS BIOMASS))))
 (reset)
 (defquery DATABASE::get-instruments 
     ?f <- (DATABASE::list-of-instruments (list $?l))
@@ -127,11 +129,11 @@
          (return (contains$ (rest$ ?list) ?elem)))    
     )
 
-(defrule MANIFEST0::SMAP-add-common-dish-to-MWR
+(defrule MANIFEST::SMAP-add-common-dish-to-MWR
     "If we manifest the SMAP radar, radiometer, or both, then we need to 
     manifest the share dish"
     (declare (salience 100))
-    ?miss <- (MANIFEST::Satellite (instruments $?list-of-instruments))
+    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
     (test (eq (contains$ ?list-of-instruments SMAP_ANT) FALSE))
     (test (eq (contains$ ?list-of-instruments SMAP_MWR) TRUE))
     
@@ -142,10 +144,10 @@
     
     ) 
 
-(defrule MANIFEST0::SMAP-add-common-dish-to-RAD
+(defrule MANIFEST::SMAP-add-common-dish-to-RAD
     "If we manifest the SMAP radar, radiometer, or both, then we need to manifest the share dish"
 	(declare (salience 100))
-    ?miss <- (MANIFEST::Satellite (instruments $?list-of-instruments))
+    ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
 	(test (eq (contains$ ?list-of-instruments SMAP_ANT) FALSE))
     (test (eq (contains$ ?list-of-instruments SMAP_RAD) TRUE))
     ;(test (eq (subsetp (create$ SMAP_MWR) ?list-of-instruments) TRUE))
@@ -162,7 +164,7 @@
 
 
 (defrule MANIFEST::compute-SMAP-MWR-spatial-resolution
-    ?MWR <- (CAPABILITIES::Manifested-instrument  (Name SMAP_MWR)
+    ?MWR <- (CAPABILITIES::Manifested-instrument  (Name SMAP_MWR) (Intent "Imaging multi-spectral radiometers -passive MW-")
          (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?theta&~nil) (scanning-angle-plus-minus# ?alfa&~nil) (flies-in ?sat))
     (CAPABILITIES::Manifested-instrument  (Name SMAP_ANT) (dimension-x# ?D&~nil) (flies-in ?sat))
     =>
@@ -180,7 +182,7 @@
     )
 
 (defrule MANIFEST::compute-CMIS-spatial-resolution
-    ?MWR <- (CAPABILITIES::Manifested-instrument  (Name CMIS)
+    ?MWR <- (CAPABILITIES::Manifested-instrument  (Name CMIS) (Intent "Imaging multi-spectral radiometers -passive MW-")
          (frequency# ?f&~nil) (orbit-altitude# ?h&~nil) (dimension-x# ?D&~nil) (Horizontal-Spatial-Resolution# nil) (off-axis-angle-plus-minus# ?theta&~nil) (scanning-angle-plus-minus# ?alfa&~nil) (flies-in ?sat))
     =>
     (bind ?dtheta (to-deg (/ 3e8 (* ?D ?f)))); lambda/D
@@ -238,8 +240,10 @@
 (defrule CAPABILITIES::compute-image-distortion-in-side-looking-instruments
     "Computes image distortion for side-looking instruments"
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) 
-        (Geometry slant) (characteristic-orbit ?href&~nil) (image-distortion# nil))
+        (Geometry slant)  (characteristic-orbit ?orb&~nil) (image-distortion# nil))
     =>
+    (bind ?href (get-orbit-altitude ?orb))
+    
     (modify ?instr (image-distortion# (/ ?h ?href))) 
         
     )
@@ -310,8 +314,8 @@
 	=>
 
     (duplicate ?SM (Parameter "2.3.3 Carbon net ecosystem exchange NEE")  
-            (Id (str-cat ?id1 "-syn-" ?id2 "-syn-" ?id3 "-syn-" ?id4))
-            (taken-by (str-cat ?ins1 "-syn-" ?ins2 "-syn-" ?ins3 "-syn-" ?ins4)));; fuzzy-max in accuracy is OK because joint product does provide 4% accuracy
+            (Id (str-cat ?id1 "-syn" ?id2 "-syn" ?id3 "-syn" ?id4))
+            (taken-by (str-cat ?ins1 "-syn" ?ins2 "-syn-" ?ins3 "-syn-" ?ins4)));; fuzzy-max in accuracy is OK because joint product does provide 4% accuracy
 )
 
 (defrule SYNERGIES::snow-cover-3freqs
@@ -425,7 +429,7 @@
 
 (defrule MANIFEST::put-ADCS-values-by-default
 "Use values  by default for satellite parameters"
-?miss <- (MANIFEST::Satellite  (ADCS-requirement nil))
+?miss <- (MANIFEST::Mission  (ADCS-requirement nil))
 =>
 (modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)
  (propellant-injection hydrazine) (slew-angle 2.0)
@@ -442,17 +446,15 @@
 ;	(assert (SYNERGIES::cross-registered (measurements (str-cat $?m1 $?m2))))
 ;)
 
-(defrule CAPABILITIES-CROSS-REGISTER::cross-register-measurements-from-cross-registered-instruments
-	(SYNERGIES::cross-registered-instruments (instruments $?ins))
+(defrule CAPABILITIES::cross-register-measurements-from-cross-registered-instruments
+	(SYNERGIES::cross-registered-instruments (instruments $?ins) (platform ?sat))
 	?c <- (accumulate (bind ?str "")                        ;; initializer
                 (bind ?str (str-cat ?str " " $?m1))                    ;; action
                 ?str                                        ;; result
-                (CAPABILITIES::Manifested-instrument (Name ?ins1&:(contains$ $?ins ?ins1)) (measurement-ids $?m1))
+                (CAPABILITIES::Manifested-instrument (Name ?ins1&:(contains$ $?ins ?ins1)) (flies-in ?sat) (measurement-ids $?m1))
 				) ;; CE
 	=>
-	(assert (SYNERGIES::cross-registered (measurements (explode$ ?c)) (degree-of-cross-registration spacecraft)))
+	(assert (SYNERGIES::cross-registered (measurements (explode$ ?c)) (degree-of-cross-registration spacecraft) (platform ?sat)))
 	;(printout t ?c crlf)
 )
-
-
 

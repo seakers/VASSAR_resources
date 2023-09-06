@@ -4,7 +4,7 @@
 ;(set-reset-globals FALSE)
 ;(ENUMERATION::SMAP-ARCHITECTURE (payload SMAP_RAD SMAP_MWR CMIS VIIRS BIOMASS) (num-sats 1) (orbit-altitude 800) (orbit-raan DD) (orbit-type SSO) (orbit-inc SSO) (num-planes 1) (doesnt-fly ) (num-sats-per-plane 1) (num-instruments 5) (sat-assignments 1 1 1 1 1))
 
-(deftemplate MANIFEST::ARCHITECTURE (slot bitString) (multislot payload) (slot num-sats) (slot source) (slot orbit)
+(deftemplate MANIFEST::ARCHITECTURE (slot bitString) (multislot payload) (slot num-sats) (slot source) (slot orbit) 
     (slot orbit-altitude) (slot orbit-raan) (slot orbit-type) (slot orbit-inc) (slot num-planes)
     (multislot doesnt-fly) (slot num-sats-per-plane) (slot lifecycle-cost) (slot benefit)  
 	(slot space-segment-cost) (slot ground-segment-cost) (slot pareto-ranking) (slot utility)
@@ -279,8 +279,7 @@
 (REQUIREMENTS::Measurement (Parameter ?p) (diurnal-cycle PM-only) (Id ?id2) (taken-by ?ins2) (factHistory ?fh))
 
 =>
-;(printout t (str-cat ?id1 "-syn-" ?id2) " // " (str-cat ?ins1 "-syn-" ?ins2) " // " (str-cat "{R" (?*rulesMap* get SYNERGIES-ACROSS-ORBITS::AM-PM-diurnal-cycle) " " ?fh "}") crlf)
-(modify ?m1 (diurnal-cycle AM-PM) (Id (str-cat ?id1 "-syn-" ?id2)) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES-ACROSS-ORBITS::AM-PM-diurnal-cycle) " " ?fh "}")))
+(modify ?m1 (diurnal-cycle AM-PM) (Id (str-cat ?id1 "-syn-" ?id2)) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES-ACROSS-ORBITS::AM-PM-diurnal-cycle) " " ?fh "}"))) 
 )
 (defrule SYNERGIES::ozone
 ?m1 <- (REQUIREMENTS::Measurement (Parameter "1.8.2 O3"|"1.8.26 O3 - lower troposphere"|"1.8.27 O3 - upper troposphere"|"1.8.28 O3 - lower stratosphere"|"1.8.29 O3 - upper stratosphere") (Accuracy# 5.0) (Id ?id1) (taken-by ?ins1) (factHistory ?fh1))
@@ -302,7 +301,7 @@
 ?sub1 <-(REQUIREMENTS::Measurement (Parameter "1.1.1 aerosol height/optical depth") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <-(SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
 =>
-(modify ?m1 (rms-system-tropo-dry# Low) (taken-by (str-cat ?ins1 "-syn-"  ?ins2))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::dry-atmosphere-correction-for-ocean-altimetry) " " ?fh " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
+(modify ?m1 (rms-system-tropo-dry# Low) (taken-by (str-cat ?ins1 "-syn"  ?ins2))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::dry-atmosphere-correction-for-ocean-altimetry) " " ?fh " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
 )
 ;; A4.Clouds and aerosols
 (defrule SYNERGIES::clouds-and-aerosols
@@ -310,7 +309,7 @@
 ?sub1 <- (REQUIREMENTS::Measurement (Parameter "1.1.6 aerosol absorption optical depth") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
 =>
-(duplicate ?m1 (Parameter "A12.Clouds and aerosols") (taken-by (str-cat ?ins1 "-syn-"  ?ins2))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::clouds-and-aerosols) " D" (call ?m1 getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
+(duplicate ?m1 (Parameter "A12.Clouds and aerosols") (taken-by (str-cat ?ins1 "-syn"  ?ins2))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::clouds-and-aerosols) " D" (call ?m1 getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
 )
 ;; A4.Clouds and radiation
 (defrule SYNERGIES::clouds-and-radiation
@@ -318,7 +317,7 @@
 ?sub1 <- (REQUIREMENTS::Measurement (Parameter "1.9.3 Spectrally resolved SW radiance -0.3-2um-") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
 =>
-(duplicate ?m1 (Parameter "A4.Clouds and radiation") (taken-by (str-cat ?ins1 "-syn-"  ?ins2))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::clouds-and-radiation) " D" (call ?m1 getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
+(duplicate ?m1 (Parameter "A4.Clouds and radiation") (taken-by (str-cat ?ins1 "-syn"  ?ins2))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::clouds-and-radiation) " D" (call ?m1 getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
 )
 ;; A11. Tropospheric chemistry, pollution and aerosols
 (defrule SYNERGIES::tropospheric-pollution-GHG-and-aerosols
@@ -326,7 +325,7 @@
 ?sub1 <- (REQUIREMENTS::Measurement (Parameter "1.1.6 aerosol absorption optical depth") (Id ?id2&~?id1) (taken-by ?ins2&~?ins1))
 ?sub2 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2) $?m))
 =>
-(duplicate ?m1 (Parameter "A11. Tropospheric chemistry, pollution and aerosols") (taken-by (str-cat ?ins1 "-syn-"  ?ins2))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::tropospheric-pollution-GHG-and-aerosols) " D" (call ?m1 getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
+(duplicate ?m1 (Parameter "A11. Tropospheric chemistry, pollution and aerosols") (taken-by (str-cat ?ins1 "-syn"  ?ins2))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::tropospheric-pollution-GHG-and-aerosols) " D" (call ?m1 getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
 )
 
 (defrule SYNERGIES::carbon-net-ecosystem-exchange 
@@ -340,9 +339,10 @@
     ?sub4 <- (SYNERGIES::cross-registered (measurements $?m)) (test (subsetp (create$ ?id1 ?id2 ?id3 ?id4) $?m))
     ;(not (REQUIREMENTS::Measurement (Parameter "2.3.3 Carbon net ecosystem exchange NEE")))
 	=>
+
     (duplicate ?SM (Parameter "2.4.6 Soil carbon")  
-            (Id (str-cat ?id1 "-syn-" ?id2 "-syn-" ?id3 "-syn-" ?id4))
-            (taken-by (str-cat ?ins1 "-syn-" ?ins2 "-syn-" ?ins3 "-syn-" ?ins4)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::carbon-net-ecosystem-exchange) " D" (call ?SM getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) " S" (call ?sub3 getFactId) " S" (call ?sub4 getFactId) "}")));; fuzzy-max in accuracy is OK because joint product does provide 4% accuracy
+            (Id (str-cat ?id1 "-syn" ?id2 "-syn" ?id3 "-syn" ?id4))
+            (taken-by (str-cat ?ins1 "-syn" ?ins2 "-syn-" ?ins3 "-syn-" ?ins4)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::carbon-net-ecosystem-exchange) " D" (call ?SM getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) " S" (call ?sub3 getFactId) " S" (call ?sub4 getFactId) "}")));; fuzzy-max in accuracy is OK because joint product does provide 4% accuracy
 )
 
 (defrule SYNERGIES::snow-cover-3freqs
@@ -456,7 +456,7 @@
 
 (defrule MANIFEST::put-ADCS-values-by-default
 "Use values  by default for satellite parameters"
-?miss <- (MANIFEST::Satellite  (ADCS-requirement nil) (factHistory ?fh))
+?miss <- (MANIFEST::Mission  (ADCS-requirement nil) (factHistory ?fh))
 =>
 (modify ?miss (ADCS-requirement 0.01) (ADCS-type three-axis) (propellant-ADCS hydrazine)
  (propellant-injection hydrazine) (slew-angle 2.0) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::put-ADCS-values-by-default) " " ?fh "}"))

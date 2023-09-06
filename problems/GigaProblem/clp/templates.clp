@@ -41,7 +41,7 @@
 
 (deftemplate AGGREGATION::STAKEHOLDER (slot id) (slot fuzzy-value) (slot parent) (slot index) (slot satisfaction) (slot satisfied-by) (multislot obj-fuzzy-scores) (multislot obj-scores) (slot reason) (multislot weights)(slot factHistory))
 (deftemplate AGGREGATION::OBJECTIVE (slot id) (slot fuzzy-value) (slot index) (slot satisfaction) (slot reason) (multislot subobj-fuzzy-scores) (multislot subobj-scores) (slot satisfied-by) (slot parent) (multislot weights)(slot factHistory))
-(deftemplate AGGREGATION::SUBOBJECTIVE (slot id) (slot fuzzy-value) (slot index) (slot satisfaction) (multislot attributes) (multislot attrib-scores) (multislot reasons) (slot reason) (slot satisfied-by) (slot parent) (slot requirement-id) (slot factHistory))
+(deftemplate AGGREGATION::SUBOBJECTIVE (slot id) (slot fuzzy-value) (slot index) (slot satisfaction) (multislot attributes) (multislot attrib-scores) (multislot reasons) (slot reason) (slot satisfied-by) (slot parent)(slot factHistory))
 (deftemplate AGGREGATION::ATTRIBUTE (slot id) (slot fuzzy-value) (slot satisfaction) (slot reason) (slot satisfied-by) (slot parent)(slot factHistory))
 (deftemplate AGGREGATION::VALUE (slot satisfaction) (slot fuzzy-value) (slot reason) (multislot weights) (multislot sh-scores) (multislot sh-fuzzy-scores)(slot factHistory))
 

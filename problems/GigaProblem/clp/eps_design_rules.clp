@@ -10,14 +10,14 @@
 ; ******************************************
 
 (defrule MASS-BUDGET::estimate-depth-of-discharge
-    ?sat <- (MANIFEST::Satellite (orbit-type ?typ&~nil) (orbit-RAAN ?raan&~nil)
+    ?sat <- (MANIFEST::Mission (orbit-type ?typ&~nil) (orbit-RAAN ?raan&~nil)
         (depth-of-discharge nil) (factHistory ?fh))
     =>
     (modify ?sat (depth-of-discharge (get-dod ?typ ?raan)) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::estimate-depth-of-discharge) " " ?fh "}")))
     )
 
 (defrule MASS-BUDGET::design-EPS
-    ?miss<- (MANIFEST::Satellite (payload-power# ?p&~nil) (EPS-mass# nil) (depth-of-discharge ?dod&~nil) 
+    ?miss<- (MANIFEST::Mission (payload-power# ?p&~nil) (EPS-mass# nil) (depth-of-discharge ?dod&~nil) 
         (orbit-semimajor-axis ?a&~nil) (orbit-type ?typ&~nil) 
         (worst-sun-angle ?angle&~nil) (fraction-sunlight ?frac&~nil) 
               (satellite-dry-mass ?m&~nil) (satellite-BOL-power# nil) (lifetime ?life&~nil) (factHistory ?fh))

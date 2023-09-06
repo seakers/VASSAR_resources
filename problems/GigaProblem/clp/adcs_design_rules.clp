@@ -10,7 +10,7 @@
 ; ******************************************
  
 (defrule MASS-BUDGET::set-ADCS-type
-    ?sat <- (MANIFEST::Satellite (ADCS-requirement ?adcs&~nil) (ADCS-type nil)  (factHistory ?fh))
+    ?sat <- (MANIFEST::Mission (ADCS-requirement ?adcs&~nil) (ADCS-type nil)  (factHistory ?fh))
     =>
     (if (< ?adcs 0.1) then (bind ?typ three-axis)
         elif (< ?adcs 1) then (bind ?typ spinner)
@@ -19,20 +19,20 @@
     )
 
 (defrule MASS-BUDGET::estimate-drag-coefficient
-    ?sat <- (MANIFEST::Satellite (drag-coefficient nil) (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (factHistory ?fh))
+    ?sat <- (MANIFEST::Mission (drag-coefficient nil) (satellite-dimensions $?dim&:(> (length$ $?dim) 0)) (factHistory ?fh))
     =>
     (modify ?sat (drag-coefficient (estimate-drag-coeff $?dim)) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::estimate-drag-coefficient) " " ?fh "}")))
     )
 
 (defrule MASS-BUDGET::estimate-residual-dipole
     " Anywhere between 0.1 and 20Am^2, 1Am2 for small satellite"
-    ?sat <- (MANIFEST::Satellite (residual-dipole nil) (factHistory ?fh))
+    ?sat <- (MANIFEST::Mission (residual-dipole nil) (factHistory ?fh))
     =>
     (modify ?sat (residual-dipole 5.0) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::estimate-residual-dipole) " " ?fh "}")))
     )
 
 (defrule MASS-BUDGET::design-ADCS
-    ?sat <- (MANIFEST::Satellite (ADCS-requirement ?req&~nil) (satellite-dry-mass ?dry-mass&~nil) 
+    ?sat <- (MANIFEST::Mission (ADCS-requirement ?req&~nil) (satellite-dry-mass ?dry-mass&~nil) 
         (moments-of-inertia $?mom&:(> (length$ $?mom) 0)) (orbit-semimajor-axis ?a&~nil)
         (drag-coefficient ?Cd&~nil) (worst-sun-angle ?sun-angle&~nil)  
         (residual-dipole ?D&~nil) (slew-angle ?off-nadir&~nil)

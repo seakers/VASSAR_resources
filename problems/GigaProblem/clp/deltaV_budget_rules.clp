@@ -10,7 +10,7 @@
     of 150km and an apogee at the desired orbit, as suggested in De Weck's paper found in 
     http://strategic.mit.edu/docs/2_3_JSR_parametric_NGSO.pdf. For LEO/SSO, no injection is required."
     
-    ?miss <- (MANIFEST::Satellite (orbit-type ?typ) (orbit-semimajor-axis ?a&~nil) 
+    ?miss <- (MANIFEST::Mission (orbit-type ?typ) (orbit-semimajor-axis ?a&~nil) 
          (delta-V-injection nil) (factHistory ?fh))
     =>
 	(if (or (eq ?typ GEO) (eq ?typ MEO)) then (bind ?dV (compute-dV-injection (+ 6378000 150000) ?a))
@@ -23,7 +23,7 @@
     "This rule computes the delta-V required to overcome drag. The data comes from 
     De Weck's paper found in http://strategic.mit.edu/docs/2_3_JSR_parametric_NGSO.pdf"
     
-    ?miss <- (MANIFEST::Satellite (orbit-semimajor-axis ?a&~nil) (orbit-eccentricity ?e&~nil) 
+    ?miss <- (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil) (orbit-eccentricity ?e&~nil) 
         (delta-V-drag nil) (lifetime ?life&~nil) (factHistory ?fh))
     =>
     
@@ -41,7 +41,7 @@
     "This rule computes the delta-V required for attitude control. The data comes from 
     De Weck's paper found in http://strategic.mit.edu/docs/2_3_JSR_parametric_NGSO.pdf"
     
-    ?miss <- (MANIFEST::Satellite (ADCS-type ?adcs) (delta-V-ADCS nil) 
+    ?miss <- (MANIFEST::Mission (ADCS-type ?adcs) (delta-V-ADCS nil) 
         (lifetime ?life&~nil) (factHistory ?fh))
     =>
     
@@ -53,14 +53,14 @@
 
 (defrule MASS-BUDGET::drag-based-deorbiting-mode
     "This rule sets the deorbiting mode to drag-based"
-    ?miss <- (MANIFEST::Satellite  (deorbiting-strategy nil) (orbit-type ?typ&:(or (eq ?typ LEO) (eq ?typ SSO))) (factHistory ?fh))
+    ?miss <- (MANIFEST::Mission  (deorbiting-strategy nil) (orbit-type ?typ&:(or (eq ?typ LEO) (eq ?typ SSO))) (factHistory ?fh))
     =>
     (modify ?miss (deorbiting-strategy drag-based) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::drag-based-deorbiting-mode) " " ?fh "}")))
     )
 
 (defrule MASS-BUDGET::graveyard-deorbiting-mode
     "This rule sets the deorbiting mode to graveyard"
-    ?miss <- (MANIFEST::Satellite  (deorbiting-strategy nil) (orbit-type ?typ&:(or (eq ?typ GEO) (eq ?typ MEO))) (factHistory ?fh))
+    ?miss <- (MANIFEST::Mission  (deorbiting-strategy nil) (orbit-type ?typ&:(or (eq ?typ GEO) (eq ?typ MEO))) (factHistory ?fh))
     =>
     (modify ?miss (deorbiting-strategy graveyard) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::graveyard-deorbiting-mode) " " ?fh "}")))
     )
@@ -69,7 +69,7 @@
     "This rule computes the delta-V required for deorbiting assuming a change of semimajor axis
     so that the perigee is the surface of the earth"
     
-    ?miss <- (MANIFEST::Satellite (orbit-semimajor-axis ?a&~nil) 
+    ?miss <- (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil) 
         (delta-V-deorbit nil) (deorbiting-strategy drag-based) (factHistory ?fh))
     =>
     
@@ -82,7 +82,7 @@
     This is calculated as a change of semimajor axis to raise perigee by a certain amount
     given in http://www.iadc-online.org/Documents/IADC-UNCOPUOS-final.pdf"
     
-    ?miss <- (MANIFEST::Satellite (orbit-type GEO) (satellite-dry-mass ?m&~nil) 
+    ?miss <- (MANIFEST::Mission (orbit-type GEO) (satellite-dry-mass ?m&~nil) 
         (orbit-semimajor-axis ?a&~nil) (satellite-dimensions $?dim)
         (delta-V-deorbit nil) (deorbiting-strategy graveyard) (factHistory ?fh))
     =>
@@ -94,7 +94,7 @@
 (defrule MASS-BUDGET::compute-deltaV-total
     "This rule computes the delta-V as the sum of all deltaVs"
     
-    ?miss <- (MANIFEST::Satellite (delta-V-injection ?inj&~nil) 
+    ?miss <- (MANIFEST::Mission (delta-V-injection ?inj&~nil) 
         (delta-V-ADCS ?adcs&~nil) 
         (delta-V-drag ?drag&~nil) (delta-V-deorbit ?deorbit&~nil) (delta-V nil)  (factHistory ?fh))
     =>

@@ -6,6 +6,13 @@
 ;; Generic synergy rules
 ;; ********
 
+(defrule SYNERGIES::raz-synergy-levels
+    (declare (salience 50))
+    ?m <- (REQUIREMENTS::Measurement (synergy-level# nil))
+    =>
+    (modify ?m (synergy-level# 0))
+    )
+
 (defrule SYNERGIES::spatial-disaggregation "A frequent coarse spatial resolution measurement can be combined with a sparse high spatial resolution measurement to produce a frequent high spatial resolution measurement with average accuracy"
     ?m1 <- (REQUIREMENTS::Measurement (Parameter ?p&~nil) (Temporal-resolution ?tr1&~nil) (Horizontal-Spatial-Resolution ?hsr1&~nil) (Accuracy ?a1&~nil) (Id ?id1) (taken-by ?ins1) (synergy-level# ?s1&:(< ?s1 1)) (factHistory ?fh1))
     ?m2 <- (REQUIREMENTS::Measurement (Parameter ?p&~nil) (Temporal-resolution ?tr2&~nil) (Horizontal-Spatial-Resolution ?hsr2&~nil) (Accuracy ?a2&~nil) (Id ?id2) (taken-by ?ins2) (synergy-level# ?s2&:(< ?s2 1)) (factHistory ?fh2))
@@ -136,7 +143,7 @@
     	(test (member$ ?id1 $?m))
     	(test (member$ ?id2 $?m))
     =>
-    (duplicate ?topo (Id (str-cat ?id1 "-syn-" ?id2)) (taken-by (str-cat ?ins1 "-syn-" ?ins2)) (Parameter "4.1.3 glacier mass balance")(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::glacier-mass-balance-from-gravity) " D" (call ?topo getFactId) " S" (call ?grav getFactId) "}"))))
+    (duplicate ?topo (Id (str-cat ?id1 "-syn" ?id2)) (taken-by (str-cat ?ins1 "-syn" ?ins2)) (Parameter "4.1.3 glacier mass balance")(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::glacier-mass-balance-from-gravity) " D" (call ?topo getFactId) " S" (call ?grav getFactId) "}"))))
 
 ;; ocean mass distribution from gravity measurement
 (defrule SYNERGIES::ocean-mass-distribution-from-gravity "Ocean mass distribution can be inferred from precise gravity measurements"
@@ -481,7 +488,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     =>
     ;(printout t clouds-and-radiation3 ?n1 " " ?n2 " " ?n3 crlf)
     (duplicate ?clouds (Parameter "A4.Clouds and radiation") (num-of-indep-samples# 3)
-        (Id (str-cat ?id1 "-syn-" ?id2))  (taken-by (str-cat ?ins1 "-syn-" ?ins2 "-syn-" ?n1 "-syn-" ?n2 "-syn-" ?n3)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::clouds-and-radiation3) " D" (call ?clouds getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) " S" (call ?sub3 getFactId) " S" (call ?sub4 getFactId) "}")))
+        (Id (str-cat ?id1 "-syn-" ?id2))  (taken-by (str-cat ?ins1 "-syn-" ?ins2 "-syn" ?n1 "-syn" ?n2 "-syn" ?n3)) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::clouds-and-radiation3) " D" (call ?clouds getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) " S" (call ?sub3 getFactId) " S" (call ?sub4 getFactId) "}")))
     ;(assert (REQUIREMENTS::Measurement (Parameter "A4.Clouds and radiation") (num-of-indep-samples# 3)))
     )
 
@@ -993,7 +1000,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     ;(printout t h2o crlf)
     (duplicate ?PATH (Region-of-interest Global) (Vertical-Spatial-Resolution High-200m-orless) (Horizontal-Spatial-Resolution Medium-100m-1km) 
         (cloud-cleared yes) (sensitivity-in-low-troposphere-PBL High)  (Temporal-resolution Highest-1h-orless) (taken-by (str-cat ?ins1 "-syn-" ?ins2 "-syn-" ?ins3))
-         (Id (str-cat ?id1 "-syn-" ?id2 "-syn-" ?id3)) (synergy-level# 2)(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::water-vapor-transport-strategy) " D" (call ?PATH getFactId) " S" (call ?GPSRO getFactId) " S" (call ?GACM getFactId) "}")))
+         (Id (str-cat ?id1 "-syn-" ?id2 "-syn" ?id3)) (synergy-level# 2)(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::water-vapor-transport-strategy) " D" (call ?PATH getFactId) " S" (call ?GPSRO getFactId) " S" (call ?GACM getFactId) "}")))
     )
 
 

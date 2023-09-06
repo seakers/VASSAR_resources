@@ -62,7 +62,7 @@
     "This rule estimates payload cost using a very simplified version of the 
     NASA Instrument Cost Model available on-line"
     (declare (salience 18))
-    ?miss <- (MANIFEST::Satellite (payload-cost# nil) (instruments $?payload) (factHistory ?fh)
+    ?miss <- (MANIFEST::Mission (payload-cost# nil) (instruments $?payload) (factHistory ?fh)
         )
     =>
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
@@ -84,7 +84,7 @@
 (defrule FUZZY-COST-ESTIMATION::estimate-bus-non-recurring-cost
     "This rule estimates bus non-recurring cost using SMAD CERs"
     (declare (salience 10))
-    ?miss <- (MANIFEST::Satellite (bus-non-recurring-cost# nil) 
+    ?miss <- (MANIFEST::Mission (bus-non-recurring-cost# nil) 
         (satellite-BOL-power# ?p&~nil) (EPS-mass# ?epsm&~nil) (thermal-mass# ?thm&~nil)
         (structure-mass# ?strm &~nil) (propulsion-mass# ?prm&~nil) (avionics-mass# ?comm&~nil)
         (ADCS-mass# ?adcm&~nil) (standard-bus ?bus) (factHistory ?fh)
@@ -117,7 +117,7 @@
 (defrule FUZZY-COST-ESTIMATION::estimate-bus-TFU-recurring-cost
     "This rule estimates bus recurring cost (TFU) using SMAD CERs"
     (declare (salience 10))
-    ?miss <- (MANIFEST::Satellite (bus-recurring-cost# nil) 
+    ?miss <- (MANIFEST::Mission (bus-recurring-cost# nil) 
         (EPS-mass# ?epsm&~nil) (thermal-mass# ?thm&~nil) (avionics-mass# ?comm&~nil)
         (structure-mass# ?strm &~nil) (propulsion-mass# ?prm&~nil) 
         (ADCS-mass# ?adcm&~nil) (standard-bus ?bus) (factHistory ?fh)
@@ -156,7 +156,7 @@
 (defrule FUZZY-COST-ESTIMATION::estimate-spacecraft-cost-dedicated
     "This rule estimates s/c non recurring cost adding up bus and payload n/r cost"
     (declare (salience 5))
-    ?miss <- (MANIFEST::Satellite (spacecraft-non-recurring-cost# nil) (spacecraft-recurring-cost# nil)
+    ?miss <- (MANIFEST::Mission (spacecraft-non-recurring-cost# nil) (spacecraft-recurring-cost# nil)
         (bus-non-recurring-cost# ?busnr&~nil) (bus-recurring-cost# ?bus&~nil) (payload-cost# ?payl&~nil) (standard-bus ?sbus)
         (bus-non-recurring-cost ?fz-busnr&~nil) (bus-recurring-cost ?fz-bus&~nil) (payload-cost ?fz-payl&~nil) (factHistory ?fh))
     (or (test (eq ?sbus nil)) (test (eq ?sbus dedicated-class)))
@@ -182,7 +182,7 @@
 ; IA&T cost
 (defrule FUZZY-COST-ESTIMATION::estimate-integration-and-testing-cost
     "This rule estimates Integration, assembly and testing non recurring and cost using SMAD CERs"
-    ?miss <- (MANIFEST::Satellite (IAT-non-recurring-cost# nil) (IAT-recurring-cost# nil) (IAT-cost# nil) 
+    ?miss <- (MANIFEST::Mission (IAT-non-recurring-cost# nil) (IAT-recurring-cost# nil) (IAT-cost# nil) 
         (spacecraft-non-recurring-cost# ?scnr&~nil) (satellite-dry-mass ?m&~nil) (factHistory ?fh)
         )
     =>
@@ -204,7 +204,7 @@
 ; ********************
 (defrule FUZZY-COST-ESTIMATION::estimate-program-overhead-cost
     "This rule estimates program overhead non recurring and cost using SMAD CERs"
-    ?miss <- (MANIFEST::Satellite (program-non-recurring-cost# nil) (program-recurring-cost# nil) (program-cost# nil) 
+    ?miss <- (MANIFEST::Mission (program-non-recurring-cost# nil) (program-recurring-cost# nil) (program-cost# nil) 
         (spacecraft-non-recurring-cost# ?scnr&~nil) (spacecraft-recurring-cost# ?scr&~nil) (factHistory ?fh)
         )
     =>
@@ -228,7 +228,7 @@
 (defrule FUZZY-COST-ESTIMATION::estimate-operations-cost-std
     "This rule estimates operations cost using NASAs MOCM"
     (declare (salience -5))
-    ?miss <- (MANIFEST::Satellite (satellite-cost# ?sat&~nil) (operations-cost# nil) 
+    ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# nil) 
         (lifetime ?life &~nil) (program-cost# ?prog&~nil) (IAT-cost# ?iat&~nil)
         (sat-data-rate-per-orbit# ?rbo&nil) (factHistory ?fh))
     =>
@@ -243,7 +243,7 @@
 (defrule FUZZY-COST-ESTIMATION::estimate-operations-cost-with-ground-station-penalty
     "This rule estimates operations cost using NASAs MOCM"
     (declare (salience -5))
-    ?miss <- (MANIFEST::Satellite (satellite-cost# ?sat&~nil) (operations-cost# nil) 
+    ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# nil) 
         (lifetime ?life &~nil) (program-cost# ?prog&~nil) (IAT-cost# ?iat&~nil)
         (sat-data-rate-per-orbit# ?rbo&~nil) (factHistory ?fh))
     =>
@@ -296,7 +296,7 @@
     mature instrument in the payload"
     
     (declare (salience -10))
-    ?miss <- (MANIFEST::Satellite (satellite-cost# ?sat&~nil) (operations-cost# ?ops&~nil) 
+    ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# ?ops&~nil) 
         (launch-cost# ?launch&~nil) (program-cost# ?prog&~nil) (IAT-cost# ?iat&~nil)
         (mission-cost# nil) (instruments $?ins) (partnership-type $?prt&:(eq (length$ ?prt) 0)) (factHistory ?fh)
         )
@@ -317,7 +317,7 @@
     account"
     
     (declare (salience -10))
-    ?miss <- (MANIFEST::Satellite (satellite-cost# ?sat&~nil) (operations-cost# ?ops&~nil) 
+    ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# ?ops&~nil) 
         (launch-cost# ?launch&~nil) (program-cost# ?prog&~nil) (IAT-cost# ?iat&~nil)
         (payload-cost# ?payl&~nil) (bus-cost# ?bus&~nil) 
         (mission-cost# nil) (instruments $?ins) (partnership-type $?prt&:(> (length$ ?prt) 0)) (factHistory ?fh)
@@ -342,7 +342,7 @@
     "Non recurring cost"
     
     (declare (salience -10))
-    ?miss <- (MANIFEST::Satellite (bus-non-recurring-cost# ?bus&~nil) (payload-non-recurring-cost# ?payl&~nil) 
+    ?miss <- (MANIFEST::Mission (bus-non-recurring-cost# ?bus&~nil) (payload-non-recurring-cost# ?payl&~nil) 
         (program-non-recurring-cost# ?prog&~nil) (IAT-non-recurring-cost# ?iat&~nil)
         (bus-non-recurring-cost ?fz-bus) (payload-non-recurring-cost ?fz-payl) 
         (program-non-recurring-cost ?fz-prog) (IAT-non-recurring-cost ?fz-iat)
@@ -359,7 +359,7 @@
     "Non recurring cost"
     
     (declare (salience -10))
-    ?miss <- (MANIFEST::Satellite (bus-recurring-cost# ?bus&~nil) (payload-recurring-cost# ?payl&~nil) 
+    ?miss <- (MANIFEST::Mission (bus-recurring-cost# ?bus&~nil) (payload-recurring-cost# ?payl&~nil) 
         (program-recurring-cost# ?prog&~nil) (IAT-recurring-cost# ?iat&~nil) (operations-cost# ?ops&~nil)
         (launch-cost# ?launch&~nil)
         (bus-recurring-cost ?fz-bus) (payload-recurring-cost ?fz-payl) 
@@ -384,7 +384,7 @@
     )
 
 (defrule FUZZY-COST-ESTIMATION::estimate-lifecycle-mission-cost
-    ?miss <- (MANIFEST::Satellite (mission-recurring-cost# ?rec&~nil) (mission-recurring-cost ?fz-rec)
+    ?miss <- (MANIFEST::Mission (mission-recurring-cost# ?rec&~nil) (mission-recurring-cost ?fz-rec)
          (mission-non-recurring-cost ?fz-nr) (mission-non-recurring-cost# ?nr&~nil) (lifecycle-cost# nil) (factHistory ?fh))
     => (modify ?miss (lifecycle-cost# (+ ?rec ?nr)) (lifecycle-cost (fuzzysum ?fz-rec ?fz-nr)) (factHistory (str-cat "{R" (?*rulesMap* get FUZZY-COST-ESTIMATION::estimate-lifecycle-mission-cost) " " ?fh "}")))
     )
@@ -393,7 +393,7 @@
 
 (defquery COST-ESTIMATION::search-cost-breakdown
     (declare (variables ?name))
-    (MANIFEST::Satellite (Name ?name) (mission-cost# ?total) (payload-cost# ?payl) 
+    (MANIFEST::Mission (Name ?name) (mission-cost# ?total) (payload-cost# ?payl) 
         (bus-cost# ?bus)  (launch-cost# ?launch)  (program-cost# ?prog) (IAT-cost# ?iat) (operations-cost# ?ops))
     )
 

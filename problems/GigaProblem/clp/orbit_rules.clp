@@ -6,7 +6,7 @@
 (defrule MANIFEST::calculate-orbit-semimajor-axis-sat
 	"This rule calculates the semimajor axis of a constellation from the altitude"
     (declare (salience 20))
-    ?f <- (MANIFEST::Satellite (orbit-altitude# ?orb-alt&~nil)
+    ?f <- (MANIFEST::Mission (orbit-altitude# ?orb-alt&~nil)
         						   (orbit-semimajor-axis nil) (factHistory ?fh))
     =>
     (bind ?orb-sa (+ 6378 ?orb-alt))
@@ -16,7 +16,7 @@
 (defrule MANIFEST::calculate-orbit-period
 	"This rule calculates the semimajor axis of a constellation from the altitude"
     (declare (salience 20))
-    ?f <- (MANIFEST::Satellite (orbit-semimajor-axis ?a&~nil)
+    ?f <- (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil)
         						   (orbit-period# nil) (factHistory ?fh))
     =>
     (modify ?f (orbit-period# (orbit-period ?a))(factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::calculate-orbit-period) " " ?fh "}")))
@@ -25,14 +25,14 @@
 
 (defrule MANIFEST::estimate-sun-angle
     (declare (salience 20))
-    ?sat <- (MANIFEST::Satellite (worst-sun-angle nil) (factHistory ?fh) )
+    ?sat <- (MANIFEST::Mission (worst-sun-angle nil) (factHistory ?fh) )
     =>
     (modify ?sat (worst-sun-angle 0.0) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::estimate-sun-angle) " " ?fh "}")))
     )
 
 (defrule MANIFEST::estimate-fraction-of-sunlight
     (declare (salience 20))
-    ?sat <- (MANIFEST::Satellite (orbit-semimajor-axis ?a&~nil) (fraction-sunlight nil) (factHistory ?fh))
+    ?sat <- (MANIFEST::Mission (orbit-semimajor-axis ?a&~nil) (fraction-sunlight nil) (factHistory ?fh))
     =>
     (modify ?sat (fraction-sunlight (estimate-fraction-sunlight ?a))(factHistory (str-cat "{R" (?*rulesMap* get MANIFEST::estimate-fraction-of-sunlight) " " ?fh "}")))
     )
@@ -83,6 +83,6 @@
 
 	
 (deffunction get-orbit-altitude (?orbit-str)
-	(bind ?orb (new seakers.vassar.Orbit ?orbit-str))
+	(bind ?orb (new rbsa.eoss.Orbit ?orbit-str))
 	(return (?orb getAltitude))
     )
