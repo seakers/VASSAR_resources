@@ -46,7 +46,7 @@
 (deffunction get-instrument-peak-power (?instr)
     (bind ?result (run-query* search-instrument-by-name ?instr))
     (?result next)
-    (return (?result getDouble ppp))
+    (return (?result getDouble pp))
     )
 
 
@@ -54,7 +54,7 @@
 (deffunction get-instrument-power (?instr)
     (bind ?result (run-query* search-instrument-by-name ?instr))
     (?result next)
-    (return (?result getDouble ppp))
+    (return (?result getDouble pp))
     )
 
 (deffunction get-instrument-datarate (?instr)
