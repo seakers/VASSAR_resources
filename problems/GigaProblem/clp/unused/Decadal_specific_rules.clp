@@ -22,6 +22,14 @@
     ;        (taken-by (str-cat ?ins1 "-" ?ins2 "-disaggregated")));; fuzzy-max in accuracy is OK because joint product does provide 4% accuracy
 ;)
 
+(deftemplate MANIFEST::ARCHITECTURE (slot bitString) (multislot payload) (slot num-sats) (slot source) (slot orbit) 
+    (slot orbit-altitude) (slot orbit-raan) (slot orbit-type) (slot orbit-inc) (slot num-planes)
+    (multislot doesnt-fly) (slot num-sats-per-plane) (slot lifecycle-cost) (slot benefit)  
+	(slot space-segment-cost) (slot ground-segment-cost) (slot pareto-ranking) (slot utility)
+	(slot mutate) (slot crossover)  (slot improve) (slot id) (multislot heuristics-to-apply) (multislot heuristics-applied) 
+    (slot num-instruments) (multislot sat-assignments) (multislot ground-stations) (multislot constellations) (slot factHistory))
+
+
 (defrule SYNERGIES::SMAP-spatial-disaggregation 
     "A frequent coarse spatial resolution measurement can be combined
      with a sparse high spatial resolution measurement to produce 
