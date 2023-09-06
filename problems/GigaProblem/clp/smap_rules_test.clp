@@ -14,7 +14,7 @@
 ;(defglobal ?*smap-instruments* = 0)
 ;(bind ?*smap-instruments* (create$ SMAP_RAD SMAP_MWR CMIS VIIRS BIOMASS))
 
-(deftemplate DATABASE::list-of-instruments (multislot list) )
+;(deftemplate DATABASE::list-of-instruments (multislot list) )
 
 
 (deffacts DATABASE::list-of-instruments (DATABASE::list-of-instruments 
