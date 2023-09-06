@@ -167,7 +167,7 @@
     
        =>
     (foreach ?x $?list-of-instruments (assert (CAPABILITIES::Manifested-instrument (Name ?x) (flies-in ?name)  (mission-architecture ?arch) (num-of-planes# ?nplanes) (num-of-sats-per-plane# ?nsats) (num-of-planes# ?nplanes) (orbit-altitude# ?h) (orbit-inclination ?inc) (factHistory (str-cat "{R" (?*rulesMap* get MANIFEST2::assert-manifested-instruments) " A" (call ?miss getFactId) "}")))))
-    ;(assert (SYNERGIES::cross-registered-instruments (instruments ?list-of-instruments) (degree-of-cross-registration spacecraft)))
+    (assert (SYNERGIES::cross-registered-instruments (instruments ?list-of-instruments) (degree-of-cross-registration spacecraft)))
     )         
 
 
