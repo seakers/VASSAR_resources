@@ -9,7 +9,7 @@
     (multislot doesnt-fly) (slot num-sats-per-plane) (slot lifecycle-cost) (slot benefit)  
 	(slot space-segment-cost) (slot ground-segment-cost) (slot pareto-ranking) (slot utility)
 	(slot mutate) (slot crossover)  (slot improve) (slot id) 
-    (slot num-instruments) (multislot sat-assignments) (multislot ground-stations) (multislot constellations))
+    (slot num-instruments) (multislot sat-assignments) (multislot ground-stations) (multislot constellations) (slot factHistory))
 
 ;(defglobal ?*smap-instruments* = 0)
 ;(bind ?*smap-instruments* (create$ SMAP_RAD SMAP_MWR CMIS VIIRS BIOMASS))
