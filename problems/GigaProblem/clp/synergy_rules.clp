@@ -402,7 +402,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
         (num-soundings-per-day# nil) (num-of-planes# nil) (num-of-sats-per-plane# nil) )
     => 
     (bind ?ns 450); 450 soundings/day per satellite
-    (modify ?m (num-soundings-per-day# ?ns) (factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::count-num-soundings-per-day-when-nil) " D" (call ?m1 getFactId) " S" (call ?m2 getFactId) "}")))
+    (modify ?m (num-soundings-per-day# ?ns))
     ;(printout t "nsoundings of " ?tk " = " ?ns crlf)
     )
 
