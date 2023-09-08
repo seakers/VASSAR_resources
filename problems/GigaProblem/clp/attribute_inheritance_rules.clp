@@ -267,7 +267,7 @@
 (defrule MANIFEST::compute-fov-from-angular-res-and-npixels-square 
     "Compute field of view in degrees from angular resolution (IFOV)
     and number of pixels for a square image"
-    (declare (salience 4))
+    (declare (salience -1))
     ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view# nil) 
         (Angular-resolution-azimuth# nil) (Angular-resolution-elevation# nil)
         (Angular-resolution# ?ifov&~nil) (num-pixels# ?npix&~nil) (factHistory ?fh) ) ; only square images
@@ -279,7 +279,7 @@
 (defrule MANIFEST::compute-fov-from-angular-res-and-npixels-elevation 
     "Compute field of view in degrees from angular resolution (IFOV)
     and number of pixels for the elevation direction in a rectangular image"
-    (declare (salience 4))
+    (declare (salience -1))
     ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view-elevation# nil) 
        (Angular-resolution-elevation# ?ara&~nil) (num-pixels-along-track# ?npix&~nil) (factHistory ?fh) )
     =>
@@ -290,7 +290,7 @@
 (defrule MANIFEST::compute-fov-from-angular-res-and-npixels-azimuth 
     "Compute field of view in degrees from angular resolution (IFOV)
     and number of pixels for the azimuth direction in a rectangular image"
-    (declare (salience 4))
+    (declare (salience -1))
     ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-view-azimuth# nil) 
        (Angular-resolution-azimuth# ?ara&~nil) (num-pixels-cross-track# ?npix&~nil) (factHistory ?fh))
     =>
@@ -301,7 +301,7 @@
 (defrule MANIFEST::compute-for-from-fov-square 
     "Compute field of regard in degrees from field of view
     and off-axis scanning capability"
-    (declare (salience 2))
+    (declare (salience -2))
     ?instr <- (CAPABILITIES::Manifested-instrument  (Field-of-regard# nil) 
         (Field-of-view# ?fov&~nil) (off-axis-angle-plus-minus# ?off-axis) (factHistory ?fh)) ; only square images
     =>
