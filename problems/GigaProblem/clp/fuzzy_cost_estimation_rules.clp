@@ -11,6 +11,22 @@
         else (return (+ (nth$ 1 ?list) (sum$ (rest$ ?list)))))
     )
 
+(deffunction fsum$ (?list)
+    (bind ?sum 0)
+    (loop-for-count (?i 1 (length$ ?list))
+        (bind ?sum (+ ?sum (nth$ ?i ?list)))
+    )
+    (return ?sum)
+    )
+
+(deffunction ffsum$ (?list)
+    (bind ?sum 0)
+    (foreach ?ins ?list
+        (bind ?sum (+ ?sum ?ins))
+        )
+    (return ?sum)
+    )
+
 
 (deffunction apply-NICM (?m ?p ?rb)
     
@@ -70,7 +86,7 @@
     (printout t "estimate payload cost: instrument costs = " ?costs crlf)
     (printout t "fuzzy costs = " ?fuzzy-costs crlf)
 
-    (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
+    (bind ?cost (ffsum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (printout t "finished costs" ?cost crlf)
     (bind ?fuzzy-cost (fuzzysum$ ?fuzzy-costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (printout t "finished fuzz costs" crlf)
