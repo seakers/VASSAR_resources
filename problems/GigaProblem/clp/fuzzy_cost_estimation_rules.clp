@@ -81,6 +81,7 @@
         )
     =>
 
+    (printout t "instruments: " ?payload crlf)
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
     (bind ?fuzzy-costs (map get-instrument-fuzzy-cost-manifest ?payload)); in FY04$
     ;(printout t "estimate payload cost: instrument costs = " ?costs crlf)
