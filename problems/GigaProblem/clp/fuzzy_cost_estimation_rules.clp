@@ -59,15 +59,14 @@
     )
 
 (defrule FUZZY-COST-ESTIMATION::estimate-payload-cost2
-    "This rule estimates payload cost using a very simplified version of the 
-    NASA Instrument Cost Model available on-line"
+    "This rule estimates payload cost using a very simplified version of the NASA Instrument Cost Model available on-line"
     (declare (salience 18))
     ?miss <- (MANIFEST::Mission (payload-cost# nil) (instruments $?payload) (factHistory ?fh)
         )
     =>
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
     (bind ?fuzzy-costs (map get-instrument-fuzzy-cost-manifest ?payload)); in FY04$
-    ;(printout t "estimate payload cost: instrument costs = " ?costs crlf)
+    (printout t "estimate payload cost: instrument costs = " ?costs crlf)
     (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     (bind ?fuzzy-cost (fuzzysum$ ?fuzzy-costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
         (modify ?miss (payload-cost# ?cost) (payload-non-recurring-cost# (* 0.8 ?cost))

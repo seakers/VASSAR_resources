@@ -90,6 +90,7 @@
 
 	
 (deffunction get-performance (?lv ?typ ?h ?i)
+    (printout t "sufficient performance " ?lv " m=" ?m " orb=" ?typ " h=" ?a " i=" ?i)
 	(bind ?coeffs (MatlabFunctions getLaunchVehiclePerformanceCoeffs ?lv (str-cat ?typ "-" ?i)))
 	(if (isempty$ ?coeffs) then 
 		(throw new JessException (str-cat "get-performance: coeffs not found for lv typ h i = " ?lv " " ?typ " " ?h " " ?i)))
