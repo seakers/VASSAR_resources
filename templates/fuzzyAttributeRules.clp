@@ -18,5 +18,6 @@
                     (create${% for value in fuzzyValues %} {{value}}{% endfor %})
                     (create${% for min in mins %} {{min}}{% endfor %})
                     (create${% for max in maxs %} {{max}}{% endfor %})))
+    (printout t "numerical-to-fuzzy-{{attribute}} " ?num " " ?values crlf)
     (modify ?m ({{attribute}} ?value))
 )
