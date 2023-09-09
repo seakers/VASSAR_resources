@@ -31,7 +31,7 @@
     (if (< ?hp 500) then (bind ?dV 12)
         elif (< ?hp 600) then (bind ?dV 5)
         elif(< ?hp 1000) then (bind ?dV 2)
-        elif (> ?hp 1000) then (bind ?dV 0)
+        elif (>= ?hp 1000) then (bind ?dV 0)
         ) 
 
     (modify ?miss (delta-V-drag (* ?dV ?life)) (factHistory (str-cat "{R" (?*rulesMap* get MASS-BUDGET::compute-deltaV-drag) " " ?fh "}")))
