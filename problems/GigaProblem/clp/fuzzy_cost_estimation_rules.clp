@@ -84,7 +84,7 @@
     (printout t "instruments: " ?payload crlf)
     (bind ?index (member$ "SMAP_ANT" ?payload))
     (printout t "ant check: " ?index crlf)
-    (if (neq ?index FALSE) then
+    (if (neq ?index 0) then
         (bind ?payload (delete$ ?payload ?index ?index))
     )
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
