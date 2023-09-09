@@ -886,7 +886,7 @@ Occultation Events for Orbit Selection for Global/Regional Observation, RAST 200
     
     (test (eq (increases-coverage3 (str-cat ?typ1 "-" ?h1 "-" ?inc1 "-" ?raan1) (str-cat ?typ2 "-" ?h2 "-" ?inc2 "-" ?raan2) (str-cat ?typ3 "-" ?h3 "-" ?inc3 "-" ?raan3)) TRUE))
     =>
-    (printout t "aerosol complete" crlf)
+    ;(printout t "aerosol complete" crlf)
     (duplicate ?m1 (Temporal-resolution Medium-1day-3days) (taken-by (str-cat ?ins1 "-syn-" ?ins2 "-syn-" ?ins3)) (Id (str-cat ?id1 "-syn-" ?id2 "-syn-" ?id3))(factHistory (str-cat "{R" (?*rulesMap* get SYNERGIES::several-lidars-for-aerosols) " D" (call ?m1 getFactId) " S" (call ?sub1 getFactId) " S" (call ?sub2 getFactId) "}")))
     )
 
