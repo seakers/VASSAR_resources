@@ -82,6 +82,10 @@
     =>
 
     (printout t "instruments: " ?payload crlf)
+    (bind ?index (member$ "SMAP_ANT" ?payload))
+    (if (> ?index 0) then
+        (bind ?payload (delete$ ?payload ?index ?index))
+    )
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
     (bind ?fuzzy-costs (map get-instrument-fuzzy-cost-manifest ?payload)); in FY04$
     ;(printout t "estimate payload cost: instrument costs = " ?costs crlf)
