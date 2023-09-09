@@ -11,7 +11,7 @@
 {% endif %}
             ({{attribute}} nil)
             (factHistory ?fh))
-    (printout t "numerical-to-fuzzy-{{attribute}} " ?num crlf)
+    ;(printout t "numerical-to-fuzzy-{{attribute}} " ?num crlf)
     =>
     (bind ?value (numerical-to-fuzzy
                     ?num
