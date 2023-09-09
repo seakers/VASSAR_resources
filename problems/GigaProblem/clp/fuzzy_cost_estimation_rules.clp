@@ -66,9 +66,11 @@
     =>
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
     (bind ?fuzzy-costs (map get-instrument-fuzzy-cost-manifest ?payload)); in FY04$
-    (printout t "estimate payload cost: instrument costs = " ?costs crlf)
     (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
+    (printout t "estimate payload cost: instrument costs = " ?cost crlf)
+    (printout t "fuzzy costs = " ?fuzzy-costs crlf)
     (bind ?fuzzy-cost (fuzzysum$ ?fuzzy-costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
+        
         (modify ?miss (payload-cost# ?cost) (payload-non-recurring-cost# (* 0.8 ?cost))
         (payload-recurring-cost# (* 0.2 ?cost))
         (payload-cost ?fuzzy-cost) (payload-non-recurring-cost (fuzzyscprod ?fuzzy-cost 0.8))
