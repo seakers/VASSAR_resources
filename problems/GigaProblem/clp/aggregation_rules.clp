@@ -7,7 +7,7 @@
     (test (< (nth$ ?index $?scors) ?sat))
     =>
     (bind ?new-scors (replace$ $?scors ?index ?index ?sat))
-    (modify ?obj (subobj-scores ?new-scors) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::get-subobjective-scores) " " ?fh " S" (call ?sub getFactId) "}")))
+    (modify ?obj (subobj-scores ?new-scors) )
     )
 
 	
@@ -18,7 +18,7 @@
 	?obj <- (AGGREGATION::OBJECTIVE (satisfaction nil) (subobj-scores $?scors) (weights $?weights) (factHistory ?fh))
     (test (no-nils $?scors))
     =>
-    (modify ?obj (satisfaction (dot-product$ $?weights $?scors)) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::compute-objective-scores) " " ?fh "}")))
+    (modify ?obj (satisfaction (dot-product$ $?weights $?scors)) )
     )
 
 (defrule AGGREGATION::get-objective-scores
@@ -30,7 +30,7 @@
     (test (< (nth$ ?index $?scors) ?sat))
     =>
     (bind ?new-scors (replace$ $?scors ?index ?index ?sat))
-    (modify ?sh (obj-scores ?new-scors) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::get-objective-scores) " " ?fh " S" (call ?sub getFactId) "}")))
+    (modify ?sh (obj-scores ?new-scors) )
     )
 
 (defrule AGGREGATION::compute-stakeholder-scores
@@ -40,7 +40,7 @@
     (test (no-nils $?scors))
     =>
     ;(printout t "compute-stakeholder-scores " (?sh getFactId) crlf)
-    (modify ?sh (satisfaction (dot-product$ $?weights $?scors)) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::compute-stakeholder-scores) " " ?fh "}")))
+    (modify ?sh (satisfaction (dot-product$ $?weights $?scors)) )
     )
 
 (defrule AGGREGATION::get-stakeholder-scores
@@ -52,7 +52,7 @@
     (test (< (nth$ ?index $?scors) ?sat))
     =>
     (bind ?new-scors (replace$ $?scors ?index ?index ?sat))
-    (modify ?val (sh-scores ?new-scors) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::get-stakeholder-scores) " " ?fh " S" (call ?sub getFactId) "}")))
+    (modify ?val (sh-scores ?new-scors))
     )
 
 
@@ -61,7 +61,7 @@
     ?val <- (AGGREGATION::VALUE (satisfaction nil) (sh-scores $?scors) (weights $?weights) (factHistory ?fh))
     (test (no-nils $?scors))
     =>
-    (modify ?val (satisfaction (dot-product$ $?weights $?scors)) (factHistory (str-cat "{R" (?*rulesMap* get AGGREGATION::compute-value) " " ?fh "}")))
+    (modify ?val (satisfaction (dot-product$ $?weights $?scors)))
     )
 
 (defquery AGGREGATION::find-subobj-weight 
