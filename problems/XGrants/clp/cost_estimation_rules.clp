@@ -211,6 +211,7 @@
         )
     =>
     (bind ?cost 1500)
+    (printout t "Cubesat!" crlf)
 
     (modify ?miss (bus-recurring-cost# ?cost) (bus-non-recurring-cost# 0.0))
     )
