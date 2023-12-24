@@ -207,7 +207,7 @@
     "This rule assigns a rule of thumb 12U cost"
     (declare (salience 10))
     ?miss <- (MANIFEST::Mission (bus-recurring-cost# nil)
-        (satellite-dry-mass ?m&~nil&:(<= ?m 12) (payload-dimensions ?pdims&~nil&:(<= (nth$ 1 ?pdims) 0.3))
+        (satellite-dry-mass ?m&~nil&:(<= ?m 12)) (payload-dimensions ?pdims&~nil&:(<= (nth$ 1 ?pdims) 0.3))
         )
     =>
     (bind ?cost 1500)
@@ -261,7 +261,7 @@
 (defrule COST-ESTIMATION::estimate-integration-and-testing-cost-cubesat
     "This rule estimates Integration, assembly and testing non recurring and cost for a cubesat"
     ?miss <- (MANIFEST::Mission (IAT-non-recurring-cost# nil) (IAT-recurring-cost# nil) (IAT-cost# nil)
-        (spacecraft-non-recurring-cost# ?scnr&~nil) (satellite-dry-mass ?m&~nil&:(<= ?m 12) (payload-dimensions ?pdims&~nil&:(<= (nth$ 1 ?pdims) 0.3))
+        (spacecraft-non-recurring-cost# ?scnr&~nil) (satellite-dry-mass ?m&~nil&:(<= ?m 12)) (payload-dimensions ?pdims&~nil&:(<= (nth$ 1 ?pdims) 0.3))
         )
     =>
     (bind ?iatnr 500)
