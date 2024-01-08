@@ -25,8 +25,9 @@
     "This rule estimates payload cost using a very simplified version of the
     NASA Instrument Cost Model available on-line"
     (declare (salience 25) (no-loop TRUE))
-    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil&:(> ?m 12)) (dimension-x# ?x&~nil&:(> ?x 0.3)) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
+    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil) (dimension-x# ?x&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
             (developed-by ?whom) (factHistory ?fh))
+    (test (or (> ?m 12) (> ?x 0.3)))
     =>
 
     (bind ?c0 (apply-NICM ?m ?p ?rb ?name))
@@ -38,8 +39,9 @@
     "This rule estimates payload cost using a very simplified version of the
     NASA Instrument Cost Model available on-line"
     (declare (salience 25) (no-loop TRUE))
-    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil&:(<= ?m 12)) (dimension-x# ?x&~nil&:(> ?x 0.3)) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
+    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil) (dimension-x# ?x&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
             (developed-by ?whom) (factHistory ?fh))
+    (test (and (<= ?m 12) (<= ?x 0.3)))
     =>
 
     (bind ?c0 4000)
@@ -58,7 +60,6 @@
     =>
     ;(printout t "Instruments: " $?payload crlf)
     (bind ?costs (map get-instrument-cost-manifest ?payload)); in FY04$
-
     (bind ?cost (sum$ ?costs)); correct for inflation from FY04 to FY00, from http://oregonstate.edu/cla/polisci/faculty-research/sahr/cv2000.pdf
     ;(printout t "Payload cost: instrument cost = " (* ?cost 1e3) crlf)
     (bind ?cost (MatlabFunctions inflate ?cost 2004 2010))
