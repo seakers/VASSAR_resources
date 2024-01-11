@@ -25,9 +25,9 @@
     "This rule estimates payload cost using a very simplified version of the
     NASA Instrument Cost Model available on-line"
     (declare (salience 25) (no-loop TRUE))
-    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil) (dimension-x# ?x&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
+    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil) (dimension-x# ?x&~nil) (dimension-y# ?y&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
             (developed-by ?whom) (factHistory ?fh))
-    (test (or (> ?m 12) (> ?x 0.3)))
+    (test (or (> ?m 12) (> ?x 0.18) (> ?y 0.28)))
     =>
 
     (bind ?c0 (apply-NICM ?m ?p ?rb ?name))
@@ -39,9 +39,9 @@
     "This rule estimates payload cost using a very simplified version of the
     NASA Instrument Cost Model available on-line"
     (declare (salience 25) (no-loop TRUE))
-    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil) (dimension-x# ?x&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
+    ?instr <- (CAPABILITIES::Manifested-instrument (Name ?name) (cost# nil) (mass# ?m&~nil) (dimension-x# ?x&~nil) (dimension-y# ?y&~nil) (average-power# ?p&~nil) (average-data-rate# ?rb&~nil)
             (developed-by ?whom) (factHistory ?fh))
-    (test (and (<= ?m 12) (<= ?x 0.3)))
+    (test (and (<= ?m 12) (<= ?x 0.18) (<= ?y 0.28)))
     =>
 
     (bind ?c0 4000)
@@ -81,7 +81,7 @@
         (ADCS-mass# ?adcm&~nil) (standard-bus ?bus) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims)
         )
     (or (test (eq ?bus nil)) (test (eq ?bus dedicated-class)))
-    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.3)))
+    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.18) (> (nth$ 2 $?pdims) 0.28)))
     =>
     ;(printout t "Mass" crlf)
     ;(printout t "Str " ?strm " kg" crlf)
@@ -149,7 +149,7 @@
         (ADCS-mass# ?adcm&~nil) (standard-bus ?bus) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims)
         )
     (or (test (eq ?bus nil)) (test (eq ?bus dedicated-class)))
-    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.3)))
+    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.18) (> (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?str-cost (str-cost-recurring ?strm))
     (bind ?prop-cost (prop-cost-recurring ?prm ?strm ?adcm ?comm ?thm ?epsm))
@@ -212,7 +212,7 @@
     ?miss <- (MANIFEST::Mission (bus-recurring-cost# nil)
         (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims)
         )
-    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.3)))
+    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.18) (<= (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?cost 1500)
     (printout t "Cubesat!" crlf)
@@ -254,7 +254,7 @@
     ?miss <- (MANIFEST::Mission (IAT-non-recurring-cost# nil) (IAT-recurring-cost# nil) (IAT-cost# nil)
         (spacecraft-non-recurring-cost# ?scnr&~nil) (spacecraft-recurring-cost# ?scr&~nil) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims)
         )
-    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.3)))
+    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.18) (> (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?iatnr (* ?scnr 0.195))
     (bind ?iatr (* ?scr 0.124))
@@ -268,7 +268,7 @@
     ?miss <- (MANIFEST::Mission (IAT-non-recurring-cost# nil) (IAT-recurring-cost# nil) (IAT-cost# nil)
         (spacecraft-non-recurring-cost# ?scnr&~nil) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims)
         )
-    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.3)))
+    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.18) (<= (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?iatnr 500)
     (bind ?iatr 500)
@@ -285,7 +285,7 @@
     ?miss <- (MANIFEST::Mission (program-non-recurring-cost# nil) (program-recurring-cost# nil) (program-cost# nil)
         (spacecraft-non-recurring-cost# ?scnr&~nil) (spacecraft-recurring-cost# ?scr&~nil) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims)
         )
-    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.3)))
+    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.18) (> (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?prognr (* 0.414 ?scnr))
     (bind ?progr (* 0.32 ?scr))
@@ -299,7 +299,7 @@
     ?miss <- (MANIFEST::Mission (program-non-recurring-cost# nil) (program-recurring-cost# nil) (program-cost# nil)
         (spacecraft-non-recurring-cost# ?scnr&~nil) (spacecraft-recurring-cost# ?scr&~nil) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims)
         )
-    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.3)))
+    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.18) (<= (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?prognr 500)
     (bind ?progr 500)
@@ -318,7 +318,7 @@
     ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# nil)
         (lifetime ?life &~nil) (program-cost# ?prog&~nil) (IAT-cost# ?iat&~nil)
         (sat-data-rate-per-orbit# ?rbo&nil) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims))
-    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.3)))
+    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.18) (> (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?total-cost (+ ?sat ?prog ?iat))
     (bind ?total-cost (* ?total-cost 0.001097)); correct for inflation and transform to $M
@@ -334,7 +334,7 @@
     ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# nil)
         (lifetime ?life &~nil) (program-cost# ?prog&~nil) (IAT-cost# ?iat&~nil)
         (sat-data-rate-per-orbit# ?rbo&~nil) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims))
-    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.3)))
+    (test (or (> ?m 12) (> (nth$ 1 $?pdims) 0.18) (> (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?total-cost (+ ?sat ?prog ?iat))
     (bind ?total-cost (* ?total-cost 0.001097)); correct for inflation and transform to $M
@@ -350,7 +350,7 @@
     (declare (salience -5))
     ?miss <- (MANIFEST::Mission (satellite-cost# ?sat&~nil) (operations-cost# nil)
         (lifetime ?life &~nil) (num-of-planes# ?np&~nil) (num-of-sats-per-plane# ?ns&~nil) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims))
-    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.3)))
+    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.18) (<= (nth$ 2 $?pdims) 0.28)))
     =>
     ;(bind ?N (* ?np ?ns))
     ;(bind ?salary (+ 200 (log ?N)))
@@ -459,7 +459,7 @@
     "Overriding launch cost computation using rule of thumb"
     (declare (salience 10))
     ?miss <- (MANIFEST::Mission (launch-cost# ?launch&~nil) (num-of-planes# ?np&~nil) (num-of-sats-per-plane# ?ns&~nil) (satellite-dry-mass ?m&~nil) (payload-dimensions $?pdims))
-    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.3)))
+    (test (and (<= ?m 12) (<= (nth$ 1 $?pdims) 0.18) (<= (nth$ 2 $?pdims) 0.28)))
     =>
     (bind ?N (* ?np ?ns))
     (bind ?cost (* (* ?N 0.1) 12))
